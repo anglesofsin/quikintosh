@@ -1,0 +1,11 @@
+/* matugen-* CSS variables for zen-wabi - rendered by Noctalia */
+:root {
+  --matugen-bg: {{colors.surface_container_lowest.default.hex}};
+  --matugen-bg-dark: {{colors.surface_container_low.default.hex}};
+  --matugen-bg-light: {{colors.surface_container_high.default.hex}};
+  --matugen-fg: {{colors.on_surface.default.hex}};
+  --matugen-fg-light: {{colors.on_surface_variant.default.hex}};
+  --matugen-accent: {{colors.primary.default.hex}};
+  --matugen-secondary: {{colors.secondary.default.hex}};
+  --matugen-tertiary: {{colors.tertiary.default.hex}};
+}

@@ -1,0 +1,96 @@
+--- a/components/glass/GlassWindows.qml
++++ b/components/glass/GlassWindows.qml
+@@ -26,15 +26,32 @@
+     }
+ 
+     readonly property var monitorObject: {
+-        var ms = Hyprland.monitors.values
++        var ms = GlassTracker.monitorSnapshots
+         for (var i = 0; i < ms.length; i++) {
+             if (ms[i].name === root.monitorName)
+                 return ms[i]
+         }
+         return null
+     }
+-    readonly property real monitorX: monitorObject && monitorObject.lastIpcObject ? (monitorObject.lastIpcObject.x ?? 0) : 0
+-    readonly property real monitorY: monitorObject && monitorObject.lastIpcObject ? (monitorObject.lastIpcObject.y ?? 0) : 0
++    readonly property real monitorX: monitorObject ? (monitorObject.x ?? 0) : 0
++    readonly property real monitorY: monitorObject ? (monitorObject.y ?? 0) : 0
++
++    function workspaceVisible(ipc, workspace) {
++        var monitor = root.monitorObject
++        if (!ipc || !monitor) return false
++        if (ipc.pinned === true) return true
++        var id = ipc.workspace ? ipc.workspace.id : null
++        if (monitor.activeWorkspace && id === monitor.activeWorkspace.id) return true
++        return monitor.specialWorkspace && monitor.specialWorkspace.id !== 0
++            && id === monitor.specialWorkspace.id
++    }
++
++    function windowLayer(ipc) {
++        if (!ipc) return 0
++        if (ipc.pinned) return 4000
++        var special = ipc.workspace && String(ipc.workspace.name).indexOf("special:") === 0
++        return (special ? 2000 : 0) + (ipc.floating ? 1000 : 0)
++    }
+ 
+     property int pending: 0
+     property bool graceDone: false
+@@ -125,10 +142,9 @@
+             readonly property var ipc: modelData.lastIpcObject
+             readonly property bool onScreen: ipc !== undefined && ipc !== null
+                 && modelData.wayland !== null
+-                && modelData.monitor !== null
+-                && modelData.monitor.name === root.monitorName
+-                && modelData.workspace !== null
+-                && modelData.workspace.active
++                && root.monitorObject !== null
++                && ipc.monitor === root.monitorObject.id
++                && root.workspaceVisible(ipc, modelData.workspace)
+                 && ipc.hidden !== true
+                 && ipc.mapped !== false
+                 && ipc.at !== undefined && ipc.size !== undefined
+@@ -199,7 +215,7 @@
+             y: ipc && ipc.at ? ipc.at[1] - root.monitorY : 0
+             width: ipc && ipc.size ? ipc.size[0] : 0
+             height: ipc && ipc.size ? ipc.size[1] : 0
+-            z: (ipc && ipc.floating ? 1000 : 0) - rank
++            z: root.windowLayer(ipc) - rank
+         }
+     }
+ }
+--- a/components/glass/GlassTracker.qml
++++ b/components/glass/GlassTracker.qml
+@@ -2,10 +2,24 @@
+ 
+ import QtQuick
+ import Quickshell
++import Quickshell.Io
+ import Quickshell.Hyprland
+ 
+ Singleton {
+     id: root
++
++    property var monitorSnapshots: []
++    Process {
++        id: monitorQuery
++        command: ["hyprctl", "monitors", "-j"]
++        stdout: StdioCollector {
++            onStreamFinished: {
++                try { root.monitorSnapshots = JSON.parse(this.text) }
++                catch (error) { console.warn("Glass monitor query:", error) }
++            }
++        }
++    }
++    Component.onCompleted: monitorQuery.running = true
+ 
+     property int captureUsers: 0
+     property bool fast: false
+@@ -52,6 +66,7 @@
+     }
+ 
+     function refreshWindows() {
++        if (!monitorQuery.running) monitorQuery.running = true
+         Hyprland.refreshMonitors()
+         Hyprland.refreshToplevels()
+     }

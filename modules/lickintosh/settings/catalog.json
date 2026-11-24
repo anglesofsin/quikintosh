@@ -1,0 +1,352 @@
+[
+ {
+  "id": "account",
+  "title": "Account",
+  "icon": "user.svg",
+  "group": 0,
+  "keywords": "profile user name avatar home password"
+ },
+ {
+  "id": "wifi",
+  "title": "Wi-Fi",
+  "icon": "wifi.svg",
+  "legacy": "WifiPage",
+  "group": 1,
+  "keywords": "wireless internet password hotspot"
+ },
+ {
+  "id": "bluetooth",
+  "title": "Bluetooth",
+  "icon": "bluetooth.svg",
+  "legacy": "BluetoothPage",
+  "group": 1,
+  "keywords": "pair headphones keyboard devices"
+ },
+ {
+  "id": "network",
+  "title": "Network",
+  "icon": "network.svg",
+  "group": 1,
+  "query": "network",
+  "keywords": "ethernet wired DNS address connections IP proxy"
+ },
+ {
+  "id": "vpn",
+  "title": "VPN",
+  "icon": "network.svg",
+  "group": 1,
+  "query": "network",
+  "keywords": "virtual private network wireguard openvpn"
+ },
+ {
+  "id": "battery",
+  "title": "Battery",
+  "icon": "battery.svg",
+  "legacy": "BatteryPage",
+  "group": 1,
+  "keywords": "power energy charging health"
+ },
+ {
+  "id": "general",
+  "title": "General",
+  "icon": "general.svg",
+  "group": 2,
+  "keywords": "about software update storage login extensions date time language region sharing backups default applications"
+ },
+ {
+  "id": "accessibility",
+  "title": "Accessibility",
+  "icon": "accessibility.svg",
+  "group": 2,
+  "keywords": "vision display text motion contrast transparency pointer cursor"
+ },
+ {
+  "id": "appearance",
+  "title": "Appearance",
+  "icon": "appearance.svg",
+  "group": 2,
+  "keywords": "light dark accent color liquid glass tint theme"
+ },
+ {
+  "id": "menubar",
+  "title": "Menu Bar",
+  "icon": "menu bar.svg",
+  "legacy": "TopBarPage",
+  "group": 2,
+  "keywords": "status clock linux logo tray notifications"
+ },
+ {
+  "id": "ai",
+  "title": "Intelligence & Assistant",
+  "icon": "menubar/ai.png",
+  "legacy": "AiSettingsPage",
+  "group": 2,
+  "keywords": "AI chat models providers assistant siri"
+ },
+ {
+  "id": "desktop",
+  "title": "Desktop & Dock",
+  "icon": "dock.svg",
+  "legacy": "DockPage",
+  "group": 2,
+  "keywords": "icons grid widgets magnification recent files downloads trash"
+ },
+ {
+  "id": "displays",
+  "title": "Displays",
+  "icon": "display.svg",
+  "legacy": "MonitorsPage",
+  "group": 2,
+  "keywords": "monitor resolution scale refresh brightness night shift"
+ },
+ {
+  "id": "spotlight",
+  "title": "Spotlight",
+  "icon": "spotlight.svg",
+  "legacy": "SpotlightPage",
+  "group": 2,
+  "keywords": "search index clipboard launchpad applications"
+ },
+ {
+  "id": "wallpaper",
+  "title": "Wallpaper",
+  "icon": "wallpaper.svg",
+  "legacy": "WallpaperPage",
+  "group": 2,
+  "keywords": "background pictures photos video desktop"
+ },
+ {
+  "id": "notifications",
+  "title": "Notifications",
+  "icon": "notifications.svg",
+  "group": 3,
+  "keywords": "banners apps alerts preview duration lock screen"
+ },
+ {
+  "id": "sound",
+  "title": "Sound",
+  "icon": "volume.svg",
+  "group": 3,
+  "keywords": "audio volume input output microphone speakers headphones mute"
+ },
+ {
+  "id": "focus",
+  "title": "Focus",
+  "icon": "lockscreen2.svg",
+  "group": 3,
+  "keywords": "do not disturb quiet schedule sleep work"
+ },
+ {
+  "id": "activity",
+  "title": "Screen Time",
+  "icon": "energy.svg",
+  "group": 3,
+  "query": "usage",
+  "keywords": "activity application usage time daily reminders privacy"
+ },
+ {
+  "id": "lock",
+  "title": "Lock Screen",
+  "icon": "lockscreen.svg",
+  "legacy": "LockScreenPage",
+  "group": 4,
+  "keywords": "password idle automatic lock login wallpaper"
+ },
+ {
+  "id": "privacy",
+  "title": "Privacy & Security",
+  "icon": "lockscreen2.svg",
+  "group": 4,
+  "query": "privacy",
+  "keywords": "camera microphone screen recording app permissions sandbox flatpak"
+ },
+ {
+  "id": "passwords",
+  "title": "Passwords",
+  "icon": "lockscreen2.svg",
+  "group": 4,
+  "query": "privacy",
+  "keywords": "keyring keys credentials secrets manager"
+ },
+ {
+  "id": "users",
+  "title": "Users & Groups",
+  "icon": "users.svg",
+  "group": 4,
+  "query": "users",
+  "keywords": "account administrator user password login"
+ },
+ {
+  "id": "accounts",
+  "title": "Internet Accounts",
+  "icon": "network.svg",
+  "group": 4,
+  "keywords": "server sftp webdav smb network folders accounts cloud"
+ },
+ {
+  "id": "games",
+  "title": "Game Mode",
+  "icon": "launchpad.svg",
+  "group": 4,
+  "keywords": "gaming performance steam fullscreen"
+ },
+ {
+  "id": "keyboard",
+  "title": "Keyboard",
+  "icon": "../devices/keyboard.svg",
+  "group": 5,
+  "query": "input",
+  "keywords": "layout repeat delay keys shortcuts typing variant compose"
+ },
+ {
+  "id": "mouse",
+  "title": "Mouse",
+  "icon": "../devices/mouse.svg",
+  "group": 5,
+  "query": "input",
+  "keywords": "pointer tracking speed acceleration natural scrolling"
+ },
+ {
+  "id": "trackpad",
+  "title": "Trackpad",
+  "icon": "general.svg",
+  "group": 5,
+  "query": "input",
+  "keywords": "touchpad tap click natural scrolling typing gestures"
+ },
+ {
+  "id": "printers",
+  "title": "Printers & Scanners",
+  "icon": "general.svg",
+  "group": 5,
+  "query": "printers",
+  "keywords": "CUPS queue default printer scanner"
+ },
+ {
+  "id": "island",
+  "title": "Dynamic Island",
+  "icon": "notch.svg",
+  "legacy": "RosaPage",
+  "group": 6,
+  "keywords": "call discord notifications music downloads clock"
+ },
+ {
+  "id": "controlcenter",
+  "title": "Control Center",
+  "icon": "menubar/controlCenter.svg",
+  "legacy": "ControlCenterPage",
+  "group": 6,
+  "keywords": "controls tiles gallery quick settings"
+ },
+ {
+  "id": "capture",
+  "title": "Screenshots",
+  "icon": "display.svg",
+  "legacy": "CapturePage",
+  "group": 6,
+  "keywords": "quickshot OCR color picker palette recording capture"
+ },
+ {
+  "id": "about",
+  "title": "About",
+  "icon": "general.svg",
+  "parent": "general",
+  "query": "system",
+  "keywords": "hardware processor CPU memory model version serial kernel"
+ },
+ {
+  "id": "updates",
+  "title": "Software Update",
+  "icon": "update.svg",
+  "parent": "general",
+  "query": "updates",
+  "keywords": "NixOS upgrade version rebuild generation packages"
+ },
+ {
+  "id": "storage",
+  "title": "Storage",
+  "icon": "general.svg",
+  "parent": "general",
+  "query": "storage",
+  "keywords": "disk space used available files downloads caches"
+ },
+ {
+  "id": "defaults",
+  "title": "Default Applications",
+  "icon": "general.svg",
+  "parent": "general",
+  "query": "apps",
+  "keywords": "browser mail web pdf images video audio opener"
+ },
+ {
+  "id": "login",
+  "title": "Login Items & Extensions",
+  "icon": "general/autostart.svg",
+  "parent": "general",
+  "query": "login",
+  "keywords": "startup background automatic autostart apps"
+ },
+ {
+  "id": "datetime",
+  "title": "Date & Time",
+  "icon": "general.svg",
+  "parent": "general",
+  "query": "datetime",
+  "keywords": "timezone clock NTP synchronized date"
+ },
+ {
+  "id": "language",
+  "title": "Language & Region",
+  "icon": "general.svg",
+  "parent": "general",
+  "query": "datetime",
+  "keywords": "English French Portuguese language locale units calendar"
+ },
+ {
+  "id": "sharing",
+  "title": "Sharing",
+  "icon": "network.svg",
+  "parent": "general",
+  "query": "network",
+  "keywords": "computer hostname network folders services"
+ },
+ {
+  "id": "backups",
+  "title": "Backups",
+  "icon": "general.svg",
+  "parent": "general",
+  "query": "updates",
+  "keywords": "time machine backup snapshots generations restore files"
+ },
+ {
+  "id": "shortcuts",
+  "title": "Keyboard Shortcuts",
+  "icon": "general.svg",
+  "parent": "keyboard",
+  "query": "shortcuts",
+  "keywords": "keybind super alt ctrl screenshot clipboard launchpad spotlight"
+ },
+ {
+  "id": "app-permissions",
+  "title": "App Permissions",
+  "icon": "lockscreen2.svg",
+  "parent": "privacy",
+  "query": "privacy",
+  "keywords": "flatpak network home downloads permissions sandbox"
+ },
+ {
+  "id": "auto-lock",
+  "title": "Automatic Locking",
+  "icon": "lockscreen.svg",
+  "parent": "lock",
+  "keywords": "idle timeout automatic lock security"
+ },
+ {
+  "id": "glass",
+  "title": "Liquid Glass",
+  "icon": "appearance.svg",
+  "legacy": "LegacyAppearancePage",
+  "parent": "appearance",
+  "keywords": "advanced refraction roughness blur opacity per element"
+ }
+]

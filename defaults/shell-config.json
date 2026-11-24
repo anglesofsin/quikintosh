@@ -1,0 +1,292 @@
+{
+  "appearance": {
+    "accentColor": "#1C7AFF",
+    "accentMode": "auto",
+    "accentOverride": "#d2c797",
+    "blurLayerPopups": true,
+    "blurLayers": true,
+    "blurParams": {},
+    "blurPreset": "",
+    "blurSurfaceAlpha": 0.3,
+    "blurWindowOpacity": 0.8,
+    "blurWindowOpacityInactive": 0.8,
+    "glassAutoDarken": true,
+    "glassAutoDarkenSeeded": true,
+    "glassDarkenStrength": 0.5,
+    "glassDarkenThreshold": 0.7,
+    "glassElements": {
+      "*": {
+        "tintAlpha": 0.12
+      }
+    },
+    "glassTintDark": 0.4,
+    "glassTintLight": 0.45,
+    "highlightColor": "#0a84ff",
+    "highlightMode": "accent",
+    "iconAppearance": "dark",
+    "iconDarkColor": "#9ecaff",
+    "iconLightColor": "#0061a4",
+    "iconPaletteRole": "primary",
+    "iconStyle": "color",
+    "iconTintColor": "#f7c7ff",
+    "iconTintMode": "auto",
+    "iconTreatmentStrength": 1,
+    "layerIgnoreAlpha": 0.05,
+    "mode": "dark",
+    "panelOpacity": 0.85,
+    "reduceMotion": false,
+    "scrollbarVisibility": "automatic",
+    "sidebarSize": "medium"
+  },
+  "battery": {},
+  "capture": {
+    "autoSave": true,
+    "feedback": "notification",
+    "filenameTemplate": "Screenshot_{datetime}_{w}x{h}.png",
+    "magnifier": true,
+    "ocrLanguages": "eng+por",
+    "recordCursor": true,
+    "recordMaxSeconds": 120,
+    "recordMic": false,
+    "recordSystemAudio": false,
+    "translateLanguage": "pt"
+  },
+  "controlCenter": {
+    "items": [
+      {
+        "type": "wifiWidget",
+        "uid": "wifiWidget",
+        "x": 0,
+        "y": 0
+      },
+      {
+        "type": "btWidget",
+        "uid": "btWidget",
+        "x": 2,
+        "y": 0
+      },
+      {
+        "type": "adWidget",
+        "uid": "adWidget",
+        "x": 3,
+        "y": 0
+      },
+      {
+        "type": "musicWidget",
+        "uid": "musicWidget",
+        "x": 0,
+        "y": 1
+      },
+      {
+        "type": "focusWidget",
+        "uid": "focusWidget",
+        "x": 2,
+        "y": 1
+      },
+      {
+        "type": "stageWidget",
+        "uid": "stageWidget",
+        "x": 2,
+        "y": 2
+      },
+      {
+        "type": "shareWidget",
+        "uid": "shareWidget",
+        "x": 3,
+        "y": 2
+      },
+      {
+        "type": "darkWidget",
+        "uid": "darkWidget",
+        "x": 0,
+        "y": 3
+      },
+      {
+        "type": "calcWidget",
+        "uid": "calcWidget",
+        "x": 2,
+        "y": 3
+      },
+      {
+        "type": "gameModeWidget",
+        "uid": "gameModeWidget",
+        "x": 3,
+        "y": 3
+      },
+      {
+        "type": "displayWidget",
+        "uid": "displayWidget",
+        "x": 0,
+        "y": 4
+      },
+      {
+        "type": "volumeWidget",
+        "uid": "volumeWidget",
+        "x": 0,
+        "y": 5
+      }
+    ],
+    "keepAwakeSeeded": true
+  },
+  "dockAppearance": {
+    "animateOpening": true,
+    "confirmEmptyTrash": true,
+    "enable": true,
+    "height": 60,
+    "hideDelay": 500,
+    "hoverToReveal": true,
+    "iconOverflow": 4,
+    "iconScale": 1.15,
+    "iconSize": 40,
+    "iconTint": false,
+    "iconTintColor": "#0a84ff",
+    "iconTintStrength": 1,
+    "magnification": 1.5,
+    "magnificationEnabled": true,
+    "minimizeToAppIcon": true,
+    "monochromeIcons": false,
+    "position": "bottom",
+    "recentAppBlacklist": [
+      {
+        "key": "polkit-gnome-authentication-agent-1",
+        "name": "Authentication Agent"
+      },
+      {
+        "key": "org.quickshell",
+        "name": "Quickshell / Settings"
+      },
+      {
+        "key": "feh",
+        "name": "feh"
+      },
+      {
+        "key": "peazip",
+        "name": "peazip"
+      },
+      {
+        "key": "xdg-desktop-portal-gtk",
+        "name": "xdg-desktop-portal-gtk"
+      },
+      {
+        "key": "org.lickintosh.experienceqa",
+        "name": "org.lickintosh.ExperienceQA"
+      },
+      {
+        "key": "org.lickintosh.insettest",
+        "name": "org.lickintosh.InsetTest"
+      },
+      {
+        "key": "org.codex.floatmemoryvalidation",
+        "name": "org.codex.FloatMemoryValidation"
+      },
+      {
+        "key": "com.github.wwmm.easyeffects",
+        "name": "Easy Effects"
+      },
+      {
+        "key": "dev.zed.zed",
+        "name": "Zed"
+      },
+      {
+        "key": "steam",
+        "name": "Brawlhalla"
+      }
+    ],
+    "recentAppCount": 3,
+    "showDownloads": true,
+    "showIndicators": true,
+    "showPinButton": false,
+    "showRecentApps": true,
+    "showRecentFiles": false,
+    "showTrash": true,
+    "stackDisplay": "stack",
+    "stackPreferences": [
+      {
+        "path": "",
+        "view": "automatic"
+      }
+    ],
+    "stackSort": "modified",
+    "stackView": "grid"
+  },
+  "edges": {
+    "bottomLeftAction": "none",
+    "bottomLeftModifiers": 0,
+    "bottomRightAction": "none",
+    "bottomRightModifiers": 0,
+    "cornerRadius": 23,
+    "hideCornersFullscreen": true,
+    "hideHotCornersFullscreen": true,
+    "hotCornerDelay": 200,
+    "hotCorners": false,
+    "menuCornerRadius": 12,
+    "roundMenuBackground": false,
+    "roundedCorners": true,
+    "topLeftAction": "none",
+    "topLeftModifiers": 0,
+    "topRightAction": "none",
+    "topRightModifiers": 0
+  },
+  "general": {
+    "language": "en"
+  },
+  "glass": {
+    "captureIntervalMs": 400,
+    "captureWindows": true,
+    "captureWindowsSeeded": true,
+    "windowOpacity": 1,
+    "windowOpacityByClass": {
+      "kitty": 0.3
+    }
+  },
+  "lockscreen": {
+    "clockLarge": true,
+    "clockStyle": 0,
+    "clockWeight": 1,
+    "lockAtStartup": false,
+    "showControlCenter": true,
+    "showMediaPlayer": true,
+    "showNotificationPreviews": true,
+    "showNotifications": true
+  },
+  "menuBar": {
+    "autoHide": false
+  },
+  "notifications": {
+    "enable": true,
+    "timeoutSecs": 5
+  },
+  "sound": {
+    "osdTimeout": 1.5,
+    "showOsd": true
+  },
+  "topbar": {
+    "backgroundColor": "#242428",
+    "backgroundEnabled": false,
+    "backgroundOpacity": 1,
+    "barHeight": 30,
+    "batteryIconVisible": true,
+    "batteryTextVisible": true,
+    "batteryVisible": false,
+    "clockBadgeVisible": true,
+    "clockFormat": "ddd d MMM HH:mm",
+    "clockTextVisible": true,
+    "clockVisible": true,
+    "foregroundColor": "#fafafa",
+    "foregroundMode": "auto",
+    "islandProvider": "rosa",
+    "logoColor": "#fafafa",
+    "logoColorMode": "follow",
+    "logoSize": 20,
+    "logoText": "\uf17c",
+    "logoType": "apple",
+    "logoVisible": true,
+    "notchVisible": true,
+    "showAI": true,
+    "showBluetooth": false,
+    "showControlCenter": true,
+    "showSpotlight": true,
+    "showSystemTray": true,
+    "showWifi": false
+  }
+}

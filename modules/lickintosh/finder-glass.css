@@ -1,0 +1,169 @@
+/* Finder-only material. GTK paints the controls and files at full opacity;
+ * only the sidebar reveals the blurred background. */
+window.nautilus-window,
+window.nautilus-window.background,
+window.nautilus-window.background:backdrop {
+  background-color: transparent;
+  background-image: none;
+  backdrop-filter: blur(24px);
+}
+window.nautilus-window > contents,
+window.nautilus-window toastoverlay,
+window.nautilus-window overlay-split-view {
+  background-color: transparent;
+}
+window.nautilus-window .sidebar-pane:dir(ltr),
+window.nautilus-window .sidebar-pane:dir(rtl),
+window.nautilus-window .sidebar-pane:backdrop:dir(ltr),
+window.nautilus-window .sidebar-pane:backdrop:dir(rtl) {
+  transition: none;
+  border: none;
+  background-color: alpha(@window_bg_color, 0.38);
+  background-image: linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.025));
+  box-shadow: 0 0 0 6px @view_bg_color, 0 32px 0 6px @view_bg_color, 0 -32px 0 6px @view_bg_color;
+}
+window.nautilus-window .sidebar-pane headerbar,
+window.nautilus-window .sidebar-pane toolbarview,
+window.nautilus-window .sidebar-pane placessidebar,
+window.nautilus-window .sidebar-pane .navigation-sidebar {
+  background-color: transparent;
+  background-image: none;
+}
+window.nautilus-window .content-pane,
+window.nautilus-window .content-pane:backdrop {
+  background-color: @view_bg_color;
+  background-image: none;
+}
+window.nautilus-window .content-pane headerbar {
+  background-color: transparent;
+  background-image: none;
+}
+window.nautilus-window .nautilus-grid-view,
+window.nautilus-window .nautilus-list-view {
+  background-color: @view_bg_color;
+}
+
+/* A decorative traffic light only: the GTK control remains insensitive. */
+window.nautilus-window headerbar windowcontrols button.minimize,
+window.nautilus-window headerbar windowcontrols button.minimize:disabled,
+window.nautilus-window headerbar windowcontrols button.minimize:backdrop {
+  opacity: 1;
+  filter: none;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  border-width: 0;
+  border-radius: 999px;
+  background-image: radial-gradient(circle at center, #ffbd2e 0, #ffbd2e 6.5px, transparent 7px);
+  background-size: 16px 16px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  background-clip: border-box;
+  box-shadow: none;
+  color: transparent;
+}
+window.nautilus-window headerbar windowcontrols button.minimize image {
+  opacity: 0;
+}
+
+window.nautilus-window headerbar windowcontrols button.minimize:backdrop,
+window.nautilus-window headerbar windowcontrols button.minimize:disabled:backdrop {
+  background-image: radial-gradient(circle at center, mix(@window_bg_color, @window_fg_color, 0.24) 0, mix(@window_bg_color, @window_fg_color, 0.24) 6.5px, transparent 7px);
+}
+
+/* The native toolbar floats over scrolling file content. The outer frame
+ * remains opaque; only individual controls sample the content beneath them. */
+window.nautilus-window .content-pane toolbarview > .top-bar,
+window.nautilus-window .content-pane toolbarview > .top-bar:backdrop,
+window.nautilus-window .content-pane headerbar,
+window.nautilus-window .content-pane headerbar:backdrop {
+  background: transparent;
+  box-shadow: none;
+  border: none;
+}
+window.nautilus-window .content-pane headerbar button,
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation,
+window.nautilus-window .content-pane headerbar .linked,
+window.nautilus-window .content-pane headerbar .mc-toggle-group,
+window.nautilus-window .content-pane headerbar .nautilus-pathbar,
+window.nautilus-window .content-pane headerbar #NautilusPathBar {
+  backdrop-filter: blur(8px) saturate(1.2);
+  background-color: alpha(@window_bg_color, 0.24);
+  background-image: linear-gradient(to bottom, rgba(255,255,255,0.14), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.24), inset 0 -1px 0 rgba(255,255,255,0.06);
+}
+window.nautilus-window .content-pane headerbar .nautilus-pathbar > menubutton,
+window.nautilus-window .content-pane headerbar .nautilus-pathbar > menubutton > button,
+window.nautilus-window .content-pane headerbar .nautilus-pathbar .nautilus-path-button,
+window.nautilus-window .content-pane headerbar #NautilusPathBar > menubutton,
+window.nautilus-window .content-pane headerbar #NautilusPathBar > menubutton > button,
+window.nautilus-window .content-pane headerbar #NautilusPathBar #NautilusPathButton,
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation button,
+window.nautilus-window .content-pane headerbar .linked > button,
+window.nautilus-window .content-pane headerbar .linked > menubutton > button,
+window.nautilus-window .content-pane headerbar .mc-toggle-group > button {
+  backdrop-filter: none;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+window.nautilus-window .nautilus-grid-view gridview,
+window.nautilus-window .nautilus-list-view {
+  padding-top: 54px;
+}
+
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation {
+  border-radius: 999px;
+}
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation button {
+  opacity: 1;
+  border: none;
+}
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation button:disabled {
+  opacity: 1;
+  background: transparent;
+  color: alpha(@window_fg_color, 0.35);
+}
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation button:hover:not(:disabled) {
+  background-color: alpha(@window_fg_color, 0.08);
+}
+/* Selection/loading information remains native, with a neutral status-line look. */
+window.nautilus-window .floating-bar,
+window.nautilus-window .floating-bar:backdrop {
+  padding: 4px 10px;
+  min-height: 20px;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: alpha(@view_bg_color, 0.96);
+  color: alpha(@window_fg_color, 0.72);
+  box-shadow: none;
+  font-size: 11px;
+  font-weight: normal;
+}
+window.nautilus-window .floating-bar label {
+  color: inherit;
+  text-shadow: none;
+  font-weight: normal;
+}
+
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation > box,
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation .linked {
+  backdrop-filter: none;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+/* Theme backdrop selectors must not introduce a second material inside a pill. */
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation button:backdrop,
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation button:disabled:backdrop,
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation > box:backdrop,
+window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation .linked:backdrop {
+  backdrop-filter: none;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}

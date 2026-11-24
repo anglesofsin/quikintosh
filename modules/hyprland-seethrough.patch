@@ -1,0 +1,89 @@
+diff -ru a/src/managers/screenshare/ScreenshareFrame.cpp b/src/managers/screenshare/ScreenshareFrame.cpp
+--- a/src/managers/screenshare/ScreenshareFrame.cpp	2026-08-19 19:05:53.141175364 -0300
++++ b/src/managers/screenshare/ScreenshareFrame.cpp	2026-08-19 19:05:56.401043234 -0300
+@@ -217,6 +217,37 @@
+         {0, 0, PMONITOR->m_pixelSize.x, PMONITOR->m_pixelSize.y});
+     g_pHyprRenderer->m_renderData.renderModif.enabled = OLD;
+
++    // -- See-through capture ------------------------------------------------
++    // If any window on this monitor is flagged noscreenshare, the default path
++    // below copies the composited scanout (which already has that window baked
++    // in) and paints a black box over it. Instead, re-render the monitor's
++    // workspace with those windows skipped, so the surfaces behind them show
++    // through - no black box.
++    {
++        bool hasHidden = false;
++        for (auto const& w : Desktop::windowState()->windows()) {
++            if (w->m_ruleApplicator && w->m_ruleApplicator->noScreenShare().valueOrDefault() && g_pHyprRenderer->shouldRenderWindow(w, PMONITOR)) {
++                hasHidden = true;
++                break;
++            }
++        }
++
++        if (hasHidden) {
++            g_pHyprRenderer->startRenderPass();
++            g_pHyprRenderer->m_bExcludeNoScreenShare = true;
++            if (PMONITOR->m_activeWorkspace)
++                g_pHyprRenderer->renderWorkspace(PMONITOR, PMONITOR->m_activeWorkspace, Time::steadyNow(), CBox{{}, PMONITOR->m_pixelSize});
++            g_pHyprRenderer->m_bExcludeNoScreenShare = false;
++
++            if (m_overlayCursor) {
++                CRegion  fakeDamage = {0, 0, m_bufferSize.x, m_bufferSize.y};
++                Vector2D cursorPos  = g_pInputManager->getMouseCoordsInternal() - PMONITOR->m_position - m_session->m_captureBox.pos() / PMONITOR->m_scale;
++                Pointer::mgr()->renderSoftwareCursorsFor(PMONITOR, Time::steadyNow(), fakeDamage, std::optional<Vector2D>{cursorPos}, true);
++            }
++            return;
++        }
++    }
++
+     // render black boxes for noscreenshare
+     auto hidePopups = [&](Vector2D popupBaseOffset) {
+         return [&, popupBaseOffset](WP<Desktop::View::CPopup> popup, void*) {
+diff -ru a/src/render/Renderer.cpp b/src/render/Renderer.cpp
+--- a/src/render/Renderer.cpp	2026-08-19 19:05:53.150416794 -0300
++++ b/src/render/Renderer.cpp	2026-08-19 19:06:11.384496860 -0300
+@@ -228,6 +228,9 @@
+ }
+
+ bool IHyprRenderer::shouldRenderWindow(PHLWINDOW pWindow, PHLMONITOR pMonitor) {
++    if (m_bExcludeNoScreenShare && pWindow->m_ruleApplicator && pWindow->m_ruleApplicator->noScreenShare().valueOrDefault())
++        return false;
++
+     if (!pWindow->visibleOnMonitor(pMonitor))
+         return false;
+
+@@ -1203,14 +1206,16 @@
+     }
+
+     // special
+-    for (auto const& ws : State::workspaceState()->workspaces()) {
+-        if (ws->m_alpha->value() <= 0.F || !ws->m_isSpecialWorkspace)
+-            continue;
++    if (!m_bExcludeNoScreenShare) {
++        for (auto const& ws : State::workspaceState()->workspaces()) {
++            if (ws->m_alpha->value() <= 0.F || !ws->m_isSpecialWorkspace)
++                continue;
+
+-        if (Fullscreen::controller()->hasFullscreen(ws.lock()))
+-            renderWorkspaceWindowsFullscreen(pMonitor, ws.lock(), time);
+-        else
+-            renderWorkspaceWindows(pMonitor, ws.lock(), time);
++            if (Fullscreen::controller()->hasFullscreen(ws.lock()))
++                renderWorkspaceWindowsFullscreen(pMonitor, ws.lock(), time);
++            else
++                renderWorkspaceWindows(pMonitor, ws.lock(), time);
++        }
+     }
+
+     // pinned always above
+diff -ru a/src/render/Renderer.hpp b/src/render/Renderer.hpp
+--- a/src/render/Renderer.hpp	2026-08-19 19:05:53.150542303 -0300
++++ b/src/render/Renderer.hpp	2026-08-19 19:06:11.384783368 -0300
+@@ -107,6 +107,7 @@
+
+         NColorManagement::PImageDescription workBufferImageDescription();
+         bool                                m_bBlockSurfaceFeedback = false;
++        bool                                m_bExcludeNoScreenShare  = false; // see-through capture: skip noscreenshare windows in the capture render pass
+         bool                                m_bRenderingSnapshot    = false;
+         PHLMONITORREF                       m_mostHzMonitor;
+         bool                                m_directScanoutBlocked = false;

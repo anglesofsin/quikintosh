@@ -1,0 +1,30 @@
+diff --git a/src/system/brightness_service.cpp b/src/system/brightness_service.cpp
+index ee1d6a703..e0c680a12 100644
+--- a/src/system/brightness_service.cpp
++++ b/src/system/brightness_service.cpp
+@@ -654,6 +654,8 @@ struct BrightnessService::Impl {
+   std::unordered_map<std::string, DdcJob> pendingRefreshes;
+   std::queue<WorkerCompletion> completions;
+
++  std::chrono::steady_clock::time_point m_lastOutputChange;
++
+   Impl(SystemBus* systemBus, CompositorPlatform& compositorPlatform, BrightnessConfig config)
+       : bus(systemBus), wayland(compositorPlatform.wayland()), platform(compositorPlatform),
+         activeConfig(std::move(config)) {
+@@ -734,7 +736,15 @@ struct BrightnessService::Impl {
+     rebuildState(true);
+   }
+
+-  void onOutputsChanged() { rebuildState(true); }
++  void onOutputsChanged() {
++    constexpr auto kOutputChangeCooldown = std::chrono::milliseconds(2000);
++    const auto now = std::chrono::steady_clock::now();
++    if (now - m_lastOutputChange < kOutputChangeCooldown) {
++      return;
++    }
++    m_lastOutputChange = now;
++    rebuildState(true);
++  }
+
+   void rebuildState(bool notify) {
+     const auto oldPublic = publicDisplays;

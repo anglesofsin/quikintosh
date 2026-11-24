@@ -1,0 +1,210 @@
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  riceUser = config.quickintosh.user;
+  riceHome = config.users.users.${riceUser}.home;
+  cleanModuleSource =
+    src:
+    lib.cleanSourceWith {
+      inherit src;
+      filter =
+        path: _type:
+        let
+          name = baseNameOf path;
+        in
+        name != "__pycache__" && !(lib.hasInfix ".bak" name) && !(lib.hasSuffix ".pyc" name);
+    };
+
+  hypr-canvas = pkgs.stdenv.mkDerivation {
+    pname = "hypr-canvas";
+    version = "0.1-a5f9cda";
+
+    src = pkgs.fetchFromGitHub {
+      owner = "aaronsb";
+      repo = "hypr-canvas";
+      rev = "a5f9cdaccb864db094a6a978498bb77c7e90fc53";
+      hash = "sha256-75c/soq/YF2KQCTNR2GgnfgHCeCG0ZCNX1phissdDX8=";
+    };
+
+    patches = [ ./hypr-canvas-mode-gated-reset.patch ];
+
+    postPatch = ''
+      substituteInPlace src/canvas.cpp \
+        --replace-fail '    m_mouseButtonHook = hookByName("onMouseButton", (void*)&hkOnMouseButton);' '    m_mouseButtonHook = nullptr;' \
+        --replace-fail '    m_mouseMovedHook  = hookByName("onMouseMoved", (void*)&hkOnMouseMoved);' '    m_mouseMovedHook  = nullptr;'
+    '';
+
+    nativeBuildInputs = with pkgs; [ pkg-config ];
+    buildInputs = with pkgs; [
+      hyprland.dev
+      aquamarine
+      hyprcursor
+      hyprgraphics
+      hyprlang
+      hyprutils
+      glslang
+      pixman
+      libdrm
+      libglvnd
+      libinput
+      wayland
+      wayland-protocols
+      cairo
+      libxkbcommon
+      libxcb
+      libxcb-errors
+      xorg.xcbutilwm
+      xorg.xcbutilrenderutil
+    ];
+
+    makeFlags = [ "CXX=${pkgs.stdenv.cc.targetPrefix}c++" ];
+
+    installPhase = ''
+      runHook preInstall
+      mkdir -p $out/lib/hyprland
+      cp hypr-canvas.so $out/lib/hyprland/hypr-canvas.so
+      runHook postInstall
+    '';
+  };
+
+  hyprland-config = pkgs.stdenv.mkDerivation {
+    name = "hyprland-config";
+    src = cleanModuleSource ./hyprland-lua;
+    dontBuild = true;
+    installPhase = ''
+      mkdir -p $out
+      cp -r * $out/
+      ${pkgs.python3}/bin/python3 - "$out" ${lib.escapeShellArg riceHome} <<'PYPORTABLE'
+import sys
+from pathlib import Path
+for p in Path(sys.argv[1]).rglob('*'):
+    if p.is_file():
+        try: s=p.read_text()
+        except UnicodeError: continue
+        p.write_text(s.replace('/home/pg', sys.argv[2]))
+PYPORTABLE
+      substituteInPlace $out/hyprland.lua \
+        --replace-fail "@HYPR_CANVAS_PLUGIN@" "${hypr-canvas}/lib/hyprland/hypr-canvas.so"
+    '';
+  };
+  infinite-desktop-scripts = pkgs.stdenv.mkDerivation {
+    name = "infinite-desktop-scripts";
+    src = cleanModuleSource ./infinite-desktop;
+    dontBuild = true;
+    installPhase = ''
+      mkdir -p $out
+      cp -r * $out/
+      ${pkgs.python3}/bin/python3 - "$out" ${lib.escapeShellArg riceHome} <<'PYPORTABLE'
+import sys
+from pathlib import Path
+for p in Path(sys.argv[1]).rglob('*'):
+    if p.is_file():
+        try: s=p.read_text()
+        except UnicodeError: continue
+        p.write_text(s.replace('/home/pg', sys.argv[2]))
+PYPORTABLE
+      chmod +x $out/*.sh $out/*.py
+    '';
+  };
+in
+{
+  programs.hyprland = {
+    enable = true;
+    portalPackage = pkgs.xdg-desktop-portal-hyprland;
+    xwayland.enable = true;
+  };
+
+  environment.systemPackages = with pkgs; [
+    unzip
+    ffmpeg
+    zenity
+    ddcutil
+    hyprland-config
+    infinite-desktop-scripts
+    polkit_gnome
+    wlr-randr
+    grim
+    slurp
+    hyprshot
+    wl-clipboard
+    swappy
+    satty
+    imagemagick
+    tesseract
+    wf-recorder
+    curl
+    cliphist
+    hyprpicker
+    zbar
+    translate-shell
+    linux-wallpaperengine
+    espeak-ng
+    pulseaudio
+    kdePackages.breeze-icons
+    hypr-canvas
+  ];
+
+  services.upower.enable = lib.mkForce true;
+
+  xdg.portal = {
+    config = {
+      common.default = lib.mkForce [
+        "hyprland"
+        "gtk"
+      ];
+      "Hyprland" = {
+        default = lib.mkDefault "hyprland;gtk";
+      };
+    };
+  };
+
+  system.activationScripts.hyprland-config = {
+    text = ''
+      mkdir -p ${riceHome}/.config/hypr
+      chown ${riceUser}:users ${riceHome}/.config/hypr
+      for f in ${hyprland-config}/*.lua; do
+        ln -sf "$f" "${riceHome}/.config/hypr/$(basename $f)"
+      done
+      chown -h ${riceUser}:users ${riceHome}/.config/hypr/*
+    '';
+    deps = [ "users" ];
+  };
+
+  system.activationScripts.infinite-desktop-scripts = {
+    text = ''
+      mkdir -p ${riceHome}/scripts
+      chown ${riceUser}:users ${riceHome}/scripts
+      for f in ${infinite-desktop-scripts}/*; do
+        ln -sf "$f" "${riceHome}/scripts/$(basename $f)"
+      done
+      chown -h ${riceUser}:users ${riceHome}/scripts/*
+    '';
+    deps = [ "users" ];
+  };
+
+  environment.sessionVariables = {
+    NIXOS_OZONE_WL = "1";
+    QT_QPA_PLATFORM = "wayland;xcb";
+    QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";
+    GDK_BACKEND = "wayland,x11";
+    SDL_VIDEODRIVER = "wayland";
+    CLUTTER_BACKEND = "wayland";
+    _JAVA_AWT_WM_NONREPARENTING = "1";
+    QT_PLUGIN_PATH = [ "/run/current-system/sw/lib/qt-6/plugins" ];
+    MOZ_ENABLE_WAYLAND = "1";
+  };
+  environment.etc."xdg/menus/applications.menu".text = ''
+    <!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
+      "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
+    <Menu>
+      <Name>Applications</Name>
+      <DefaultAppDirs/>
+      <DefaultDirectoryDirs/>
+      <DefaultMergeDirs/>
+    </Menu>
+  '';
+}

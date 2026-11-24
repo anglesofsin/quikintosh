@@ -1,0 +1,41 @@
+--- a/services/ShellConfig.qml
++++ b/services/ShellConfig.qml
+@@ -80,6 +80,7 @@
+ 
+             property JsonObject dockAppearance: JsonObject {
+                 property bool enable:            true
++                property bool showPinButton:     true
+                 property real height:            60
+                 property bool hoverToReveal:     true
+                 property bool monochromeIcons:   false
+--- a/ui/dock/Dock.qml
++++ b/ui/dock/Dock.qml
+@@ -925,6 +925,7 @@
+ 
+                             Item {
+                                 id: _pinIconWrap
++                                visible: ShellConfig.options.dockAppearance.showPinButton
+                                 width:  dockRoot.baseIconSize
+                                 height: dockRoot.baseIconSize + 14
+ 
+--- a/ui/settings/pages/DockPage.qml
++++ b/ui/settings/pages/DockPage.qml
+@@ -10,6 +10,18 @@
+ 
+     ContentSection {
+         title: I18n.tr("Dock")
++
++        ConfigSwitch {
++            text: I18n.tr("Show Dock")
++            checked: ShellConfig.options.dockAppearance.enable
++            onToggled: function(v) { ShellConfig.options.dockAppearance.enable = v }
++        }
++
++        ConfigSwitch {
++            text: I18n.tr("Show Dock pin button")
++            checked: ShellConfig.options.dockAppearance.showPinButton
++            onToggled: function(v) { ShellConfig.options.dockAppearance.showPinButton = v }
++        }
+ 
+         ConfigSwitch {
+             text: I18n.tr("Masquer et afficher automatiquement le Dock")

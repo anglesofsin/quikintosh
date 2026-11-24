@@ -1,0 +1,11 @@
+result
+result-*
+.direnv/
+__pycache__/
+*.py[cod]
+*.bak
+*.bak-*
+.env
+.env.*
+*.key
+secrets/

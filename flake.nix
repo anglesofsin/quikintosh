@@ -1,0 +1,38 @@
+{
+  description = "Quickintosh — complete Tahoe-inspired NixOS/Hyprland desktop";
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-patched.url = "github:NixOS/nixpkgs/9fbb54b33e91ee4ca368e35a78e0613c720600b3";
+    hyprland-src.url = "git+https://github.com/hyprwm/Hyprland.git?submodules=1";
+    noctalia-src = { url = "git+https://github.com/noctalia-dev/noctalia.git"; inputs.nixpkgs.follows = "nixpkgs-patched"; };
+    noctalia-legacy-src = { url = "git+https://github.com/noctalia-dev/noctalia.git?ref=legacy-v4"; inputs.nixpkgs.follows = "nixpkgs-patched"; };
+    eqsh-src = { url = "git+https://github.com/eq-desktop/eqsh.git?submodules=1"; flake = false; };
+    rosa-src = { url = "git+https://github.com/fedyaqq34356/rosa.git"; flake = false; };
+    lickintosh-src = { url = "path:./upstream/lickintosh"; flake = false; };
+    caelestia-shell = { url = "git+https://github.com/caelestia-dots/shell.git"; inputs.nixpkgs.follows = "nixpkgs"; };
+  };
+  outputs = inputs@{ self, nixpkgs, ... }: let
+    system = "x86_64-linux";
+    demo = nixpkgs.lib.nixosSystem {
+      inherit system;
+      modules = [ self.nixosModules.default {
+        nixpkgs.config.allowUnfree = true;
+        quickintosh = { enable = true; user = "demo"; };
+        users.users.demo = { isNormalUser = true; home = "/home/demo"; };
+        fileSystems."/" = { device = "none"; fsType = "tmpfs"; };
+        boot.loader.grub.enable = false;
+        system.stateVersion = "26.05";
+      } ];
+    };
+  in {
+    nixosModules.default = import ./nix/module.nix { inherit inputs; };
+    packages.${system} = {
+      default = demo.config.system.build.quickintosh;
+      quickintosh = demo.config.system.build.quickintosh;
+      shell = demo.config.system.build.lickintosh;
+      rice-shell = demo.config.system.build.riceShell;
+      hyprland = demo.config.programs.hyprland.package;
+    };
+    checks.${system}.configuration = demo.config.system.build.toplevel;
+  };
+}

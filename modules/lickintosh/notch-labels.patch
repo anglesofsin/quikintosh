@@ -1,0 +1,65 @@
+--- a/ui/topbar/notch/NotchPill.qml
++++ b/ui/topbar/notch/NotchPill.qml
+@@ -13,7 +13,7 @@
+     readonly property string kind: NotchState.primaryKind
+     readonly property bool hasKind: root.kind !== "none"
+ 
+-    readonly property string themeDir: Quickshell.env("HOME") + "/.icons/MacTahoe/"
++    readonly property string themeDir: Quickshell.shellDir + "/assets/icons_desktop/MacTahoe/"
+ 
+     readonly property bool themedGlyph: root.kind === "gamemode"
+ 
+@@ -37,13 +37,13 @@
+             case "media":          return MprisState.trackArtist ? (MprisState.trackTitle + " — " + MprisState.trackArtist) : MprisState.trackTitle
+             case "timer":          return TimerState.formatRemaining(TimerState.remainingMs)
+             case "stopwatch":      return StopwatchState.formatElapsed(StopwatchState.elapsedMs)
+-            case "alarm":          return "Alarme"
++            case "alarm":          return I18n.tr("Alarme")
+             case "notification":   return NotchState.topUrgent ? NotchState.topUrgent.title : I18n.tr("Notification")
+             case "bluetooth":      return NotchState.topUrgent ? NotchState.topUrgent.title : I18n.tr("Bluetooth")
+-            case "gamemode":       return "Game Mode"
+-            case "focus":          return "Focus"
+-            case "capture-camera": return "Caméra active"
+-            case "capture-mic":    return "Micro actif"
++            case "gamemode":       return I18n.tr("Game Mode")
++            case "focus":          return I18n.tr("Focus")
++            case "capture-camera": return I18n.tr("Caméra active")
++            case "capture-mic":    return I18n.tr("Micro actif")
+             default:               return ""
+         }
+     }
+--- a/assets/i18n/fr.json
++++ b/assets/i18n/fr.json
+@@ -271,5 +271,7 @@
+  "hyprsunset est introuvable : installe-le pour utiliser Night Shift": "hyprsunset est introuvable : installe-le pour utiliser Night Shift",
+  "Température de couleur": "Température de couleur",
+  "Image": "Image",
+- "Theme": "Thème"
++ "Theme": "Thème",
++ "Caméra active": "Caméra active",
++ "Micro actif": "Micro actif"
+ }
+--- a/assets/i18n/en.json
++++ b/assets/i18n/en.json
+@@ -561,6 +561,7 @@
+  "prérequis manquent encore": "requirements still missing",
+  "prérequis à installer": "requirements to install",
+  "À propos": "About",
+- "Aucun fond d'écran": "No wallpaper",
+- "Choisis une image dans Réglages › Fond d'écran, ou ajoute-en dans": "Pick an image in Settings › Wallpaper, or add some to"
++ "Choisis une image dans Réglages › Fond d'écran, ou ajoute-en dans": "Pick an image in Settings › Wallpaper, or add some to",
++ "Caméra active": "Camera active",
++ "Micro actif": "Microphone active"
+ }
+--- a/assets/i18n/es.json
++++ b/assets/i18n/es.json
+@@ -842,6 +842,7 @@
+  "prérequis manquent encore": "requisitos aún faltan",
+  "prérequis à installer": "requisitos por instalar",
+  "À propos": "Acerca de",
+- "Aucun fond d'écran": "Sin fondo de pantalla",
+- "Choisis une image dans Réglages › Fond d'écran, ou ajoute-en dans": "Elige una imagen en Ajustes › Fondo de pantalla, o añade algunas en"
++ "Choisis une image dans Réglages › Fond d'écran, ou ajoute-en dans": "Elige una imagen en Ajustes › Fondo de pantalla, o añade algunas en",
++ "Caméra active": "Cámara activa",
++ "Micro actif": "Micrófono activo"
+ }

@@ -1,0 +1,62 @@
+--- a/ui/desktop/DesktopLayer.qml
++++ b/ui/desktop/DesktopLayer.qml
+@@ -16,7 +16,7 @@
+ 
+         WlrLayershell.namespace: "quickshell:desktop"
+         WlrLayershell.layer: WlrLayer.Bottom
+-        WlrLayershell.keyboardFocus: DesktopFiles.renaming !== "" || WidgetState.typing ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
++        WlrLayershell.keyboardFocus: DesktopFiles.renaming !== "" || WidgetState.typing ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.OnDemand
+         exclusionMode: ExclusionMode.Ignore
+         color: "transparent"
+         anchors { top: true; right: true; bottom: true; left: true }
+@@ -34,6 +34,25 @@
+ 
+         Item {
+             id: stage
++            focus: true
++
++            Keys.onDeletePressed: function(event) {
++                if (DesktopFiles.renaming !== "" || WidgetState.typing || DesktopFiles.selection.length === 0) {
++                    event.accepted = false
++                    return
++                }
++                DesktopFiles.trashMany(DesktopFiles.selection.slice())
++                DesktopFiles.clearSelection()
++                event.accepted = true
++            }
++
++            Connections {
++                target: DesktopFiles
++                function onSelectionChanged() {
++                    if (DesktopFiles.selection.length > 0 && DesktopFiles.renaming === "" && !WidgetState.typing)
++                        stage.forceActiveFocus()
++                }
++            }
+             anchors.fill: parent
+             anchors.topMargin: WidgetState.desktopOffsetY
+             anchors.leftMargin: WidgetState.desktopOffsetX
+--- a/services/DesktopFiles.qml
++++ b/services/DesktopFiles.qml
+@@ -235,8 +235,13 @@
+         root.run('cd "$(dirname "$1")" && tar -czf "$(basename "$1").tar.gz" -- "$(basename "$1")"', [path])
+     }
+ 
++    function trashMany(paths) {
++        if (paths.length === 0) return
++        root.run('for path in "$@"; do gio trash -- "$path" || trash-put -- "$path"; done', paths)
++    }
++
+     function trash(path) {
+-        root.run('gio trash -- "$1" || trash-put -- "$1"', [path])
++        root.trashMany([path])
+     }
+ 
+     function copyPath(path) {
+@@ -327,6 +332,6 @@
+         else if (action === "open") root.targetsOf(target).forEach(function(path) { root.open(path, root.nameOfPath(path)) })
+         else if (action === "duplicate") root.targetsOf(target).forEach(function(path) { root.duplicate(path) })
+         else if (action === "compress") root.targetsOf(target).forEach(function(path) { root.compress(path) })
+-        else if (action === "trash") root.targetsOf(target).forEach(function(path) { root.trash(path) })
++        else if (action === "trash") root.trashMany(root.targetsOf(target))
+     }
+ }

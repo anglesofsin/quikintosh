@@ -1,0 +1,68 @@
+--- a/services/ShellConfig.qml
++++ b/services/ShellConfig.qml
+@@ -28,7 +28,7 @@
+         onAdapterUpdated: writeAdapter()
+         onLoaded: {
+             root.ready = true
+-            if (configAdapter.spotlight.indexing.wallpaperDir === "~/Pictures/wallpaper") configAdapter.spotlight.indexing.wallpaperDir = "~/Pictures/wallpapers"
++            if (configAdapter.spotlight.indexing.wallpaperDir === "~/Pictures/wallpaper") configAdapter.spotlight.indexing.wallpaperDir = "~/Pictures/Wallpapers"
+             root.seedKeepAwake()
+             root.seedCaptureWindows()
+             root.seedAutoDarken()
+@@ -152,7 +152,7 @@
+                 }
+ 
+                 property JsonObject indexing: JsonObject {
+-                    property string wallpaperDir:       "~/Pictures/wallpapers"
++                    property string wallpaperDir:       "~/Pictures/Wallpapers"
+                     property list<string> excludePaths: ["node_modules", "target", "dist", "build", "vendor", "venv", "__pycache__"]
+                     property int fullReindexHours:       24
+                     property int incrementalMinutes:     5
+--- a/services/WidgetState.qml
++++ b/services/WidgetState.qml
+@@ -222,7 +222,7 @@
+         running: false
+         command: ["sh", "-c",
+             "d=\"$1\"; case \"$d\" in '~'*) d=\"$HOME${d#'~'}\";; esac; " +
+-            "find \"$d\" \"$2\" -maxdepth 2 -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\) 2>/dev/null | sort | head -40",
++            "find -H \"$d\" \"$2\" -type f \\( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' -o -iname '*.webp' \\) 2>/dev/null | sort",
+             "sh", ShellConfig.options.spotlight.indexing.wallpaperDir, Quickshell.shellDir + "/assets/wallpapers"]
+         stdout: StdioCollector { id: imageOut }
+         onExited: root.imageChoices = String(imageOut.text).trim().split("\n").filter(function(l) { return l !== "" })
+--- a/ui/settings/pages/WallpaperPage.qml
++++ b/ui/settings/pages/WallpaperPage.qml
+@@ -37,9 +37,9 @@
+     }
+ 
+     function _findCmd(dir, listFile) {
+-        return "find " + root._safeShellPath(dir) +
+-               " -maxdepth 2 -type f \\( -name '*.jpg' -o -name '*.png' -o -name '*.jpeg' -o -name '*.webp' \\) " +
+-               "2>/dev/null | sort | head -60 | tee " + root._safeShellPath(listFile)
++        return "find -H " + root._safeShellPath(dir) +
++               " -type f \\( -name '*.jpg' -o -name '*.png' -o -name '*.jpeg' -o -name '*.webp' \\) " +
++               "2>/dev/null | sort | tee " + root._safeShellPath(listFile)
+     }
+ 
+     function _parse(text) {
+@@ -158,8 +158,8 @@
+         id: videoProc
+         running: false
+         command: ["sh", "-c",
+-            "find " + root._safeShellPath(root.userDir) + " " + root._safeShellPath(root.shippedDir) +
+-            " -maxdepth 2 -type f \\( -iname '*.mp4' -o -iname '*.webm' -o -iname '*.mkv' -o -iname '*.mov' \\) 2>/dev/null | sort | head -60"]
++            "find -H " + root._safeShellPath(root.userDir) + " " + root._safeShellPath(root.shippedDir) +
++            " -type f \\( -iname '*.mp4' -o -iname '*.webm' -o -iname '*.mkv' -o -iname '*.mov' \\) 2>/dev/null | sort"]
+         stdout: StdioCollector { id: videoOut }
+         onExited: root.videoList = root._parse(videoOut.text)
+     }
+--- a/tools/wallpaper-thumbs/spotlight-list.sh
++++ b/tools/wallpaper-thumbs/spotlight-list.sh
+@@ -10,7 +10,7 @@
+ mkdir -p "$cache"
+ 
+ list() {
+-    find "$dir" -maxdepth 2 -type f \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.mp4' -o -iname '*.webm' -o -iname '*.mkv' -o -iname '*.mov' \) 2>/dev/null | sort | head -60
++    find -H "$dir" -type f \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.mp4' -o -iname '*.webm' -o -iname '*.mkv' -o -iname '*.mov' \) 2>/dev/null | sort
+ }
+ 
+ thumb_of() {

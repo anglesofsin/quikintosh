@@ -1,0 +1,233 @@
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.VectorImage
+import QtQuick.Effects
+import Quickshell.Services.Notifications
+import Quickshell
+import qs.services
+import qs.ui.topbar.menubar
+import qs.ui.topbar.notch
+import qs.ui.topbar.statusarea
+import qs.ui.topbar.statusarea.notifcenter
+
+Rectangle {
+    id: root
+    readonly property bool themed: false
+    signal toggleCC()
+    signal toggleAppleMenu()
+    signal toggleSpotlight()
+    signal toggleAI()
+    signal toggleNotifCenter()
+    signal toggleWifi(int xPos)
+    signal toggleBluetooth(int xPos)
+    signal toggleBattery(int xPos)
+    signal toggleVolume(int xPos)
+
+    property var hostWindow: null
+    property var notifServer: null
+    property bool appleMenuOpened:  false
+    property bool spotlightOpened:  false
+    property int  notifUnreadCount: 0
+
+    readonly property alias notchExpandedPanel: notchPill
+
+    readonly property color themeBackground: "transparent"
+    readonly property int   themeHeight:     32
+    readonly property int   themeMargin:     20
+
+    implicitHeight: themeHeight
+    color:          themeBackground
+
+    anchors.top:   parent.top
+    anchors.left:  parent.left
+    anchors.right: parent.right
+
+
+    readonly property real notchZoneLeft:  root.themeMargin + menuBarItem.width
+    readonly property real notchZoneRight: root.width - root.themeMargin - statusAreaItem.width
+
+    readonly property bool notchEnabled: ShellConfig.options.topbar.notchVisible
+
+    onNotchEnabledChanged: {
+        if (!notchEnabled && NotchState.expanded) NotchState.toggleExpanded()
+    }
+
+    Binding {
+        target: NotchState
+        property: "topbarZoneWidth"
+        value: root.notchZoneRight - root.notchZoneLeft
+    }
+
+    Connections {
+        target: root.notifServer
+        function onNotification(notification) {
+            if (NotifService.dndEnabled || !root.notchEnabled) return
+            NotchState.notifyIncoming(notification.appName, notification.summary, notification.appIcon)
+        }
+    }
+
+    RowLayout {
+        anchors.fill:        parent
+        anchors.leftMargin:  root.themeMargin
+        anchors.rightMargin: root.themeMargin
+
+        opacity: NotchState.expanded ? 0 : 1
+        enabled: !NotchState.expanded
+        Behavior on opacity { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+
+        Item {
+            id: menuBarItem
+            Layout.alignment: Qt.AlignLeft | Qt.AlignVCenter
+            Layout.maximumWidth: root.width * 0.42
+            implicitWidth:  Math.min(menuBarContent.implicitWidth, Layout.maximumWidth)
+            implicitHeight: menuBarContent.implicitHeight
+            clip: true
+
+            MenuBar {
+                id: menuBarContent
+                anchors.fill: parent
+                appleActive: root.appleMenuOpened
+                onAppleClicked: root.toggleAppleMenu()
+            }
+        }
+
+        Item {
+            Layout.fillWidth: true
+        }
+
+        Item {
+            id: statusAreaItem
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+            implicitWidth:  statusAreaContent.implicitWidth
+            implicitHeight: statusAreaContent.implicitHeight
+
+            StatusArea {
+                id: statusAreaContent
+                anchors.fill: parent
+                hostWindow:        root.hostWindow
+                notifUnreadCount:  root.notifUnreadCount
+                barWidth:          root.width
+                onToggleCC:        root.toggleCC()
+                onToggleSpotlight: root.toggleSpotlight()
+                onToggleAI:        root.toggleAI()
+                onToggleNotifCenter: root.toggleNotifCenter()
+                onToggleWifi:      (x) => root.toggleWifi(x)
+                onToggleBluetooth: (x) => root.toggleBluetooth(x)
+                onToggleBattery:    (x) => root.toggleBattery(x)
+                onToggleVolume:    (x) => root.toggleVolume(x)
+            }
+        }
+    }
+
+    readonly property bool notchIdle:      NotchState.visualState === "idle"
+    readonly property bool notchPeek:      NotchState.visualState === "peek"
+    readonly property bool notchExpanded:  NotchState.expanded
+    readonly property bool notchDashboard: root.notchExpanded && !NotchState.hasUrgentActivity
+
+    readonly property real notchTargetWidth: root.notchDashboard ? Math.min(1200, root.width - 2 * root.themeMargin)
+                                            : root.notchExpanded   ? 440
+                                            : root.notchPeek       ? Math.min(260, root.notchZoneRight - root.notchZoneLeft - 24)
+                                            : NotchState.primaryKind === "media" ? 156
+                                                                    : 130
+    readonly property real notchTargetHeight: root.notchDashboard ? 270
+                                             : root.notchExpanded   ? 300
+                                             : root.notchPeek       ? 40
+                                                                     : 26
+
+    property real expandedWidth: 1200
+    property real expandedHeight: 270
+
+    Binding { target: root; property: "expandedWidth";  value: root.notchTargetWidth;  when: root.notchExpanded }
+    Binding { target: root; property: "expandedHeight"; value: root.notchTargetHeight; when: root.notchExpanded }
+
+    readonly property real notchTargetRadius: root.notchExpanded ? 26
+                                             : root.notchPeek     ? 20
+                                                                   : 13
+
+    Rectangle {
+        id: notchPill
+        visible: root.notchEnabled
+        readonly property real _safeHalfWidth: 65
+        readonly property real notchCenterX: Math.max(root.notchZoneLeft + _safeHalfWidth,
+                                                        Math.min(root.width / 2, root.notchZoneRight - _safeHalfWidth))
+        x: notchCenterX - width / 2
+        y: (root.themeHeight - 26) / 2
+        width:  root.notchTargetWidth
+        height: root.notchTargetHeight
+        radius: root.notchTargetRadius
+        color:  "#0A0A0A"
+        clip:   true
+
+        Behavior on width  { NumberAnimation { duration: ShellMotion.spatial(); easing.type: Easing.BezierSpline; easing.bezierCurve: ShellMotion.spatialCurve } }
+        Behavior on height { NumberAnimation { duration: ShellMotion.spatial(); easing.type: Easing.BezierSpline; easing.bezierCurve: ShellMotion.spatialCurve } }
+        Behavior on radius { NumberAnimation { duration: ShellMotion.spatial(); easing.type: Easing.BezierSpline; easing.bezierCurve: ShellMotion.spatialCurve } }
+
+        FadeLoader {
+            anchors.fill: parent
+            anchors.margins: 4
+            shouldBeActive: !root.notchExpanded
+            fadeDuration: ShellMotion.effects()
+            fadeCurve: ShellMotion.effectsCurve
+            enterDelay: ShellMotion.spatial(0.4)
+            sourceComponent: NotchPill { peek: root.notchPeek }
+        }
+
+        FadeLoader {
+            width: root.expandedWidth - 32
+            height: root.expandedHeight - 32
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            anchors.topMargin: 16
+            shouldBeActive: root.notchExpanded
+            fadeDuration: ShellMotion.effects()
+            fadeCurve: ShellMotion.effectsCurve
+            enterDelay: ShellMotion.spatial(0.3)
+            sourceComponent: NotchExpandedContent {}
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            enabled: !root.notchExpanded
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onEntered: NotchState.setHovered(true)
+            onExited:  NotchState.setHovered(false)
+            onClicked: NotchState.toggleExpanded()
+        }
+    }
+
+    component FadeLoader: Loader {
+        id: fl
+        property bool shouldBeActive: false
+        property int fadeDuration: 200
+        property int enterDelay: 0
+        property var fadeCurve: [0.34, 0.8, 0.34, 1, 1, 1]
+
+        active: false
+        opacity: 0
+
+        states: State {
+            name: "active"
+            when: fl.shouldBeActive
+            PropertyChanges { fl.opacity: 1; fl.active: true }
+        }
+
+        transitions: [
+            Transition {
+                from: ""; to: "active"
+                SequentialAnimation {
+                    PropertyAction { property: "active" }
+                    NumberAnimation { property: "opacity"; from: 0; to: 0; duration: fl.enterDelay }
+                    NumberAnimation { property: "opacity"; duration: fl.fadeDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: fl.fadeCurve }
+                }
+            },
+            Transition {
+                from: "active"; to: ""
+                SequentialAnimation {
+                    NumberAnimation { property: "opacity"; duration: fl.fadeDuration; easing.type: Easing.BezierSpline; easing.bezierCurve: fl.fadeCurve }
+                    PropertyAction { property: "active" }
+                }
+            }
+        ]
+    }
+}

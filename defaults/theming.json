@@ -1,0 +1,84 @@
+{
+  "kitty": {
+    "input_path": "@LEGACY@/Assets/Templates/terminal/kitty.conf",
+    "output_path": "@HOME@/.config/kitty/themes/noctalia.conf",
+    "post_hook": "@LEGACY@/Scripts/bash/template-apply.sh kitty"
+  },
+  "gtk_0": {
+    "input_path": "@LEGACY@/Assets/Templates/gtk3.css",
+    "output_path": "@HOME@/.config/gtk-3.0/noctalia.css",
+    "post_hook": "python3 @LEGACY@/Scripts/python/src/theming/gtk-refresh.py dark"
+  },
+  "gtk_1": {
+    "input_path": "@LEGACY@/Assets/Templates/gtk4.css",
+    "output_path": "@HOME@/.config/gtk-4.0/noctalia.css",
+    "post_hook": "python3 @LEGACY@/Scripts/python/src/theming/gtk-refresh.py dark"
+  },
+  "qt_0": {
+    "input_path": "@LEGACY@/Assets/Templates/qtct.conf",
+    "output_path": "@HOME@/.config/qt5ct/colors/noctalia.conf"
+  },
+  "qt_1": {
+    "input_path": "@LEGACY@/Assets/Templates/qtct.conf",
+    "output_path": "@HOME@/.config/qt6ct/colors/noctalia.conf"
+  },
+  "zed_0": {
+    "input_path": "@LEGACY@/Assets/Templates/zed.json",
+    "output_path": "@HOME@/.config/zed/themes/noctalia.json"
+  },
+  "telegram_0": {
+    "input_path": "@LEGACY@/Assets/Templates/telegram.tdesktop-theme",
+    "output_path": "@HOME@/.config/telegram-desktop/themes/noctalia.tdesktop-theme"
+  },
+  "zenBrowser_0": {
+    "input_path": "@LEGACY@/Assets/Templates/zen-browser/zen-userChrome.css",
+    "output_path": "@HOME@/.cache/noctalia/zen-browser/zen-userChrome.css",
+    "post_hook": "sh -c 'CSS_CHROME=\"$HOME/.cache/noctalia/zen-browser/zen-userChrome.css\"; CSS_CONTENT=\"$HOME/.cache/noctalia/zen-browser/zen-userContent.css\"; LINE_CHROME=\"@import \\\"$CSS_CHROME\\\";\"; LINE_CONTENT=\"@import \\\"$CSS_CONTENT\\\";\"; find \"$HOME/.config/zen\" \"$HOME/.zen\" -mindepth 2 -maxdepth 2 -type d -name chrome -print0 2>/dev/null | while IFS= read -r -d \"\" dir; do USER_CHROME=\"$dir/userChrome.css\"; USER_CONTENT=\"$dir/userContent.css\"; mkdir -p \"$dir\"; touch \"$USER_CHROME\" \"$USER_CONTENT\"; sed -i \"/zen-browser\\/zen-userChrome\\.css/d\" \"$USER_CHROME\"; sed -i \"/zen-browser\\/zen-userContent\\.css/d\" \"$USER_CONTENT\"; if ! grep -Fq \"$LINE_CHROME\" \"$USER_CHROME\"; then printf \"%s\\n\" \"$LINE_CHROME\" >> \"$USER_CHROME\"; fi; if ! grep -Fq \"$LINE_CONTENT\" \"$USER_CONTENT\"; then printf \"%s\\n\" \"$LINE_CONTENT\" >> \"$USER_CONTENT\"; fi; done'"
+  },
+  "zenBrowser_1": {
+    "input_path": "@LEGACY@/Assets/Templates/zen-browser/zen-userContent.css",
+    "output_path": "@HOME@/.cache/noctalia/zen-browser/zen-userContent.css",
+    "post_hook": "sh -c 'CSS_CHROME=\"$HOME/.cache/noctalia/zen-browser/zen-userChrome.css\"; CSS_CONTENT=\"$HOME/.cache/noctalia/zen-browser/zen-userContent.css\"; LINE_CHROME=\"@import \\\"$CSS_CHROME\\\";\"; LINE_CONTENT=\"@import \\\"$CSS_CONTENT\\\";\"; find \"$HOME/.config/zen\" \"$HOME/.zen\" -mindepth 2 -maxdepth 2 -type d -name chrome -print0 2>/dev/null | while IFS= read -r -d \"\" dir; do USER_CHROME=\"$dir/userChrome.css\"; USER_CONTENT=\"$dir/userContent.css\"; mkdir -p \"$dir\"; touch \"$USER_CHROME\" \"$USER_CONTENT\"; sed -i \"/zen-browser\\/zen-userChrome\\.css/d\" \"$USER_CHROME\"; sed -i \"/zen-browser\\/zen-userContent\\.css/d\" \"$USER_CONTENT\"; if ! grep -Fq \"$LINE_CHROME\" \"$USER_CHROME\"; then printf \"%s\\n\" \"$LINE_CHROME\" >> \"$USER_CHROME\"; fi; if ! grep -Fq \"$LINE_CONTENT\" \"$USER_CONTENT\"; then printf \"%s\\n\" \"$LINE_CONTENT\" >> \"$USER_CONTENT\"; fi; done'"
+  },
+  "steam_0": {
+    "input_path": "@LEGACY@/Assets/Templates/steam.css",
+    "output_path": "@HOME@/.steam/steam/steamui/skins/Material-Theme/css/main/colors/matugen.css"
+  },
+  "hyprland-colors": {
+    "input_path": "@DEFAULTS@/templates/hyprland-colors.lua.template",
+    "output_path": "@HOME@/.config/hypr/noctalia/noctalia-colors.lua",
+    "post_hook": "hyprctl eval 'pcall(dofile, os.getenv(\"HOME\") .. \"/.config/hypr/noctalia/noctalia-colors.lua\")'"
+  },
+  "nvim-base16": {
+    "input_path": "@DEFAULTS@/templates/matugen-template.lua",
+    "output_path": "@HOME@/.config/nvim/lua/matugen.lua"
+  },
+  "spicetify-noctalia": {
+    "input_path": "@DEFAULTS@/templates/spicetify-colors.ini",
+    "output_path": "@HOME@/.config/spicetify/Themes/Comfy/color.ini"
+  },
+  "zen-wabi-css": {
+    "input_path": "@DEFAULTS@/templates/zen-wabi-vars.css",
+    "output_path": "@ZEN_CHROME@/matugen-vars.css"
+  },
+  "zen-wabi-json": {
+    "input_path": "@DEFAULTS@/templates/matugen-vars.json",
+    "output_path": "@ZEN_CHROME@/matugen-vars.json"
+  },
+  "matugenfox": {
+    "input_path": "@DEFAULTS@/templates/matugenfox.css",
+    "output_path": "@HOME@/.config/matugen/generated/firefox_websites.css"
+  },
+  "opencode": {
+    "input_path": "@DEFAULTS@/templates/opencode.json",
+    "output_path": "@HOME@/.config/opencode/themes/matugen.json"
+  },
+  "obs": {
+    "input_path": "@DEFAULTS@/templates/matugen.obt",
+    "output_path": "@HOME@/.config/obs-studio/themes/matugen.obt"
+  },
+  "hyprland-borders": {
+    "input_path": "@DEFAULTS@/templates/hyprland-borders.template",
+    "output_path": "@HOME@/.config/hypr/borders.conf"
+  }
+}

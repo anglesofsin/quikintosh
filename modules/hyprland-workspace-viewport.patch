@@ -1,0 +1,77 @@
+--- a/src/render/Renderer.hpp
++++ b/src/render/Renderer.hpp
+@@ -135,6 +135,7 @@
+ 
+         CRenderPass     m_renderPass;
+ 
++        std::optional<CBox> m_windowWorkspaceClip; // monitor-local physical pixels
+         void            addPassElement(UP<IPassElement>&& element);
+         CRenderPass&    currentPass();
+         UP<CScopeGuard> redirectPass(CRenderPass* pass);
+--- a/src/render/Renderer.cpp
++++ b/src/render/Renderer.cpp
+@@ -533,6 +533,8 @@
+ }
+ 
+ void IHyprRenderer::addPassElement(UP<IPassElement>&& element) {
++    if (m_windowWorkspaceClip)
++        element->workspaceClip = m_windowWorkspaceClip;
+     currentPass().add(std::move(element));
+ }
+ 
+@@ -610,6 +612,16 @@
+         renderdata.alpha = 1.f;
+ 
+     renderdata.pWindow = pWindow;
++
++    // A workspace slide moves a viewport, not the complete scrolling tape.
++    // Capture its translated viewport with every pass element (including
++    // shadows, borders and popups), rather than clipping only the surface.
++    const auto PREVIOUSCLIP = m_windowWorkspaceClip;
++    CScopeGuard restoreWorkspaceClip([this, PREVIOUSCLIP] { m_windowWorkspaceClip = PREVIOUSCLIP; });
++    m_windowWorkspaceClip.reset();
++    if (!ignorePosition && !standalone && !m_bRenderingSnapshot && !pWindow->m_pinned && !pWindow->m_isFloating && PWORKSPACE &&
++        PWORKSPACE->m_renderOffset->isBeingAnimated())
++        m_windowWorkspaceClip = CBox{PWORKSPACE->m_renderOffset->value(), pMonitor->m_size}.scale(pMonitor->m_scale).round();
+ 
+     // for plugins
+     m_renderData.currentWindow = pWindow;
+--- a/src/render/pass/PassElement.hpp
++++ b/src/render/pass/PassElement.hpp
+@@ -36,6 +36,9 @@
+     virtual CRegion             opaqueRegion(); // in monitor-local logical coordinates
+     virtual bool                disableSimplification();
+ 
++    // Workspace viewport at collection time, in monitor-local physical pixels.
++    std::optional<CBox> workspaceClip;
++
+     // cached results, computed once per frame in CRenderPass::render()
+     bool needsLiveBlurCached       = false;
+     bool needsPrecomputeBlurCached = false;
+--- a/src/render/pass/Pass.cpp
++++ b/src/render/pass/Pass.cpp
+@@ -72,6 +72,9 @@
+                 opaque = scaledRegion;
+             }
+ 
++            if (el.element->workspaceClip)
++                opaque.intersect(*el.element->workspaceClip);
++
+             // if this intersects the liveBlur region, allow live blur to operate correctly.
+             // do not occlude a border near it.
+             if (willBlur) {
+@@ -190,6 +193,14 @@
+             continue;
+         }
+ 
++        if (el.element->workspaceClip) {
++            el.elementDamage.intersect(*el.element->workspaceClip);
++            if (el.elementDamage.empty() && !el.element->undiscardable()) {
++                el.element->discard();
++                continue;
++            }
++        }
++
+         g_pHyprRenderer->m_renderData.damage = el.elementDamage;
+         g_pHyprRenderer->draw(el.element, el.elementDamage);
+     }

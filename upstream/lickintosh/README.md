@@ -1,0 +1,188 @@
+<div align="center">
+
+**🇬🇧 English** · **🇫🇷 [Français](README.fr.md)**
+
+# 【 lickintosh 】
+
+**A macOS Tahoe-inspired desktop shell for Hyprland, built with [Quickshell](https://quickshell.org).**
+
+![Last commit](https://img.shields.io/github/last-commit/kelian-4/lickintosh/dev?style=for-the-badge&labelColor=1e1e2e)
+![Stars](https://img.shields.io/github/stars/kelian-4/lickintosh?style=for-the-badge&labelColor=1e1e2e)
+![Repo size](https://img.shields.io/github/repo-size/kelian-4/lickintosh?style=for-the-badge&labelColor=1e1e2e)
+
+[Features](#-features-) · [Installation](#-installation-) · [Keybinds](#-keybinds-) · [Configuration](#-configuration-) · [FAQ](#-faq-) · [Credits](#-credits-and-licenses-)
+
+</div>
+<img width="1366" height="768" alt="2026-11-15_13:12:24" src="https://github.com/user-attachments/assets/bba9e432-9503-44a3-b68d-7e639a09ac38" />
+
+## • features •
+
+**Top bar**
+- **Apple menu**: About, System Settings, App Store (opens your distribution's official package page), Recent Items, Force Quit, Sleep, Restart, Shut Down, Log Out, Lock.
+- **Global menu**: the active application's menu, with templates per app type (browser, file manager, IDE, messaging, media player, design, etc.).
+
+<img width="344" height="436" alt="2026-11-15_13:15:11" src="https://github.com/user-attachments/assets/8964d9f3-2cb7-4f15-9c22-a10ec5304ab1" />
+
+
+- **Status area**: Wi-Fi, Bluetooth, volume, battery, Spotlight, AI assistant, Control Center, notification center, system tray, clock.
+
+- **Notch**: a pill that expands for notifications and ongoing activity. It respects Focus mode and can be turned off in the settings.
+
+**Dock**
+- **Applications**: pinned apps, running-app indicators, trash and hover magnification.
+- **Settings**: icon size, dock scale, icon overflow and icon tint.
+
+
+<p align="center"><img src="assets/readme/dock.gif" width="800" alt="Dock"></p>
+
+
+**Desktop**
+- **File icons**: grid, multi-selection, drag and drop with animated swapping.
+- **Widgets**: battery, Bluetooth, calendar, analog and digital clocks, world clock, Focus, image, media, notes, quote, stopwatch, tasks, timer, volume, weather. Three themes: glass, light and dark.
+- **Wallpaper**: still pictures, a separate picture for dark mode, and looping video wallpapers (needs the Qt `QtMultimedia` module; paused in Game Mode).
+
+**Control Center**
+- **Editable controls**: Wi-Fi, now playing, Bluetooth, KDE Connect, Focus, screenshot, screen sharing, brightness, sound, dark mode, calculator, game mode, timer, alarm, stopwatch, keep awake, Night Shift (needs `hyprsunset`).
+<img width="308" height="509" alt="2026-11-15_13:16:52" src="https://github.com/user-attachments/assets/66731d92-1944-42ce-816a-512671c8297e" />
+
+
+**Spotlight**
+- **Sources**: applications, files (including recent files), system actions, calculator, clipboard history (text and images).
+- **Settings**: each source can be turned on or off, with prefixes to target a specific mode.
+
+
+<p align="center"><img src="assets/readme/spotlight.gif" width="800" alt="Spotlight"></p>
+
+
+**Lock screen**
+- **Authentication** through PAM, clock styles, media player and notifications.
+- **Lock at startup**: the lock screen appears before the interface.
+- **`hypridle`**: lock, screen off, suspend.
+
+<img width="1366" height="768" alt="1" src="https://github.com/user-attachments/assets/6c98b03f-9987-4055-88e4-af598535ca06" />
+
+**Other**
+- **On-screen displays** for volume and brightness, notification and battery popups.
+- **AI assistant** with four providers: Anthropic, OpenAI, Google (Gemini) and Ollama (local).
+- **Settings app**: account, AI, appearance, battery, Bluetooth, Control Center, Dock, general, lock screen, monitors, Spotlight, top bar, wallpaper, Wi-Fi.
+<img width="362" height="228" alt="2026-11-06_13:00:26" src="https://github.com/user-attachments/assets/69bf0564-28a9-490e-a93e-dcb4d8228b9d" />
+
+## • requirements •
+
+| Item | Details |
+|---|---|
+| **Hyprland** | 0.57 or newer (the bundled configuration uses the Lua config) |
+| **Quickshell** | 0.3 or newer, with the Qt 6 modules `QtGraphs`, `QtQuick.VectorImage`, `QtDeclarative` and `QtWayland` |
+| **Tools** | Python 3 (terminal calculator), ImageMagick, `brightnessctl`, `playerctl`, `wl-clipboard`, `grim`, `slurp`, `hyprpicker`, `jq`, `curl`, `xdg-utils`, `xdg-user-dirs`, PipeWire (`pw-dump`), WirePlumber (`wpctl`), NetworkManager (`nmcli`) |
+| **Services** | NetworkManager, BlueZ, UPower, power-profiles-daemon |
+| **Bundled Hyprland config** | `hypridle`, `cliphist`, `hyprpolkitagent`, and the programs from `assets/config/hypr/hyprlua/programs.lua` (terminal, file manager, browser, code editor, media player), which you can replace with your own |
+
+## • installation •
+
+```fish
+git clone https://github.com/kelian-4/lickintosh.git
+cd lickintosh
+./setup.fish
+```
+
+The script is written for fish. Don't run it as root: it asks for `sudo` (or `doas`) itself when needed.
+
+| Option | Effect |
+|---|---|
+| `--skip-deps` | Doesn't check or install dependencies |
+| `--no-launch` | Doesn't try to start the shell at the end |
+| `--doctor` | Checks the whole setup (session, Hyprland, Quickshell modules, tools, services, installed files, recent errors) and explains each problem |
+| `--uninstall` | Removes the shell after saving a backup (your settings, fonts, icons and cursor are kept unless you say otherwise) |
+
+If Quickshell is already running, restart it completely to load the new copy.
+
+> [!TIP]
+> **Updating**: run `git pull`, then `./setup.fish` again, `./setup.fish` now opens the graphical installer (install, dependencies, update, doctor, uninstall); add `--cli` for the terminal flow. It is also in the Apple menu and in Settings → General → Software Update.
+
+> [!NOTE]
+> The shell is started by `tools/lickintosh-start`: it waits for Hyprland, never starts a second copy, restarts the shell after a crash and, after repeated quick crashes, tries simpler graphics settings. The log is in `~/.local/state/lickintosh/shell.log`. Your own environment variables go in `~/.config/lickintosh/env`.
+
+## • keybinds •
+
+The main modifier is `SUPER`.
+
+| Shortcut | Action |
+|---|---|
+| `SUPER + Space` | Spotlight |
+| `CTRL + SUPER + Q` | Lock the screen |
+| `SUPER + T` | Terminal |
+| `SUPER + D` | File manager |
+| `SUPER + B` | Browser |
+| `SUPER + C` | Code editor |
+| `SUPER + M` | Media player |
+| `SUPER + Q` | Close the window |
+| `SUPER + F` | Fullscreen |
+| `SUPER + V` | Floating window |
+| `ALT + Tab` / `ALT + SHIFT + Tab` | Application switcher (hold ALT, tap Tab to cycle, release ALT to switch) |
+| `SUPER + Tab` / `SUPER + SHIFT + Tab` | Next / previous window |
+| `SUPER + arrows` | Change focus |
+| `SUPER + SHIFT + arrows` | Move the window |
+| `SUPER + ALT + arrows` | Resize the window |
+| `SUPER + 1` to `0` | Go to workspace 1 to 10 |
+| `SUPER + SHIFT + 1` to `0` | Send the window to a workspace |
+| `CTRL + SUPER + left` / `right` | Previous / next workspace |
+| `SUPER + S` | Special workspace |
+| `SUPER + Print` | Area screenshot, saved to `~/Pictures/Screenshots` and copied |
+| `SUPER + SHIFT + Print` | Area screenshot, copied only |
+| `ALT + SUPER + Escape` | Kill a window (`hyprctl kill`) |
+
+## • configuration •
+
+Almost everything is set in the **Settings** app, opened from the Apple menu ("System Settings…") or the dock. Values are saved by the shell in its configuration file.
+
+<p align="center">
+<img width="49%" alt="Settings" src="https://github.com/user-attachments/assets/657b6060-fc4f-4797-9326-94cabac4d5cf" />
+<img width="49%" alt="Settings" src="https://github.com/user-attachments/assets/ae88562b-6be1-4818-a47e-15a2a8c40081" />
+</p>
+
+
+## • repository layout •
+
+| Folder | Contents |
+|---|---|
+| `shell.qml`, `settings.qml` | Entry points of the shell and of the settings app |
+| `ui/` | Interface: bar, dock, desktop, lock screen, OSD, settings, widgets |
+| `components/` | Reusable components (buttons, sliders, glass, etc.) |
+| `services/` | Shared services and state (network, Bluetooth, theme, configuration, language, etc.) |
+| `assets/` | Icons, fonts, cursor, wallpapers, shaders, translations (`assets/i18n`) and Hyprland configuration |
+| `tools/` | Helper scripts (battery history, power, calculator, thumbnails, Liquid Glass shaders) |
+| `docs/` | Research notes, including `liquid-glass-research.md` |
+| `setup.fish` | Installation script |
+
+The Liquid Glass shaders are rebuilt with `tools/liquid-glass/build-shaders.sh`.
+
+## • faq •
+
+### How do I change the language?
+The system language is detected at launch (French, English or Spanish, English by default). To force one: **Settings › General › Language & Region**.
+
+### Why don't windows have the macOS Tahoe style?
+I'm still working on window themes.
+
+### My distribution isn't Arch, Debian or Fedora, what do I do?
+Only those families get automatic dependency installation. On others, install the packages from the [requirements](#-requirements-) section by hand, then run `./setup.fish --skip-deps`.
+You can also set things up manually or, even better, contribute to the script.
+
+### Quickshell isn't in my repositories
+It isn't available in every Arch, Debian and Fedora release: the script tells you and suggests the matching third-party repository.
+
+### Some texts aren't translated
+The English and Spanish translations are recent and may contain mistakes. Some texts remain in French: AI assistant messages and the installation script. Open an issue to report them or, even better, contribute to the project's translation.
+
+## • credits and licenses •
+
+- **Liquid Glass**: [OverShifted/LiquidGlass](https://github.com/OverShifted/LiquidGlass) (MIT) and MacTahoe Liquid KDE (GPL-3.0) served as study references for the effect. The shaders were modified and improved, and the capture system is ours. Licenses: `THIRD_PARTY_LICENSES/LiquidGlass-MIT.txt` and `THIRD_PARTY_LICENSES/MacTahoeLiquidKDE-GPL-3.0.txt`.
+- **MacShell**: music widget and the graphical installer are adapted from [0-ss/MacShell](https://github.com/0-ss/MacShell) (MIT). License: `THIRD_PARTY_LICENSES/MacShell-MIT.txt`.
+- **Icons**: [MacTahoe-icon-theme](https://github.com/vinceliuice/MacTahoe-icon-theme) by vinceliuice, "bold" variant.
+- **SF fonts, cursor and wallpapers**: shipped in `assets/`. Their rights belong to their respective authors (the San Francisco fonts are Apple resources).
+
+lickintosh is an independent project, not affiliated with Apple. macOS and Tahoe are trademarks of Apple Inc.
+
+## • license •
+
+lickintosh is free software, released under the [GNU General Public License v3.0 or later](LICENSE) (`GPL-3.0-or-later`). The full text is in the `LICENSE` file. Third-party components keep their own licenses, listed in `THIRD_PARTY_LICENSES/`.

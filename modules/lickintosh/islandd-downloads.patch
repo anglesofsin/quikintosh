@@ -1,0 +1,25 @@
+--- a/src/watch.rs
++++ b/src/watch.rs
+@@ -44,6 +44,11 @@
+                         let n = e.file_name();
+                         let n = n.to_string_lossy();
+                         PARTIAL.iter().any(|s| n.ends_with(s)) && e.file_type().is_ok_and(|t| t.is_file())
++                            && e.metadata().and_then(|m| m.modified()).ok().is_some_and(|t| {
++                                let seconds = std::env::var("ROSA_DOWNLOAD_STALE_SECONDS")
++                                    .ok().and_then(|v| v.parse::<u64>().ok()).unwrap_or(900);
++                                t.elapsed().unwrap_or_default() <= Duration::from_secs(seconds.max(60))
++                            })
+                     })
+                     .count()
+             })
+@@ -431,6 +436,10 @@
+             life.check();
+         }
+ 
++        // Existing partials can become stale without another directory event.
++        if dl.count.is_some_and(|count| count > 0) {
++            dl.check();
++        }
+         let mut next = next_vpn.min(next_out).min(remind.next);
+         #[cfg(feature = "jarvis")]
+         {

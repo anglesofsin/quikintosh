@@ -92,3 +92,49 @@ s=s.replace('height:Math.min(win.height-80,column.implicitHeight+40)','height:Ma
 s=s.replace('anchors.fill:parent;anchors.margins:20;clip:true','anchors.fill:parent;anchors.margins:20;anchors.bottomMargin:76;clip:true')
 s=s.replace("Shortcut{sequence:'Escape';onActivated:win.finish(false)}","Shortcut{sequence:'Escape';enabled:!picker.visible;onActivated:win.finish(false)}")
 p.write_text(s)
+
+# One-shot resize selection ends on outside focus/click, Escape or release.
+name='ui/desktop/DesktopLayer.qml'
+edit(name,'WlrLayershell.layer: WlrLayer.Bottom','WlrLayershell.layer:WidgetState.resizingId!=="" ? WlrLayer.Top:WlrLayer.Bottom')
+edit(name,'        id: win','        id: win\n        Shortcut{sequence:"Escape";context:Qt.ApplicationShortcut;enabled:WidgetState.resizingId!=="";onActivated:WidgetState.resizingId=""}')
+edit(name,'            focus: true','            focus: true\n            Connections{target:WidgetState;function onResizingIdChanged(){if(WidgetState.resizingId!=="")Qt.callLater(()=>stage.forceActiveFocus())}}')
+edit(name,'QuickLookState.returnToDesktop ? WlrKeyboardFocus.Exclusive','QuickLookState.returnToDesktop || WidgetState.resizingId!=="" ? WlrKeyboardFocus.Exclusive')
+edit(name,'{DesktopFiles.desktopFocused=true;stage.forceActiveFocus()}','{WidgetState.resizingId="";DesktopFiles.desktopFocused=true;stage.forceActiveFocus()}',2)
+edit(name,'            Keys.onPressed: function(event) {','            Keys.onPressed: function(event) {\n                if(event.key===Qt.Key_Escape && WidgetState.resizingId!==""){WidgetState.resizingId="";event.accepted=true;return}')
+name='services/WidgetState.qml'
+edit(name,'    property string resizingId:""','    property string resizingId:""\n    Connections{target:DesktopFiles;function onDesktopFocusedChanged(){if(!DesktopFiles.desktopFocused)root.resizingId=""}}')
+edit(name,'    function closeGallery() {','    function closeGallery() {\n        root.resizingId=""')
+
+# Previews wrap vertically instead of being silently cropped by a horizontal
+# flickable. Each preview fits both the viewport width and available height.
+name='ui/widgets/WidgetGallery.qml'
+edit(name,'''         Flickable{
+          width:parent.width;height:previews.height+6;contentWidth:previews.width;clip:true;boundsBehavior:Flickable.StopAtBounds
+          Row{
+           id:previews;spacing:16''','''         Flow{
+           id:previews;width:parent.width;spacing:18''')
+edit(name,'readonly property var dims:WidgetState.sizeOf(modelData.size);spacing:8','readonly property var dims:WidgetState.sizeOf(modelData.size);readonly property real previewScale:Math.max(.1,Math.min(.66,(list.width-8)/dims.w,(list.height-36)/dims.h));spacing:8')
+edit(name,'id:face;width:tile.dims.w*.78;height:tile.dims.h*.78','id:face;width:tile.dims.w*tile.previewScale;height:tile.dims.h*tile.previewScale')
+edit(name,'WidgetView{transformOrigin:Item.TopLeft;scale:.78;','WidgetView{transformOrigin:Item.TopLeft;scale:tile.previewScale;')
+edit(name,'''            }
+           }
+          }
+         }
+        }
+        Text{anchors.centerIn:parent''','''            }
+           }
+         }
+        }
+        Text{anchors.centerIn:parent''')
+
+# Share the desktop's wallpaper-only sampler. Backdrop snapshots must never
+# recursively sample the very clock image they are producing.
+edit('services/WidgetState.qml','    property string resizingId:""','    property var desktopBackdrop:null\n    property string resizingId:""')
+edit('ui/desktop/DesktopLayer.qml','        GlassBackdrop {\n            captureWindows: false','        GlassBackdrop {\n            id:desktopWidgetBackdrop\n            Component.onCompleted:WidgetState.desktopBackdrop=desktopWidgetBackdrop\n            Component.onDestruction:if(WidgetState.desktopBackdrop===desktopWidgetBackdrop)WidgetState.desktopBackdrop=null\n            captureWindows: false')
+edit('ui/widgets/WidgetSnapshot.qml','        onLoaded: {','        onLoaded: {\n            if(loader.item.isSnapshot!==undefined)loader.item.isSnapshot=true')
+import shutil,subprocess,os
+shader=r/'assets/shaders/liquidglass/WidgetGlyphGlass.frag'
+shader.parent.mkdir(parents=True,exist_ok=True)
+shutil.copyfile(here/'WidgetGlyphGlass.frag',shader)
+qsb=os.environ.get('QUICKINTOSH_TEST_QSB','qsb')
+subprocess.run([qsb,'--glsl','100 es,120,150,300 es,320 es,440','--hlsl','50','--msl','12','-o',str(shader)+'.qsb',str(shader)],check=True)

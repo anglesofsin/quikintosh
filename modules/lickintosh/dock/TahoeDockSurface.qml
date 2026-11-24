@@ -1,4 +1,5 @@
 import QtQuick
+import "AppIdentity.js" as AppIdentity
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
@@ -76,6 +77,7 @@ Scope {
    const r=windowWatcher.item?.dockRect
    return JSON.stringify({automatic:options.hoverToReveal,visible:dock.shown,
     obstructed:!!windowWatcher.item?.blocked,monitor:dock.screen?.name,
+    applications:controller.groupedClients.map(g=>({id:g.key,name:g.displayName,windows:g.instances.length})),
     rectangle:r ? [r.x,r.y,r.width,r.height]:null,
     scale:windowWatcher.item?.shellScale || 1})
   }
@@ -98,10 +100,17 @@ Scope {
  property real frozenZoomIndex:-1
  property bool trashConfirm:false
  property bool clearRecentConfirm:false
+ property var processIdentities:({})
+ property var identityClients:[]
+ function identifyClients(clients){
+  identityClients=clients.filter(c=>/discord|equibop|electron/i.test(String(c.class || c.cls || '')+' '+String(c.initialClass || ''))).map(c=>({pid:c.pid}))
+  send({action:'identities',clients:identityClients})
+ }
+ onProcessIdentitiesChanged:{controller._rebuildGroupedClients();const active=processIdentities[String(controller.activeClientPid)];if(active)controller.activeAppId=active.key}
  property bool workerReady:false
  property var stackPoint:Qt.point(0,0)
  readonly property var pinnedKeys:controller.pinnedApps.map(e=>controller.pinnedKey(e))
- function same(a,b){return a && b && (a.indexOf(b)>=0 || b.indexOf(a)>=0)}
+ function same(a,b){return AppIdentity.same(a,b)}
  function appIcon(name){return controller.resolveIcon(name)}
  function themeIcon(name){return 'file://'+Quickshell.shellDir+'/assets/icons_desktop/MacTahoe-light/places/scalable/'+name+'.svg'}
  function send(data){if(workerReady)worker.write(JSON.stringify(data)+'\n')}
@@ -177,7 +186,8 @@ Scope {
   stdout:SplitParser {onRead:line=>{
    try{
     const e=JSON.parse(line)
-    if(e.type==='ready'){root.workerReady=true;root.recentApps=e.apps;root.trashCount=e.trash;root.remember();root.refreshPreviews()}
+    if(e.type==='ready'){root.workerReady=true;root.send({action:'identities',clients:root.identityClients});root.recentApps=e.apps;root.trashCount=e.trash;root.remember();root.refreshPreviews()}
+    else if(e.type==='identities'){if(JSON.stringify(e.clients)!==JSON.stringify(root.processIdentities))root.processIdentities=e.clients}
     else if(e.type==='apps')root.recentApps=e.apps
     else if(e.type==='files' && e.folder===root.folder && (root.stackPending || root.stackOpen)){root.files=e.items;root.stackPending=false;root.stackOpen=true}
     else if(e.type==='preview'){const next=Object.assign({},root.folderPreviews);next[e.folder]=e.items;root.folderPreviews=next}

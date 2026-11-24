@@ -17,7 +17,7 @@ class DesktopPolish(unittest.TestCase):
             names=['WidgetState','PrivacyPresentation']
             for name in names:shutil.copyfile(Path(SOURCE)/'services'/f'{name}.qml',services/f'{name}.qml')
             stubs={
-                'DesktopFiles':'property var layout:[]',
+                'DesktopFiles':'property var layout:[];property bool desktopFocused:true',
                 'AppearanceState':"property color iconColor:'#0088ff'",
                 'ShellConfig':"property bool ready:false;property var options:({spotlight:{indexing:{wallpaperDir:''}}})",
                 'WidgetRegistry':"function resolve(w){return w} function sizesOf(t,v){return ['s','m','l']} property var sizeLabels:({s:'Small'})",

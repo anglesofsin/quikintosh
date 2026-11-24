@@ -11,6 +11,12 @@ Item {
  property real startWidth:0
  property real startHeight:0
  signal finished()
+ function cancel(){root.slot.resizing=false;root.active=false}
+ Connections{
+  target:WidgetState
+  function onResizingIdChanged(){if(root.active && WidgetState.resizingId!==root.slot.spec.id && WidgetState.galleryZone!=='desktop')root.cancel()}
+  function onGalleryZoneChanged(){if(root.active && WidgetState.resizingId!==root.slot.spec.id && WidgetState.galleryZone!=='desktop')root.cancel()}
+ }
  Repeater {
   model:['x','y','xy']
   delegate:Rectangle {
@@ -27,17 +33,18 @@ Item {
      root.slot.resizeWidth=root.startWidth;root.slot.resizeHeight=root.startHeight;root.slot.resizing=true;root.active=true
     }
     onPositionChanged:mouse=>{
-     if(!pressed)return
+     if(!pressed || !root.active)return
      const p=mapToItem(root.stage,mouse.x,mouse.y)
      if(handle.modelData!=='y')root.slot.resizeWidth=Math.max(100,Math.min(root.stage.width-root.slot.x,root.startWidth+p.x-root.startPoint.x))
      if(handle.modelData!=='x')root.slot.resizeHeight=Math.max(72,Math.min(root.stage.height-root.slot.y,root.startHeight+p.y-root.startPoint.y))
     }
     onReleased:mouse=>{
+     if(!root.active)return
      const id=root.slot.spec.id,w=root.slot.resizeWidth,h=root.slot.resizeHeight,free=!!(mouse.modifiers & Qt.ControlModifier)
-     root.slot.resizing=false;root.active=false;root.finished()
+     root.cancel();if(WidgetState.resizingId===id)WidgetState.resizingId="";root.finished()
      WidgetState.resizeWidgetTo(id,w,h,free)
     }
-    onCanceled:{root.slot.resizing=false;root.active=false}
+    onCanceled:{root.cancel();if(WidgetState.resizingId===root.slot.spec.id)WidgetState.resizingId=""}
    }
   }
  }

@@ -5,6 +5,7 @@ from pathlib import Path
 import shlex
 import shutil
 import time
+from app_identity import discord_key
 
 
 def identity(value):
@@ -52,7 +53,12 @@ class AppCatalog:
                     app={'key':key,'desktopId':desktop_id,'name':entry.get('Name',key),'icon':entry.get('Icon','')}
                     if identity(key)=='org.gnome.nautilus':app['name']='Finder'
                     names=[key,entry.get('StartupWMClass',''),Path(executable).name]
+                    channel=discord_key(Path(executable).name+' '+entry.get('Name','')+' '+key)
+                    if channel:names.append(channel)
                     for name in names:
+                        # Canary/PTB often advertise the generic WMClass
+                        # 'discord'. That alias belongs only to Stable.
+                        if channel and channel!='discord' and identity(name)=='discord':continue
                         if name:aliases.setdefault(identity(name),app)
                 except (OSError,ValueError,configparser.Error):continue
         self.aliases=aliases

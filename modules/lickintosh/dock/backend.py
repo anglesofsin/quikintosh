@@ -5,6 +5,7 @@ from datetime import datetime
 from PIL import Image,ImageOps
 from pathlib import Path
 from app_catalog import AppCatalog
+from app_identity import ProcessIdentities
 HOME=Path.home();STATE=HOME/'.local/state/lickintosh/dock';STATE.mkdir(parents=True,exist_ok=True)
 
 _output_lock=threading.Lock()
@@ -176,7 +177,7 @@ def main():
  history=STATE/'recent-apps.json'
  try:apps=json.loads(history.read_text())
  except (OSError,ValueError):apps=[]
- catalog=AppCatalog();clean=catalog.sanitize(apps)
+ catalog=AppCatalog();identities=ProcessIdentities();clean=catalog.sanitize(apps)
  if clean!=apps:
   tmp=history.with_suffix('.tmp');tmp.write_text(json.dumps(clean));tmp.replace(history)
  apps=clean
@@ -213,6 +214,7 @@ def main():
     record_recent(r['path']);emit('changed',folder='recent')
    elif action=='forget':
     apps=[app for app in apps if app['key'].casefold()!=str(r['key']).casefold()];tmp=history.with_suffix('.tmp');tmp.write_text(json.dumps(apps));tmp.replace(history);emit('apps',apps=apps)
+   elif action=='identities':emit('identities',clients=identities.identify(r.get('clients',[]),catalog))
    elif action=='remember':
     previous=apps
     apps=catalog.sanitize(apps)

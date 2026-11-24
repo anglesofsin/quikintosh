@@ -30,3 +30,7 @@ Não foi feita instalação em um segundo computador físico, teste visual em ou
 - Uma sessão Sway/Quickshell isolada confirmou que ocultar o relógio mantém a largura da ilha e que o fechamento da galeria preserva a seleção de estilo e não dessatura o widget. O relógio foi renderizado com a nova refração sobre o wallpaper; não houve erro de link do shader.
 - O download real de um avatar padrão do CDN retornou PNG válido com o cabeçalho corrigido. Isso não substitui a validação de uma chamada real em todos os clientes ou de condições de rede de outra máquina.
 - A página da Dynamic Island deixou de ter filtro interno; a busca geral das Settings permanece disponível. O ícone oficial amarelo do Canary tem identidade própria no banco e precedência sobre o arquivo genérico do Discord.
+
+## Relógio com geometria estável
+
+O componente real de relógio passou por 48 combinações de horário, incluindo segundos, 12 horas, formato empilhado, tamanho automático e fonte personalizada. O tamanho ajustado da fonte permaneceu constante dentro de cada configuração; os algarismos tabulares e a ausência de zoom/estiramento na transição também foram conferidos. Em uma sessão gráfica isolada, desligar a preferência global ocultou o relógio nos estados de música e chamada, preservando sua largura reservada.

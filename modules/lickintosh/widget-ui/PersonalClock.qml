@@ -25,7 +25,22 @@ Item {
  readonly property color ink:widgetData?.clockColorMode==='accent' ? Theme.accent:widgetData?.clockColor || look?.primary || Theme.textPrimary
  readonly property string effect:widgetData?.clockEffect || 'solid'
  readonly property int alignment:widgetData?.clockAlign==='left' ? Text.AlignLeft:widgetData?.clockAlign==='right' ? Text.AlignRight:Text.AlignHCenter
- readonly property real fittedSize:Math.min(basePixelSize,basePixelSize*Math.max(1,width-40)/Math.max(1,Math.max(...timeText.split('\n').map(line=>Math.max(measure.advanceWidth(line),measure.boundingRect(line).width)))))
+ // Reserve the widest time for this format, independent of the live digits.
+ // Custom fonts without tabular figures still receive a stable fitting size.
+ readonly property real reservedTextWidth:{
+  let widest='0',digitWidth=0,result=1
+  for(let n=0;n<10;n++){
+   const digit=String(n),w=Math.max(measure.advanceWidth(digit),measure.boundingRect(digit).width)
+   if(w>digitWidth){digitWidth=w;widest=digit}
+  }
+  for(let h=0;h<24;h++){
+   const date=new Date(2000,10,28,h,58,58)
+   const value=stacked ? Qt.formatDateTime(date,widgetData?.clock12Hour ? 'hh':'HH')+'\n'+Qt.formatDateTime(date,widgetData?.clockSeconds ? 'mm:ss':'mm'):Qt.formatDateTime(date,timeFormat)
+   for(const line of value.replace(/[0-9]/g,widest).split('\n'))result=Math.max(result,measure.advanceWidth(line),measure.boundingRect(line).width)
+  }
+  return result
+ }
+ readonly property real fittedSize:Math.min(basePixelSize,basePixelSize*Math.max(1,width-40)/reservedTextWidth)
  readonly property var hostBackdrop:GlassRegistry.lookup(QsWindow.window)
  readonly property var backdrop:{
   const shared=WidgetState.desktopBackdrop
@@ -34,7 +49,7 @@ Item {
  }
  readonly property bool glassReady:effect==='glass' && !!backdrop?.captureSettled
  SystemClock{id:clock;precision:widgetData?.clockSeconds ? SystemClock.Seconds:SystemClock.Minutes}
- FontMetrics{id:measure;font:Qt.font({family:root.family,pixelSize:root.basePixelSize,weight:LockClockStyle.weightFor(root.weight),italic:root.widgetData?.clockItalic ?? root.style.italic,letterSpacing:root.widgetData?.clockSpacing ?? root.style.spacing})}
+ FontMetrics{id:measure;font:Qt.font({family:root.family,pixelSize:root.basePixelSize,weight:LockClockStyle.weightFor(root.weight),italic:root.widgetData?.clockItalic ?? root.style.italic,letterSpacing:root.widgetData?.clockSpacing ?? root.style.spacing,features:{tnum:1}})}
  Column {
   id:stack;anchors.centerIn:parent;width:parent.width-24;spacing:root.widgetData?.clockDateGap ?? 6
   component DateLine:Text{
@@ -48,9 +63,9 @@ Item {
    width:parent.width;height:digits.implicitHeight
    LockMac.MorphText{
     id:digits;anchors.fill:parent;text:root.timeText;horizontalAlignment:root.alignment;color:root.ink
-    font:Qt.font({family:root.family,pixelSize:root.fittedSize,weight:LockClockStyle.weightFor(root.weight),italic:root.widgetData?.clockItalic ?? root.style.italic,letterSpacing:root.widgetData?.clockSpacing ?? root.style.spacing})
+    font:Qt.font({family:root.family,pixelSize:root.fittedSize,weight:LockClockStyle.weightFor(root.weight),italic:root.widgetData?.clockItalic ?? root.style.italic,letterSpacing:root.widgetData?.clockSpacing ?? root.style.spacing,features:{tnum:1}})
     duration:root.widgetData?.clockAnimate && !SettingsPreferences.accessibility.reduceMotion ? 420:0
-    useBlur:duration>0;animateWidth:false;layer.enabled:true
+    useBlur:duration>0;animateWidth:false;stretch:false;scaleIn:1;scaleOut:1;layer.enabled:true
     layer.effect:MultiEffect{shadowEnabled:root.effect==='shadow';shadowColor:'#90000000';shadowBlur:.65;shadowVerticalOffset:2;autoPaddingEnabled:true}
    }
    ShaderEffectSource{id:mask;anchors.fill:parent;sourceItem:digits;hideSource:root.glassReady || root.effect==='gradient';live:true;visible:false}

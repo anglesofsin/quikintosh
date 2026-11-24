@@ -271,6 +271,8 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/finder-menus}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/widget-ui}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/widget-stability}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/island-media}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/tray-colors}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock}/identity-integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out

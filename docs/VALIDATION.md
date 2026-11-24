@@ -34,3 +34,9 @@ Não foi feita instalação em um segundo computador físico, teste visual em ou
 ## Relógio com geometria estável
 
 O componente real de relógio passou por 48 combinações de horário, incluindo segundos, 12 horas, formato empilhado, tamanho automático e fonte personalizada. O tamanho ajustado da fonte permaneceu constante dentro de cada configuração; os algarismos tabulares e a ausência de zoom/estiramento na transição também foram conferidos. Em uma sessão gráfica isolada, desligar a preferência global ocultou o relógio nos estados de música e chamada, preservando sua largura reservada.
+
+## Música compacta e tray adaptativa
+
+- A pill de música usa a mesma altura configurada para chamada/inatividade, sem a margem externa adicional de 26 px. Capa circular e visualizador ficam nas extremidades com margens de 3/4 px; o espaço reservado ao relógio continua disponível quando ele está oculto.
+- A capa gira no renderizador, sem capturas de tela por frame, e respeita pausa/redução de movimento. O teste gráfico isolado conferiu altura de 26 px e capa circular de 20 px, comparadas com o estado de chamada.
+- A tray analisa uma imagem de 32 px apenas quando o ícone muda. O teste Qt verificou ícones brancos/pretos, preservação de imagem colorida e atualização da cor da barra. Também foram lidos os ícones reais publicados pelo Discord, Canary e Steam em uma janela de teste fora da tela principal.

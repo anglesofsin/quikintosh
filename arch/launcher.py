@@ -46,6 +46,12 @@ def main(argv):
     name,*args=argv
     aliases={'quickintosh':'lickintosh','quickintosh-finder':'lickintosh-finder','quickintosh-quicklook':'lickintosh-quicklook'}
     name=aliases.get(name,name)
+    own_session=os.environ.get('QUICKINTOSH_SESSION')=='1'
+    gui={'lickintosh','lickintosh-finder','rice-file-manager','kitty','noctalia','noctalia-legacy','caelestia','eqsh'}
+    inspect_only=bool(args and args[0] in ['ipc','list','log','--help','--version','brightness','settings-restore'])
+    lifecycle=name=='rice-shell' and (not args or args[0] not in ['status','list','capabilities'])
+    if not own_session and ((name in gui and not inspect_only) or lifecycle or name=='quickintosh-session-ready'):
+        raise RuntimeError('Enter the isolated Quickintosh session first; refusing to start/control a desktop inside another session')
     if name=='quickintosh-doctor':
         checks={k:shutil.which(k,path=env['PATH']) for k in ['Hyprland','hyprctl','lickintosh','rice-shell','playerctl','matugen','grim','wl-copy']}
         status={'commands':checks,'bundle':str(bundle),'graphics':data.get('graphics'),
@@ -57,6 +63,7 @@ def main(argv):
             raise RuntimeError('Start from a TTY/display manager after leaving the current graphical session; it will not be replaced automatically')
         if not os.environ.get('DBUS_SESSION_BUS_ADDRESS'):
             os.execv('/usr/bin/dbus-run-session',['dbus-run-session','--',sys.executable,str(ROOT/'launcher.py'),'quickintosh-session'])
+        env['QUICKINTOSH_SESSION']='1'
         command=graphics_command([str(bundle/'runtime/bin/Hyprland'),'--config',data['config']],data)
         try:return subprocess.call(command,env=env)
         finally:

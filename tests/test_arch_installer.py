@@ -46,6 +46,11 @@ class Install(unittest.TestCase):
   with patch.dict(os.environ,{'QT_PLUGIN_PATH':'/host/qt','PATH':'/usr/bin:/bin'}):env=launcher.environment(self.bundle)
   self.assertNotIn('QT_PLUGIN_PATH',env);self.assertIn('/usr/bin:/bin',env['PATH'])
   self.assertEqual(env['QUICKINTOSH_PLATFORM'],'arch')
+ def test_gui_cannot_start_inside_another_session(self):
+  a=mod.Activation(self.home);a.activate(self.bundle)
+  with patch.object(launcher,'STATE',a.state),patch.dict(os.environ,{'QUICKINTOSH_SESSION':'','XDG_CURRENT_DESKTOP':'OtherDesktop'}):
+   with self.assertRaises(RuntimeError):launcher.main(['lickintosh'])
+   with self.assertRaises(RuntimeError):launcher.main(['rice-shell','switch','quickintosh'])
  def test_graphics_missing_fails_explicitly(self):
   with self.assertRaises(RuntimeError):launcher.graphics_command(['test'],{'graphics':str(self.bundle)})
 class Pam(unittest.TestCase):

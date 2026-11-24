@@ -197,3 +197,7 @@ O uninstall restaura comandos/configurações anteriores quando os arquivos gere
 ## Prompt pronto para o OpenCode
 
 > Instale a Quickintosh deste repositório no meu Arch seguindo docs/ARCH.md e arch/README.md. Primeiro faça diagnóstico de GPU, serviços de áudio, Nix, acesso ao repositório e políticas PAM. Use o instalador Arch com Nix e a sessão isolada; preserve meu desktop/Hyprland atual e os backups. Não execute nixos-rebuild, não substitua meus discos/bootloader, não encerre minha sessão nem teste lockscreen sem eu estar pronta. Leia logs e corrija dependências antes de seguir; não ignore falhas. Depois me deixe entrar na sessão Quickintosh e teste comigo captura, clipboard, Finder/Quick Look, apps nativos, voz e desbloqueio. Explique limitações específicas do meu hardware.
+
+### Clique direito na mesa
+
+O menu da mesa usa uma superfície `Overlay`, acima da Dock. Há uma superfície de entrada própria nos monitores secundários e no modo de jogo, em que os widgets ficam suspensos. Se o clique direito não mostrar nada em uma instalação antiga, atualize e reative a rice pelo instalador descrito acima. Verifique também se você está na sessão Quickintosh e se outro desktop/gerenciador de ícones não está cobrindo a mesa; não remova seus atalhos ou sua configuração do Hyprland para testar.

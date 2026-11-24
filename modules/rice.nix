@@ -77,7 +77,9 @@ let
   '';
   tahoeIcons = pkgs.runCommand "lickintosh-tahoe-icons" {} ''
     mkdir -p $out/share/icons
-    cp -r ${lickintosh-src}/assets/icons_desktop/MacTahoe* $out/share/icons/
+    for theme in ${lickintosh-src}/assets/icons_desktop/MacTahoe*; do
+      ln -s "$theme" "$out/share/icons/$(basename "$theme")"
+    done
   '';
   desktopProfile = pkgs.writeShellApplication {
     name = "lickintosh-desktop-profile";
@@ -154,11 +156,42 @@ let
     patches = [ ./lickintosh/desktop-delete.patch ./lickintosh/notch-labels.patch ./lickintosh/special-workspace-glass.patch ./lickintosh/wallpaper-directory.patch ./lickintosh/dock-visibility.patch ];
     nativeBuildInputs = [ pkgs.qt6.qtshadertools ];
     dontWrapQtApps = true;
+    # Keep immutable icon trees shared even during unpacking; copying these
+    # tens of thousands of files twice can exhaust inodes on updates.
+    unpackPhase = ''
+      runHook preUnpack
+      mkdir source
+      for entry in ${lickintosh-src}/*; do
+        if [ "$(basename "$entry")" = assets ]; then
+          mkdir source/assets
+          for asset in "$entry"/*; do
+            if [ "$(basename "$asset")" = icons_desktop ]; then
+              ln -s "$asset" source/assets/icons_desktop
+            else
+              cp -r "$asset" source/assets/
+            fi
+          done
+        else
+          cp -r "$entry" source/
+        fi
+      done
+      chmod -R u+w source
+      sourceRoot=source
+      runHook postUnpack
+    '';
     dontBuild = true;
     dontFixup = true; # QML/assets only; helper shebangs are patched explicitly.
     installPhase = ''
       mkdir -p $out
-      cp -r shell.qml settings.qml installer.qml services components core ui tools assets THIRD_PARTY_LICENSES LICENSE $out/
+      cp -r shell.qml settings.qml installer.qml services components core ui tools THIRD_PARTY_LICENSES LICENSE $out/
+      mkdir -p $out/assets
+      for asset in assets/*; do
+        if [ "$(basename "$asset")" = icons_desktop ]; then
+          ln -s ${lickintosh-src}/assets/icons_desktop $out/assets/icons_desktop
+        else
+          cp -r "$asset" $out/assets/
+        fi
+      done
       chmod -R u+w $out
       cp ${pkgs.writeText "lickintosh-shell.qml" (builtins.replaceStrings
         [ "    id: appRoot" "model: appRoot.interfaceShown ? Quickshell.screens : []" "active: appRoot.interfaceShown; Dock {}" ]
@@ -180,7 +213,9 @@ let
       substituteInPlace $out/services/Theme.qml \
         --replace-fail 'property bool applyToCompositor: true' 'property bool applyToCompositor: false'
       mkdir -p $out/share/icons
-      cp -r $out/assets/icons_desktop/* $out/share/icons/
+      for theme in $out/assets/icons_desktop/*; do
+        ln -s "../../assets/icons_desktop/$(basename "$theme")" "$out/share/icons/$(basename "$theme")"
+      done
       # Keep the user's explicitly disabled power-profiles service optional.
       substituteInPlace $out/services/GameMode.qml \
         --replace-fail '["powerprofilesctl", "set", "performance"]' '["sh", "-c", "if systemctl -q is-active power-profiles-daemon; then powerprofilesctl set performance; fi"]' \
@@ -232,6 +267,7 @@ let
       qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o $out/components/icon-style.frag.qsb $out/components/icon-style.frag
       qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o $out/components/bar-tint.frag.qsb $out/components/bar-tint.frag
 
+      ${pkgs.python3}/bin/python3 ${./lickintosh/desktop-polish}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/lock-state-sync.py} $out

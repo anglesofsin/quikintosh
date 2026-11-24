@@ -135,3 +135,5 @@ Veja [arquitetura e fontes](docs/ARCHITECTURE.md), [temas](docs/THEMING.md) e [v
 ## Licenças
 
 Código derivado da shell sob GPL-3.0-or-later; componentes de terceiros mantêm suas licenças. Consulte [LICENSE](LICENSE), [THIRD_PARTY.md](THIRD_PARTY.md), `upstream/lickintosh/THIRD_PARTY_LICENSES/` e os avisos nos assets. Marcas Apple/macOS pertencem aos seus titulares; este projeto não é afiliado à Apple.
+
+Desktop widgets support Liquid Glass, solid and transparent surfaces, plus per-widget overrides. Photo widgets preserve full color and accept images/GIFs, additional portrait/wide formats, fit modes and shapes. Hold Control while dragging a desktop widget for free placement and intentional overlap; configure this in Desktop & Dock. Desktop context menus use an overlay above the Dock, including secondary displays and Game Mode.

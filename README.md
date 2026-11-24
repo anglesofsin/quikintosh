@@ -20,7 +20,11 @@ Este repositório contém as fontes da shell, os assets do upstream, as modifica
 
 A implementação usa os recursos disponíveis no Linux; não é uma distribuição de macOS. O Finder é Nautilus tematizado, e seu efeito GTK não tem toda a refração do shader Quickshell. Chamadas com participantes/avatares exigem o companion Discord; a detecção externa fornece apenas informações básicas. Veja [limitações e diagnóstico](docs/TROUBLESHOOTING.md).
 
-## Instalação recomendada: módulo NixOS
+## Arch Linux
+
+Há um [instalador Arch com sessão isolada e guia para OpenCode](docs/ARCH.md). Ele usa pacman para serviços do host e Nix para o bundle da rice, sem converter o Arch em NixOS. Leia o guia, o diagnóstico de GPU e as limitações antes de instalar.
+
+## Instalação NixOS: módulo
 
 Arquitetura testada: **x86_64-linux**. É necessário usar flakes. A primeira compilação pode ser demorada: inclui o compositor modificado e componentes que podem não estar disponíveis no cache binário.
 

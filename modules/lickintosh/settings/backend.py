@@ -331,6 +331,10 @@ def updates_info():
 
 
 def check_updates():
+    if os.environ.get('QUICKINTOSH_PLATFORM') == 'arch':
+        result = dict(changes=run(['/usr/bin/pacman','-Qu'],check=False).splitlines(),checkedAt=datetime.datetime.now().isoformat(timespec='minutes'))
+        write_json(STATE/'updates.json',result)
+        return result
     changes = json.loads(run(['/run/current-system/sw/bin/nix', '--json', 'update', '--all', '--dry-run'], timeout=180))
     result = dict(changes=changes, checkedAt=datetime.datetime.now().isoformat(timespec='minutes'))
     write_json(STATE/'updates.json', result)
@@ -465,7 +469,7 @@ def query(page, args=None):
                     **{'update-check': check_updates},
                     usage=lambda: read_json(STATE/'usage.json'))
     if page == 'main':
-        return json.loads(run(['/run/current-system/sw/bin/lickintosh', 'ipc', 'call', 'rice', 'state']))
+        return json.loads(run([os.environ.get('LICKINTOSH_CLI','lickintosh'), 'ipc', 'call', 'rice', 'state']))
     if page == 'storage-details':
         return storage_info(True)
     if page == 'permissions':
@@ -476,7 +480,7 @@ def query(page, args=None):
 
 
 def action(name, args):
-    active = read(Path(os.environ.get('XDG_STATE_HOME', HOME/'.local/state'))/'nixos-rice/active-shell')
+    active = read(Path(os.environ.get('RICE_SHELL_STATE_DIR',str(Path(os.environ.get('XDG_STATE_HOME', HOME/'.local/state'))/'nixos-rice')))/'active-shell')
     if name != 'runtime-restore' and active != 'lickintosh':
         raise RuntimeError('Select Lickintosh before applying these settings. Other desktop profiles are unchanged.')
     if name == 'runtime':
@@ -516,7 +520,7 @@ def action(name, args):
                 if not isinstance(args['value'], bool):
                     raise ValueError('Invalid mute state.')
                 command=['wpctl', 'set-mute', token, '1' if args['value'] else '0']
-        run(['/run/current-system/sw/bin/lickintosh','ipc','call','audioFeedback','manual'],check=False)
+        run([os.environ.get('LICKINTOSH_CLI','lickintosh'),'ipc','call','audioFeedback','manual'],check=False)
         run(command)
     elif name in {'network-up', 'network-down'}:
         if args['uuid'] not in {p['uuid'] for p in network_info()['profiles']}:

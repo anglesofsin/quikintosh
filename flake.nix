@@ -1,6 +1,7 @@
 {
   description = "Quickintosh — complete Tahoe-inspired NixOS/Hyprland desktop";
   inputs = {
+    nixgl = { url = "github:nix-community/nixGL"; inputs.nixpkgs.follows = "nixpkgs"; };
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixpkgs-patched.url = "github:NixOS/nixpkgs/9fbb54b33e91ee4ca368e35a78e0613c720600b3";
     hyprland-src.url = "git+https://github.com/hyprwm/Hyprland.git?submodules=1";
@@ -32,6 +33,8 @@
       shell = demo.config.system.build.lickintosh;
       rice-shell = demo.config.system.build.riceShell;
       hyprland = demo.config.programs.hyprland.package;
+      arch-mesa = inputs.nixgl.packages.${system}.nixGLIntel;
+      arch = import ./nix/arch.nix { desktop = demo; inherit inputs; };
     };
     checks.${system}.configuration = demo.config.system.build.toplevel;
   };

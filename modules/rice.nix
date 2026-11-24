@@ -96,7 +96,7 @@ let
     text = ''
       export GI_TYPELIB_PATH="${pkgs.glib.out}/lib/girepository-1.0:''${GI_TYPELIB_PATH:-}"
       export GIO_EXTRA_MODULES="${pkgs.gvfs}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"
-      export LICKINTOSH_CLI=/run/current-system/sw/bin/lickintosh
+      export LICKINTOSH_CLI="''${LICKINTOSH_CLI:-lickintosh}"
       exec python3 ${./lickintosh/quicklook}/open.py "$@"
     '';
   };
@@ -140,7 +140,8 @@ let
   riceFileManager = pkgs.writeShellApplication {
     name = "rice-file-manager";
     text = ''
-      if [[ "$(cat "$HOME/.local/state/nixos-rice/active-shell" 2>/dev/null || true)" == lickintosh ]]; then
+      state_dir="''${RICE_SHELL_STATE_DIR:-$HOME/.local/state/nixos-rice}"
+      if [[ "$(cat "$state_dir/active-shell" 2>/dev/null || true)" == lickintosh ]]; then
         exec ${finder}/bin/lickintosh-finder "$@"
       fi
       exec ${pkgs.kdePackages.dolphin}/bin/dolphin "$@"

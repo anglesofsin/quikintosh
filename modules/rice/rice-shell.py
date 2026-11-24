@@ -17,7 +17,7 @@ from typing import Any, Sequence
 
 
 MANIFEST = Path(os.environ.get("RICE_SHELL_MANIFEST", "/etc/nixos-rice/shells.json"))
-STATE_DIR = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state"))) / "nixos-rice"
+STATE_DIR = Path(os.environ.get("RICE_SHELL_STATE_DIR", str(Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local/state"))) / "nixos-rice")))
 STATE_FILE = STATE_DIR / "active-shell"
 LOCK_FILE = STATE_DIR / "shell.lock"
 LOG_FILE = STATE_DIR / "shell.log"
@@ -27,6 +27,12 @@ VALID_SHELLS = ("noctalia", "noctalia-legacy", "caelestia", "lickintosh", "eqsh"
 
 class RiceError(RuntimeError):
     pass
+
+
+def runtime_command(command: Sequence[str]) -> list[str]:
+    private = os.environ.get("QUICKINTOSH_BIN")
+    candidate = Path(private)/command[0] if private and not Path(command[0]).is_absolute() else None
+    return [str(candidate), *command[1:]] if candidate and candidate.is_file() else list(command)
 
 
 def run(
@@ -39,7 +45,7 @@ def run(
 ) -> subprocess.CompletedProcess[str]:
     try:
         completed = subprocess.run(
-            list(command),
+            runtime_command(command),
             text=True,
             input=input_text,
             stdout=subprocess.PIPE if capture else None,
@@ -316,7 +322,7 @@ def start_shell(name: str) -> None:
     with LOG_FILE.open("a") as log:
         log.write(f"\n[{time.strftime('%Y-%m-%dT%H:%M:%S')}] starting {name}\n")
         log.flush()
-        subprocess.Popen(command, stdout=log, stderr=log, start_new_session=True)
+        subprocess.Popen(runtime_command(command), stdout=log, stderr=log, start_new_session=True)
     if wait_until_ready(name):
         return
     raise RiceError(f"{name} did not start; inspect {LOG_FILE}")

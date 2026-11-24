@@ -49,16 +49,15 @@ Item {
                     Layout.preferredWidth:40; Layout.preferredHeight:40
                     text:modelData==="accept" ? "󰏲" : modelData==="reject" ? "󰏲" : modelData==="mute" ? (selected ? "󰍭" : "󰍬") : modelData==="deaf" ? (selected ? "󰟎" : "󰋋") : "󰏲"
                     font.pixelSize:21
+                    padding:0
                     contentItem:Item {
-                        Image {
-                            anchors.centerIn:parent;width:20;height:20
-                            source:Quickshell.shellDir+'/assets/icons/notch/'+(parent.parent.modelData==='mute' ? (parent.parent.selected ? 'mic-off.svg':'mic.svg') : parent.parent.modelData==='deaf' ? 'headphones.svg':'call-handset.svg')
-                            sourceSize:Qt.size(40,40);fillMode:Image.PreserveAspectFit;smooth:true
-                            rotation:['disconnect','reject'].includes(parent.parent.modelData) ? 135:0
-                        }
-                        Rectangle {
-                            anchors.centerIn:parent;width:24;height:2;radius:1;rotation:45;color:'white'
-                            visible:parent.parent.modelData==='deaf' && parent.parent.selected
+                        Text {
+                            id:callGlyph
+                            text:parent.parent.text;font:parent.parent.font;color:"white"
+                            readonly property rect ink:callGlyphMetrics.tightBoundingRect(text)
+                            x:(parent.width-ink.width)/2-ink.x
+                            y:(parent.height-ink.height)/2-baselineOffset-ink.y
+                            FontMetrics{id:callGlyphMetrics;font:callGlyph.font}
                         }
                     }
                     background:Rectangle { radius:width/2; color:parent.modelData==="accept" ? "#23a55a" : ["reject","disconnect"].includes(parent.modelData) ? "#ed4245" : parent.selected ? "#5865f2" : "#393b46"; opacity:parent.hovered ? 1 : 0.9 }

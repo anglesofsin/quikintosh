@@ -138,4 +138,4 @@ Código derivado da shell sob GPL-3.0-or-later; componentes de terceiros mantêm
 
 Desktop widgets support Liquid Glass, solid and transparent surfaces, plus per-widget overrides. Photo widgets preserve full color and accept images/GIFs, additional portrait/wide formats, fit modes and shapes. Hold Control while dragging a desktop widget for free placement and intentional overlap; configure this in Desktop & Dock. Desktop context menus use an overlay above the Dock, including secondary displays and Game Mode.
 
-The desktop presents Finder menus (File, Edit, View, Go, Window and Help). Desktop actions use the shell file services; Finder window actions use the file manager shortcuts, with direct navigation to common folders. Voice call buttons use centered vector artwork instead of font glyphs.
+The desktop presents Finder menus (File, Edit, View, Go, Window and Help). Desktop actions use the shell file services; Finder window actions use the file manager shortcuts, with direct navigation to common folders. Voice call buttons preserve the original glyph artwork and center its visible bounds.

@@ -34,3 +34,5 @@ anchor=' signal navigate(string page)';s=s.replace(anchor,anchor+'''
   onAccepted:{SettingsPreferences.notifications.soundFile=selectedFile.toString();SettingsPreferences.notifications.sound='custom'}
  }
 ''',1);p.write_text(s)
+
+p=root/'shell.qml';s=p.read_text();anchor='    id: appRoot';assert s.count(anchor)==1;s=s.replace(anchor,anchor+'\n    readonly property var notificationAudio:NotificationAudio',1);p.write_text(s)

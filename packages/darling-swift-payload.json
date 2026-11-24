@@ -1,0 +1,301 @@
+{
+  "repository": "VibeDarling/darling-swift",
+  "revision": "78a04e469481027bf4294022a4bffc71a41886d0",
+  "files": [
+    {
+      "path": "Combine.framework/Versions/A/Combine",
+      "sha256": "9c5afcb891bedd5738e48800606291094292a5c4c15cd9099c330f2c0e942e57",
+      "size": 3755824
+    },
+    {
+      "path": "CryptoKit.framework/Versions/A/CryptoKit",
+      "sha256": "a451a725a1340e5040b0525a11198b507961366733fbda496055555e599eb28f",
+      "size": 311028
+    },
+    {
+      "path": "libswiftAVFoundation.dylib",
+      "sha256": "06aa9a4164514f7f0339c086089861320b980bc3c1a727d7395fcf8447fb5fe7",
+      "size": 130160
+    },
+    {
+      "path": "libswiftAccelerate.dylib",
+      "sha256": "842012cdba008af77e0e5073c438fd6a3460baf6eeb50e219e4f6092077a5171",
+      "size": 788096
+    },
+    {
+      "path": "libswiftAppKit.dylib",
+      "sha256": "def58cdbc8e11a549403625cf02b6e6f8ca241e90936cd330ed95849e91ae418",
+      "size": 281864
+    },
+    {
+      "path": "libswiftCloudKit.dylib",
+      "sha256": "29df41e4c95598a54361065649fef7f03aefd76c676b708da45b7ef11f068444",
+      "size": 192096
+    },
+    {
+      "path": "libswiftCompression.dylib",
+      "sha256": "f69916ac31c1a08bdc27a1626a8551a2d64b19b5643c3dfc817cc66eee3795e1",
+      "size": 104272
+    },
+    {
+      "path": "libswiftContacts.dylib",
+      "sha256": "b3bae6d95970b8a9cb91f3fbbf19948141f9807472edfc08453be6b5d07f1bcf",
+      "size": 73152
+    },
+    {
+      "path": "libswiftCore.dylib",
+      "sha256": "30b5c17c4605133b01d265bdd5801b9eec43a3a751f0951a49c3dda23c34348a",
+      "size": 17429376
+    },
+    {
+      "path": "libswiftCoreAudio.dylib",
+      "sha256": "175d2c9b95347196aee733c5710ac19aff3537ac7b9ab0536778bc7a7e0f1704",
+      "size": 80400
+    },
+    {
+      "path": "libswiftCoreData.dylib",
+      "sha256": "fe27d0596905336bc222de5b1750154cdb0da9c5c950b97ebffe649ba7c1d415",
+      "size": 104832
+    },
+    {
+      "path": "libswiftCoreFoundation.dylib",
+      "sha256": "1ed221ba539a50fe76c945ad1e33f66517e56e4109ec4cfbad49e93bc2b956e0",
+      "size": 947676
+    },
+    {
+      "path": "libswiftCoreGraphics.dylib",
+      "sha256": "06b126af274d62176315fd02bb380cf901ad10acaf2eeaf6a988e0f5a0e71326",
+      "size": 288236
+    },
+    {
+      "path": "libswiftCoreImage.dylib",
+      "sha256": "f5d6e38cffaa114d2eed488b3a4c2d492fb1b943df6a94be7a6c5e0382792352",
+      "size": 54160
+    },
+    {
+      "path": "libswiftCoreLocation.dylib",
+      "sha256": "ba6745a9d39b0e7653e2c779813ece6b1b3884f7c3d36b22808f3a06846ee8b1",
+      "size": 63376
+    },
+    {
+      "path": "libswiftCoreMedia.dylib",
+      "sha256": "269bf0c8e11c8773bc3aa81d738d8d1fe7f8b76f4aa3569da60d83edfd11e819",
+      "size": 83072
+    },
+    {
+      "path": "libswiftCoreText.dylib",
+      "sha256": "27d77014e6673e93c92469d9cbc4a25baf3032c611138f2f65f7d04417356697",
+      "size": 77796
+    },
+    {
+      "path": "libswiftCryptoTokenKit.dylib",
+      "sha256": "a936c86ade56c0075a545cc0fe3dcbb5c9bee3360c2a61ee9f9c803df02bca67",
+      "size": 62576
+    },
+    {
+      "path": "libswiftDarwin.dylib",
+      "sha256": "b42531393d0f8c73051e5ac386c06165eebd865a26fc8e610a667321921eb29a",
+      "size": 217628
+    },
+    {
+      "path": "libswiftDeveloperToolsSupport.dylib",
+      "sha256": "c2d5919c3ea76f39fecb3fca9ac956d724ec5f41de4c2d0712a63de0ba5848e9",
+      "size": 69136
+    },
+    {
+      "path": "libswiftDispatch.dylib",
+      "sha256": "23db891aab143b66c12e47cbabc6f108021d227a82e09c131ebcfcc151d77dfa",
+      "size": 682648
+    },
+    {
+      "path": "libswiftDistributed.dylib",
+      "sha256": "502523fa40e5ffbb0e6cac4cc33c0d60051d6e62f99927a3ff18da6a3cc26a89",
+      "size": 437472
+    },
+    {
+      "path": "libswiftFoundation.dylib",
+      "sha256": "32bd0521990160f7e1630eec4430d197f8f2364e2a6ae0a92d4801b3be246ee0",
+      "size": 7640220
+    },
+    {
+      "path": "libswiftGLKit.dylib",
+      "sha256": "4a4fcbd55b0e93ae39e906cdd58c6796ecf11fd64441f6c88bf2038e6c77f378",
+      "size": 68848
+    },
+    {
+      "path": "libswiftGameplayKit.dylib",
+      "sha256": "150842bda6c4a706dccc3deda2c321e33f184784d4c28245db1148a49be80886",
+      "size": 84400
+    },
+    {
+      "path": "libswiftIOKit.dylib",
+      "sha256": "91279d2fc3944bfe1f8fe699f493f0663d085776391a22d817bf34f513888ce2",
+      "size": 49664
+    },
+    {
+      "path": "libswiftIntents.dylib",
+      "sha256": "45d1bd48b5181c94450c7d1d8fa8ee9d62eb6e544dea7b9819176cb864f5fa94",
+      "size": 60688
+    },
+    {
+      "path": "libswiftMapKit.dylib",
+      "sha256": "402e060d275a1399f1a99e8bf7670c12544c406ffec50dcd89d0adac282f8c3f",
+      "size": 75008
+    },
+    {
+      "path": "libswiftMetal.dylib",
+      "sha256": "f43db78ef5434887bf42971cf99183e2fbe645a8efac31bc188c81aff867bdc7",
+      "size": 92624
+    },
+    {
+      "path": "libswiftMetalKit.dylib",
+      "sha256": "8de307b9368607dd93f66fdbf06327481de2af799836c05c1d41ed5ccfe39afc",
+      "size": 74000
+    },
+    {
+      "path": "libswiftModelIO.dylib",
+      "sha256": "9b037731b16e343ec060afc4d06ee1488874b82d672387b0954d2944bf9d776a",
+      "size": 77728
+    },
+    {
+      "path": "libswiftNaturalLanguage.dylib",
+      "sha256": "f667e7caf88430a78c13d55ee072d9d2d7954885763f60c1a65dbdd0b1ba3b92",
+      "size": 94672
+    },
+    {
+      "path": "libswiftNetwork.dylib",
+      "sha256": "82e3e72260d54bc16d77748386213611b675363cb427155b894d5ffb5eee982b",
+      "size": 435952
+    },
+    {
+      "path": "libswiftObjectiveC.dylib",
+      "sha256": "02eda24220ea84b4619d4aac66a6b1653dd4dc0b95522ac133dfa8a603c61493",
+      "size": 151608
+    },
+    {
+      "path": "libswiftObservation.dylib",
+      "sha256": "8a0b279a046cb0f4326bf9df81ef7d40043186423b9444031be92350e3a040dd",
+      "size": 377136
+    },
+    {
+      "path": "libswiftOpenCL.dylib",
+      "sha256": "e929e136767ea64fda83034ba041cddcf6baa830c111c6a13b7277cd727f6cd4",
+      "size": 46528
+    },
+    {
+      "path": "libswiftPhotos.dylib",
+      "sha256": "8e7e2c8415037d6a9819ed3a133f810ed39d88e5f108f49fa06734be17dd1ce3",
+      "size": 73040
+    },
+    {
+      "path": "libswiftQuartzCore.dylib",
+      "sha256": "998a3c70e79075b8c4cd08d8fa4e79e4ae9f94f828aac5336ad4e71ba570a557",
+      "size": 131468
+    },
+    {
+      "path": "libswiftRegexBuilder.dylib",
+      "sha256": "6e4632780668319e39559b394ddb1d9f4caa5de14aff9a0350f388ac7cb9823f",
+      "size": 339792
+    },
+    {
+      "path": "libswiftRemoteMirror.dylib",
+      "sha256": "6a6cb045029dddeaee97c638d9dcfdab537f7d088d4c8c644454c198a9013e62",
+      "size": 2966432
+    },
+    {
+      "path": "libswiftRuntime.dylib",
+      "sha256": "72ada1481c60fdbca91da8018e60ca3de2632b2ac07ff5a55587baf1dbc2bd2e",
+      "size": 2284912
+    },
+    {
+      "path": "libswiftSafariServices.dylib",
+      "sha256": "0806f7b1dd12f002246c1f04c8f61ac47a90166d3169545a84c9a7d42b553ffd",
+      "size": 63520
+    },
+    {
+      "path": "libswiftSceneKit.dylib",
+      "sha256": "13c8b2d1f71a2a7ef01c6ed04e70026b64f8602a2640de90cb036ed3aef95a01",
+      "size": 185408
+    },
+    {
+      "path": "libswiftSpriteKit.dylib",
+      "sha256": "ee151e81e01e4b8137326fc56a848e4e2a409ce96e02569eecabff26cd159624",
+      "size": 82560
+    },
+    {
+      "path": "libswiftSwiftLang.dylib",
+      "sha256": "dc2e2d338d5572c575824b0f44cbe9e17a83fd9351b612f0b7d4912d541d29be",
+      "size": 288688
+    },
+    {
+      "path": "libswiftSwiftOnoneSupport.dylib",
+      "sha256": "b06f89f5b6a5c184bc6ab92cfa59084abc5fd840d52839c7f7ada5326558852f",
+      "size": 853952
+    },
+    {
+      "path": "libswiftSynchronization.dylib",
+      "sha256": "339e8fd00a26972ff9c77d06113961a5e5e2a063ec56906ce9e56220724ac0a8",
+      "size": 288832
+    },
+    {
+      "path": "libswiftUniformTypeIdentifiers.dylib",
+      "sha256": "7f8ff4783e7f92b1410e93fb558ecb192ad3b3a75cc59f3b80c01c0d2dcdbaf4",
+      "size": 150380
+    },
+    {
+      "path": "libswiftVision.dylib",
+      "sha256": "434d0a58aac0d1e7426ad698d22ad754ba395ea812136000c854728e96c3090f",
+      "size": 64816
+    },
+    {
+      "path": "libswiftXCTest.dylib",
+      "sha256": "ab4d9ed79d65bea29083c58f5b8996e1db6630f274eb77d8b62c291388402d2b",
+      "size": 116080
+    },
+    {
+      "path": "libswiftXPC.dylib",
+      "sha256": "b8d68ef03e4b347be05022b3681e42048ed7f9a443c5e75cba6bffafbf861813",
+      "size": 186892
+    },
+    {
+      "path": "libswift_Builtin_float.dylib",
+      "sha256": "b1fae7d5d08fbe990ec5aeb059826c45f32c3c80f37944f58895c989e540d386",
+      "size": 135760
+    },
+    {
+      "path": "libswift_Concurrency.dylib",
+      "sha256": "c1156cf07fe461366e63b9de62c302c7c1b2347e96be4c81876e8936937e0c31",
+      "size": 1925536
+    },
+    {
+      "path": "libswift_Differentiation.dylib",
+      "sha256": "3b1706372d2828281563ae11b59cabaaecb00b83afc6b2cdcb70930a0faeede2",
+      "size": 1133392
+    },
+    {
+      "path": "libswift_RegexParser.dylib",
+      "sha256": "2141e2837fe7467d3f7991cd2334a20fb8a381f11a79b445a192f40a3d4f1231",
+      "size": 2685456
+    },
+    {
+      "path": "libswift_StringProcessing.dylib",
+      "sha256": "dae6ccd4315c4b24d8847dd63325cf8e8095021e483074c177c33cc69fb4a90b",
+      "size": 2036592
+    },
+    {
+      "path": "libswift_Volatile.dylib",
+      "sha256": "cb9f98548c143ca765f65e555762c2810f79360c5925c9ea43802bd20d9de279",
+      "size": 136352
+    },
+    {
+      "path": "libswiftos.dylib",
+      "sha256": "3578b353b9791ffbf54a3fb7e2a8d2f2150d91b4894a5628e2d4124492193fac",
+      "size": 176380
+    },
+    {
+      "path": "libswiftsimd.dylib",
+      "sha256": "feefb3b130f0fc6c57707ef3afdecbcd8c05e786999183296a357762d74907a4",
+      "size": 312720
+    }
+  ]
+}

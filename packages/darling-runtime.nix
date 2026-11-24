@@ -1,4 +1,4 @@
-{ pkgs }:
+{ pkgs, extension ? null, commandName ? "darling", profileName ? "darling" }:
 let
   release = pkgs.stdenvNoCC.mkDerivation {
     pname = "darling-official-runtime";
@@ -24,13 +24,19 @@ let
       python3 ${../modules/lickintosh/mac-apps/patch_corecrypto_exports.py} $out/libexec/darling/usr/lib/system/libcorecrypto.dylib
     '';
   };
+  runtime = if extension == null then release else pkgs.runCommand "darling-extended-runtime" {} ''
+    mkdir -p $out
+    cp -a ${release}/. $out/
+    chmod -R u+w $out
+    cp -a --remove-destination ${extension}/. $out/libexec/darling/
+  '';
   entry = pkgs.writeShellScript "quickintosh-darling-entry" ''
     export QUICKINTOSH_SETPRIV=${pkgs.util-linux}/bin/setpriv
     exec ${pkgs.python3}/bin/python3 ${../modules/lickintosh/mac-apps/session.py} --namespace-server
   '';
   fhs = pkgs.buildFHSEnv {
     name = "quickintosh-darling-fhs";
-    targetPkgs = p: [ release p.bash p.python3 p.coreutils p.util-linux p.glibc p.zlib p.libbsd p.libmd
+    targetPkgs = p: [ runtime p.bash p.python3 p.coreutils p.util-linux p.glibc p.zlib p.libbsd p.libmd
       p.xdg-user-dirs p.libcap p.libelf p.fuse p.systemdLibs p.dbus p.libxml2 p.openssl p.libedit
       p.libGL p.libGLU p.mesa p.vulkan-loader p.cairo p.freetype p.fontconfig
       p.libpng p.libjpeg8 p.libtiff p.giflib p.ffmpeg_6 p.llvmPackages_18.libllvm
@@ -47,7 +53,7 @@ let
     extraBwrapArgs = [ "--cap-add ALL" ''--bind "$QUICKINTOSH_DARLING_BASE" /usr/libexec/darling'' ];
     runScript = entry;
     profile = ''
-      export DPREFIX="''${DPREFIX:-$HOME/.local/share/quickintosh/darling/prefix}"
+      export DPREFIX="''${DPREFIX:-$HOME/.local/share/quickintosh/${profileName}/prefix}"
       export LANG=C.UTF-8
       export XDG_CACHE_HOME="''${XDG_CACHE_HOME:-$HOME/.cache}"
       export MESA_SHADER_CACHE_DIR="$XDG_CACHE_HOME/darling/mesa"
@@ -56,17 +62,26 @@ let
     '';
   };
 in pkgs.writeShellApplication {
-  name = "darling";
+  name = commandName;
   runtimeInputs = [ pkgs.util-linux pkgs.coreutils pkgs.python3 ];
   text = ''
     if [ "$(id -u)" = 0 ]; then echo 'Run Darling as your normal desktop user.' >&2; exit 1; fi
     QUICKINTOSH_HOST_UID="$(id -u)"
     QUICKINTOSH_HOST_GID="$(id -g)"
     export QUICKINTOSH_HOST_UID QUICKINTOSH_HOST_GID
-    export DPREFIX="''${DPREFIX:-$HOME/.local/share/quickintosh/darling/prefix}"
+    export DPREFIX="''${DPREFIX:-$HOME/.local/share/quickintosh/${profileName}/prefix}"
     mkdir -p "$(dirname "$DPREFIX")"
     export QUICKINTOSH_DARLING_FHS=${fhs}/bin/quickintosh-darling-fhs
-    export QUICKINTOSH_DARLING_SOURCE=${release}/libexec/darling
+    export QUICKINTOSH_DARLING_SOURCE=${runtime}/libexec/darling
+    ${pkgs.lib.optionalString (extension != null) ''
+      if [ "''${1:-}" = shell ]; then
+        shift
+        if [ "$#" -eq 0 ]; then set -- /bin/sh; fi
+        # These variables belong to the guest shell, not the Linux wrapper.
+        # shellcheck disable=SC2016
+        set -- shell /bin/sh -c 'export DYLD_LIBRARY_PATH="/usr/lib/swift''${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"; exec "$@"' quickintosh-swift "$@"
+      fi
+    ''}
     exec python3 ${../modules/lickintosh/mac-apps/session.py} "$@"
   '';
 }

@@ -1,11 +1,12 @@
 import importlib.util
+import json
 from pathlib import Path
 import plistlib
 import struct
 import subprocess
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 SOURCE = Path(__file__).resolve().parents[1] / 'modules/lickintosh/mac-apps/manager.py'
 spec = importlib.util.spec_from_file_location('mac_apps', SOURCE)
@@ -19,7 +20,8 @@ class Applications(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         for name, value in [('DATA', self.root / 'data'), ('APPLICATIONS', self.root / 'data/Applications'),
-                            ('DESKTOPS', self.root / 'desktops'), ('PREFIX', self.root / 'prefix')]:
+                            ('DESKTOPS', self.root / 'desktops'), ('PREFIX', self.root / 'prefix'),
+                            ('DARLING_COMMAND', 'darling')]:
             patcher = patch.object(manager, name, value)
             patcher.start()
             self.addCleanup(patcher.stop)
@@ -115,6 +117,61 @@ class Applications(unittest.TestCase):
                 with manager.disk_image(self.root / 'Example.dmg'):
                     pass
             cleanup.assert_not_called()
+
+    def test_experimental_runtime_never_silently_falls_back(self):
+        with patch('sys.argv', ['quickintosh-mac', '--runtime', 'experimental', 'doctor']), \
+             patch.object(manager.shutil, 'which', return_value=None), \
+             patch.object(manager, 'run') as run:
+            with self.assertRaisesRegex(RuntimeError, 'Experimental runtime is not installed'):
+                manager.main()
+            run.assert_not_called()
+
+    def test_experimental_runtime_has_separate_prefix(self):
+        with patch('sys.argv', ['quickintosh-mac', '--runtime', 'experimental', 'doctor']), \
+             patch.dict(manager.os.environ, {}, clear=True), \
+             patch.object(manager.shutil, 'which', return_value='/test/darling-experimental'), \
+             patch.object(manager, 'run') as run:
+            manager.main()
+            self.assertEqual(manager.DARLING_COMMAND, 'darling-experimental')
+            self.assertEqual(manager.PREFIX, Path.home() / '.local/share/quickintosh/darling-experimental/prefix')
+            run.assert_called_once_with('/usr/bin/uname', '-s')
+
+    def test_swift_payload_manifest_is_pinned_and_path_bounded(self):
+        manifest = json.loads((SOURCE.parents[3] / 'packages/darling-swift-payload.json').read_text())
+        self.assertRegex(manifest['revision'], r'^[a-f0-9]{40}$')
+        paths = set()
+        for item in manifest['files']:
+            path = Path(item['path'])
+            self.assertFalse(path.is_absolute())
+            self.assertNotIn('..', path.parts)
+            self.assertNotIn(str(path), paths)
+            paths.add(str(path))
+            self.assertRegex(item['sha256'], r'^[a-f0-9]{64}$')
+            self.assertGreater(item['size'], 0)
+        self.assertIn('Combine.framework/Versions/A/Combine', paths)
+        self.assertIn('libswiftCore.dylib', paths)
+
+    def test_loader_abort_is_failure_even_if_transport_returns_zero(self):
+        app = self.bundle()
+        def launch(command, **kwargs):
+            kwargs['stdout'].write(b'dyld: Library not loaded: /System/Library/Frameworks/CryptoKit.framework/Versions/A/CryptoKit\n')
+            kwargs['stdout'].flush()
+            return Mock(wait=Mock(return_value=0))
+        with patch.object(manager.Path, 'home', return_value=self.root), \
+             patch.object(manager, 'run'), patch.object(manager.subprocess, 'Popen', side_effect=launch):
+            with self.assertRaisesRegex(RuntimeError, 'CryptoKit'):
+                manager.launch(app)
+
+    def test_loader_error_is_reported_while_transport_is_still_exiting(self):
+        app = self.bundle()
+        def launch(command, **kwargs):
+            kwargs['stdout'].write(b'dyld: Symbol not found: missing_runtime_api\n')
+            kwargs['stdout'].flush()
+            return Mock(wait=Mock(side_effect=subprocess.TimeoutExpired(command, 3)))
+        with patch.object(manager.Path, 'home', return_value=self.root), \
+             patch.object(manager, 'run'), patch.object(manager.subprocess, 'Popen', side_effect=launch):
+            with self.assertRaisesRegex(RuntimeError, 'missing_runtime_api'):
+                manager.launch(app)
 
 
 if __name__ == '__main__':

@@ -18,6 +18,7 @@ APPLICATIONS = DATA / 'Applications'
 DESKTOPS = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share')) / 'applications'
 PREFIX = Path(os.environ.get('DPREFIX', Path.home() / '.local/share/quickintosh/darling/prefix'))
 GUI = False
+DARLING_COMMAND = 'darling'
 
 
 @contextmanager
@@ -87,7 +88,7 @@ def run(*args, capture=False):
     marker = '__QUICKINTOSH_STATUS_' + uuid.uuid4().hex + '__'
     command = ' '.join(shlex.quote(str(arg)) for arg in args)
     script = command + '; result=$?; printf "\\n' + marker + '%s\\n" "$result"; exit "$result"'
-    process = subprocess.Popen(['darling', 'shell', '/bin/sh', '-c', script], text=True, stdout=subprocess.PIPE)
+    process = subprocess.Popen([DARLING_COMMAND, 'shell', '/bin/sh', '-c', script], text=True, stdout=subprocess.PIPE)
     progress = None
     try:
         try:
@@ -207,17 +208,23 @@ def launch(path):
     log_root = Path.home() / '.local/state/quickintosh/mac-apps'
     log_root.mkdir(parents=True, exist_ok=True)
     key = hashlib.sha256(str(path).encode()).hexdigest()[:20]
-    log_path = log_root / (key + '.log')
+    log_path = log_root / (key + ('-experimental' if DARLING_COMMAND == 'darling-experimental' else '') + '.log')
     with log_path.open('wb') as log:
-        process = subprocess.Popen(['darling', 'shell', guest(path / 'Contents/MacOS' / info['executable'])],
+        process = subprocess.Popen([DARLING_COMMAND, 'shell', guest(path / 'Contents/MacOS' / info['executable'])],
                                    stdin=subprocess.DEVNULL, stdout=log, stderr=log,
                                    start_new_session=True)
     try:
-        status = process.wait(timeout=0.5)
+        status = process.wait(timeout=3)
     except subprocess.TimeoutExpired:
-        return
-    if status:
-        raise RuntimeError('The macOS app could not start. Log: ' + str(log_path) + '\n' + log_path.read_text(errors='replace')[-3000:])
+        status = None
+    with log_path.open('rb') as stream:
+        stream.seek(0, os.SEEK_END)
+        stream.seek(max(0, stream.tell() - 8192))
+        output = stream.read(8192).decode(errors='replace')
+    loader_failed = any(line.startswith(('dyld: Library not loaded:', 'dyld: Symbol not found:',
+                                         'abort_with_payload: reason:')) for line in output.splitlines())
+    if status or loader_failed:
+        raise RuntimeError('The macOS app could not start. Log: ' + str(log_path) + '\n' + output)
 
 
 def dialog(*args):
@@ -272,22 +279,30 @@ def install(source, app_choice=None):
 
 
 def main():
-    global GUI
+    global GUI, DARLING_COMMAND, PREFIX
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', nargs='?', default='library', choices=['library', 'install', 'open', 'list', 'terminal', 'doctor', 'remove', 'sync', 'eject'])
     parser.add_argument('path', nargs='?')
     parser.add_argument('--app', help='Bundle name to install from a disk image containing several apps')
+    parser.add_argument('--runtime', choices=['stable', 'experimental'], default='stable',
+                        help='Experimental Swift/Combine runtime uses a separate Darwin prefix')
     args = parser.parse_args()
+    DARLING_COMMAND = 'darling-experimental' if args.runtime == 'experimental' else 'darling'
+    if args.runtime == 'experimental':
+        if not shutil.which(DARLING_COMMAND):
+            raise RuntimeError('Experimental runtime is not installed. Build the darling-experimental package first.')
+        PREFIX = Path(os.environ.get('DPREFIX', Path.home() / '.local/share/quickintosh/darling-experimental/prefix'))
     GUI = bool(os.environ.get('DISPLAY')) and (args.action == 'library' or
           (args.action in ('open', 'install') and not sys.stdin.isatty()))
     if args.action == 'doctor':
-        print('Runtime:', shutil.which('darling') or 'NOT INSTALLED')
+        print('Runtime:', shutil.which(DARLING_COMMAND) or 'NOT INSTALLED')
+        print('Darwin prefix:', PREFIX)
         print('DMG reader:', shutil.which('darling-dmg') or 'NOT INSTALLED (7-Zip fallback)')
         print('Host FUSE:', 'available' if os.access('/dev/fuse', os.R_OK | os.W_OK) else 'unavailable (7-Zip fallback)')
         print('Applications:', APPLICATIONS)
         run('/usr/bin/uname', '-s')
     elif args.action == 'terminal':
-        os.execvp('kitty', ['kitty', '--title', 'Darling Terminal', 'darling', 'shell'])
+        os.execvp('kitty', ['kitty', '--title', 'Darling Terminal', DARLING_COMMAND, 'shell'])
     elif args.action == 'list':
         print(json.dumps(installed_apps(), ensure_ascii=False, indent=2))
     elif args.action == 'sync':
@@ -311,7 +326,7 @@ def main():
             APPLICATIONS.mkdir(parents=True, exist_ok=True)
             subprocess.run(['xdg-open', str(APPLICATIONS)], check=True)
         elif choice == 'Darling Terminal':
-            os.execvp('kitty', ['kitty', '--title', 'Darling Terminal', 'darling', 'shell'])
+            os.execvp('kitty', ['kitty', '--title', 'Darling Terminal', DARLING_COMMAND, 'shell'])
         elif choice == 'Check runtime':
             result = run('/usr/bin/uname', '-s', capture=True)
             dialog('--info', '--text=' + result)

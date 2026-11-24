@@ -111,6 +111,90 @@ macOS 13. Installing the disk-image reader does not provide missing macOS
 frameworks or make this Arc release runnable. The original DMG and installed
 bundle are preserved; no fake framework or version spoof is used.
 
+## Separate development runtime
+
+An optional **development runtime**, not a supported Arc runtime, overlays the
+official Darling release with Swift libraries, the OpenCombine-based Combine
+build and the swift-crypto-based CryptoKit build published by VibeDarling, plus
+a source-built GameplayKit subset. It is not a full build of VibeDarling. Payload
+revision `78a04e469481027bf4294022a4bffc71a41886d0` and each LFS object's SHA-256
+are recorded in `packages/darling-swift-payload.json`; no application binaries
+or Apple operating-system frameworks are committed to this repository.
+
+```sh
+nix build .#darling-experimental -o result-darling-experimental
+./result-darling-experimental/bin/darling-experimental shell /usr/bin/uname -s
+```
+
+To add the command to the optional NixOS macOS-app integration:
+
+```nix
+quickintosh.macApps.enable = true;
+quickintosh.macApps.experimental.enable = true;
+```
+
+Then select it explicitly:
+
+```sh
+quickintosh-mac --runtime experimental doctor
+quickintosh-mac --runtime experimental open '/path/to/Example.app'
+darling-experimental --stop
+```
+
+The default `darling` command and app launchers keep using the stable runtime.
+The experimental command uses
+`~/.local/share/quickintosh/darling-experimental/prefix`; it does not reuse or
+upgrade the stable prefix. An explicit `DPREFIX` overrides either default, so
+do not point both commands at the same active prefix. Applications are still
+host-user programs, not a security sandbox.
+
+The package builds a small `libswiftCoreCompat` containing forwarding aliases
+and force-load markers, and supplies the Swift library search path **inside
+guest shells only**. It intentionally omits the upstream compatibility file's
+UI/metadata placeholders that return zero rather than implementing an API.
+Component licenses and the payload manifest ship under
+`share/doc/darling-experimental`.
+
+In the private test environment, Darwin commands ran and Python's `ctypes`
+loaded the real Combine framework after resolving its auxiliary-library and
+Swift search-path dependencies. This is a loader test, not proof of complete
+Combine behavior. Arc progressed past missing Combine, CryptoKit and GameplayKit
+to missing NaturalLanguage; no Arc browser window was established. Intel import
+analysis of the Arc 1.174.2 main executable found 33 CryptoKit and 1,615 SwiftUI
+references. Those are
+imported-reference counts, not counts of implemented features. The pinned
+CryptoKit executable was verified to include Intel and ARM slices,
+despite the upstream installer still restricting it to ARM. The integration
+installs that real executable rather than substituting cryptographic operations.
+Generic stubs would not implement the remaining Swift types, language analysis
+or user-interface behavior it needs.
+
+The authored GameplayKit subset supplies `GKRandomSource` and
+`GKMersenneTwisterRandomSource`: deterministic MT19937-64 state, seeding, state
+copy, bounded integers with rejection sampling, floating-point/Boolean draws and
+Fisher–Yates shuffling. The engine follows Apple's public description of
+`std::mt19937_64` compatibility. The choice of low 32 bits for `nextInt` and high
+24 bits for `nextUniform` is a range-correct mapping; exact parity of those
+projections with Apple's implementation was not measured. Encoding/decoding and
+the rest of GameplayKit are not supplied. The fallback `GKRandomSource` uses the
+hosted Darwin `arc4random_buf`, not a constant result.
+
+`tests/test_gameplaykit.py` compares 50,000 outputs with the independent C++
+standard-library engine. Its optional Darwin test creates and shuts down a
+separate temporary prefix, loads Combine/CryptoKit/GameplayKit and exercises seed
+replay, state copies, bounds, floats, Booleans and non-mutating shuffling:
+
+```sh
+QUICKINTOSH_TEST_CXX=/path/to/c++ \
+QUICKINTOSH_TEST_DARLING=/path/to/darling-experimental \
+python3 tests/test_gameplaykit.py
+```
+
+These tests do not claim that the full Arc application starts or renders pages.
+The launcher also checks loader diagnostics during its startup grace period,
+even if the Darling transport returns zero or is still exiting. Log reads are
+bounded; stable and experimental launch logs use separate filenames.
+
 The Nix recipe also repairs the release's missing private-extern corecrypto
 exports, publishing the existing function addresses required by Security/AppKit.
 It does not substitute cryptographic implementations. A writable, versioned

@@ -4,6 +4,22 @@ from pathlib import Path
 from PIL import Image
 from backend import save_png,filename,Worker
 class CaptureTests(unittest.TestCase):
+ def test_shell_scale_keeps_pixels_window_rectangles_and_cursor_aligned(self):
+  import json
+  with tempfile.TemporaryDirectory() as private:
+   worker=Worker(private)
+   def read(command):
+    if command[1]=='monitors':return json.dumps([dict(name='test',width=1920,height=1080,scale=1,x=100,y=50,focused=True,activeWorkspace={'id':1},specialWorkspace={'id':0})])
+    if command[1]=='cursorpos':return json.dumps(dict(x=400,y=350))
+    return json.dumps([dict(at=[250,200],size=[600,450],workspace={'id':1},mapped=True,hidden=False)])
+   def capture(command,**kwargs):Image.new('RGB',(1920,1080),'blue').save(command[-1])
+   with patch.dict('os.environ',{'QT_SCALE_FACTOR':'1.5'}),patch('backend.output',side_effect=read),patch('backend.run',side_effect=capture),patch('backend.emit'):
+    worker.capture(dict(mode='region',config={}))
+   self.assertEqual(worker.frame.size,(1920,1080))
+   self.assertEqual((worker.meta['width'],worker.meta['height']),(1280,720))
+   self.assertEqual(worker.meta['factor'],1.5)
+   self.assertEqual((worker.meta['cursorX'],worker.meta['cursorY']),(200,200))
+   self.assertEqual(worker.meta['windows'],[dict(x=100,y=100,w=400,h=300)])
  def test_save_does_not_overwrite_and_templates_are_safe(self):
   with tempfile.TemporaryDirectory() as directory:
    src=Path(directory)/'source.png';Image.new('RGB',(31,19),'red').save(src)

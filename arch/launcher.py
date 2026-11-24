@@ -53,10 +53,20 @@ def main(argv):
     if not own_session and ((name in gui and not inspect_only) or lifecycle or name=='quickintosh-session-ready'):
         raise RuntimeError('Enter the isolated Quickintosh session first; refusing to start/control a desktop inside another session')
     if name=='quickintosh-doctor':
+        pam=subprocess.run(['/usr/bin/python3',str(bundle/'arch/pam_setup.py'),'--doctor'],text=True,stdout=subprocess.PIPE,check=False)
+        try:pam_status=json.loads(pam.stdout)
+        except ValueError:pam_status={'ready':False,'error':'Host PAM diagnosis failed'}
         checks={k:shutil.which(k,path=env['PATH']) for k in ['Hyprland','hyprctl','lickintosh','rice-shell','playerctl','matugen','grim','wl-copy']}
+        checks['hyprland_lua']=Path(data['config']).is_file()
+        checks['special_workspace_helpers']=all((ROOT/'scripts'/name).is_file() for name in ['special-toggle.sh','toggle-special-left.sh','toggle-special-right.sh','toggle-special-public.sh','toggle-special-scratchpad.sh'])
         status={'commands':checks,'bundle':str(bundle),'graphics':data.get('graphics'),
-                'pam_lock':Path('/etc/pam.d/lickintosh-lock').is_file(),'session':os.environ.get('XDG_CURRENT_DESKTOP','')}
-        print(json.dumps(status,indent=2));return 0 if all(checks.values()) else 1
+                'pam_lock':Path('/etc/pam.d/lickintosh-lock').is_file(),'host_pam':pam_status,'session':os.environ.get('XDG_CURRENT_DESKTOP','')}
+        print(json.dumps(status,indent=2));return 0 if all(checks.values()) and pam_status.get('ready') else 1
+    if name=='quickintosh-auth-check':
+        script=bundle/'arch/auth-check.py'
+        clean=dict(os.environ)
+        for key in ('LD_LIBRARY_PATH','LD_PRELOAD','PYTHONPATH','PYTHONHOME'):clean.pop(key,None)
+        os.execve('/usr/bin/python3',['python3','-I',str(script)],clean)
     if name=='quickintosh-session':
         if args:raise RuntimeError('Session accepts no arguments')
         if os.environ.get('WAYLAND_DISPLAY') or os.environ.get('DISPLAY'):

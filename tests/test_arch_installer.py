@@ -54,6 +54,14 @@ class Install(unittest.TestCase):
  def test_graphics_missing_fails_explicitly(self):
   with self.assertRaises(RuntimeError):launcher.graphics_command(['test'],{'graphics':str(self.bundle)})
 class Pam(unittest.TestCase):
+ def test_all_lua_bound_scripts_are_versioned(self):
+  import re
+  helpers=set()
+  for path in (ROOT/'modules/hyprland-lua').glob('*.lua'):
+   helpers.update(re.findall(r'/home/pg/scripts/([A-Za-z0-9_.-]+)',path.read_text()))
+  self.assertTrue(helpers)
+  missing=[name for name in helpers if not (ROOT/'modules/infinite-desktop'/name).is_file()]
+  self.assertEqual(missing,[])
  def test_host_modules_absolute_and_includes_preserved(self):
   spec=importlib.util.spec_from_file_location('pam_setup',ROOT/'arch/pam_setup.py');pam=importlib.util.module_from_spec(spec);spec.loader.exec_module(pam)
   with tempfile.TemporaryDirectory() as d:

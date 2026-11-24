@@ -1,8 +1,14 @@
 """Private stdio capture worker. Native Quickshell owns selection and annotation."""
-import json,os,sys,subprocess,tempfile,time,uuid,signal,ctypes,threading,re,colorsys,urllib.parse,urllib.request
+import json,os,sys,subprocess,tempfile,time,uuid,signal,ctypes,threading,re,colorsys,urllib.parse,urllib.request,math
 from pathlib import Path
 from datetime import datetime
 from PIL import Image,ImageFilter
+
+def interface_scale():
+    try:
+        value=float(os.environ.get('QT_SCALE_FACTOR','1'))
+        return value if math.isfinite(value) and .75<=value<=2 else 1
+    except (ValueError,TypeError):return 1
 
 def run(args,**kwargs):return subprocess.run(args,check=True,timeout=kwargs.pop('timeout',15),**kwargs)
 def output(args):return subprocess.check_output(args,text=True,timeout=8)
@@ -79,15 +85,15 @@ class Worker:
         monitor=next((m for m in monitors if m['x']<=cursor['x']<m['x']+logical(m)[0] and m['y']<=cursor['y']<m['y']+logical(m)[1]),next((m for m in monitors if m.get('focused')),monitors[0]))
         self.session=uuid.uuid4().hex;path=self.root/(self.session+'.png');run(['grim','-o',monitor['name'],str(path)],stderr=subprocess.PIPE)
         with Image.open(path) as raw:self.frame=raw.convert('RGB')
-        w,h=logical(monitor);factor=self.frame.width/w
+        w,h=logical(monitor);ui_scale=interface_scale();w/=ui_scale;h/=ui_scale;factor=self.frame.width/w
         clients=json.loads(output(['hyprctl','clients','-j']));active=monitor.get('activeWorkspace',{}).get('id');special=monitor.get('specialWorkspace',{}).get('id',0);visible_workspaces={m.get(key,{}).get('id') for m in monitors for key in ['activeWorkspace','specialWorkspace']}
         clients=sorted(clients,key=lambda c:((4000 if c.get('pinned') else 0)+(2000 if c.get('workspace',{}).get('id')==special and special else 0)+(1000 if c.get('floating') else 0)-c.get('focusHistoryID',9999)),reverse=True)
         windows=[]
         for c in clients:
             if c.get('hidden') or c.get('mapped') is False or (not c.get('pinned') and c.get('workspace',{}).get('id') not in visible_workspaces):continue
-            x,y=c.get('at',[0,0]);cw,ch=c.get('size',[0,0]);x-=monitor['x'];y-=monitor['y'];x2=min(w,x+cw);y2=min(h,y+ch);x=max(0,x);y=max(0,y)
+            x,y=c.get('at',[0,0]);cw,ch=c.get('size',[0,0]);x=(x-monitor['x'])/ui_scale;y=(y-monitor['y'])/ui_scale;cw/=ui_scale;ch/=ui_scale;x2=min(w,x+cw);y2=min(h,y+ch);x=max(0,x);y=max(0,y)
             if x2>x and y2>y:windows.append(dict(x=x,y=y,w=x2-x,h=y2-y))
-        self.meta=dict(filename=filename(request.get('config',{}),self.frame.size,'region'),session=self.session,path=str(path),exportPath=str(self.root/(self.session+'-export.png')),monitor=monitor['name'],width=w,height=h,pixelWidth=self.frame.width,pixelHeight=self.frame.height,factor=factor,windows=windows,cursorX=cursor['x']-monitor['x'],cursorY=cursor['y']-monitor['y'])
+        self.meta=dict(filename=filename(request.get('config',{}),self.frame.size,'region'),session=self.session,path=str(path),exportPath=str(self.root/(self.session+'-export.png')),monitor=monitor['name'],width=w,height=h,pixelWidth=self.frame.width,pixelHeight=self.frame.height,factor=factor,uiScale=ui_scale,windows=windows,cursorX=(cursor['x']-monitor['x'])/ui_scale,cursorY=(cursor['y']-monitor['y'])/ui_scale)
         config=request.get('config',{});mode=request.get('mode','region')
         if mode=='recordFull':
             self.start_record([0,0,w,h],config);return
@@ -102,11 +108,12 @@ class Worker:
         monitors=json.loads(output(['hyprctl','monitors','-j']));monitor=next((m for m in monitors if m.get('focused')),monitors[0])
         sw,sh=monitor['width']/monitor.get('scale',1),monitor['height']/monitor.get('scale',1)
         if int(monitor.get('transform',0))%2:sw,sh=sh,sw
+        ui_scale=interface_scale();sw/=ui_scale;sh/=ui_scale
         fit=min(1,(sw-140)/image.width,(sh-180)/image.height);dw,dh=image.width*fit,image.height*fit;factor=min(2,1/fit)
         x,y=(sw-dw)/2,(sh-dh)/2
         self.prune();self.session=uuid.uuid4().hex;path=self.root/(self.session+'.png')
         self.frame=Image.new('RGB',(round(sw*factor),round(sh*factor)),'#161619');image=image.resize((round(dw*factor),round(dh*factor)),Image.Resampling.LANCZOS);self.frame.paste(image,(round(x*factor),round(y*factor)),image);self.frame.save(path)
-        self.meta=dict(filename=Path(source).stem+' annotated.png',session=self.session,path=str(path),exportPath=str(self.root/(self.session+'-export.png')),monitor=monitor['name'],width=sw,height=sh,pixelWidth=self.frame.width,pixelHeight=self.frame.height,factor=factor,windows=[],cursorX=sw/2,cursorY=sh/2,editSelection=dict(x=x,y=y,w=dw,h=dh))
+        self.meta=dict(filename=Path(source).stem+' annotated.png',session=self.session,path=str(path),exportPath=str(self.root/(self.session+'-export.png')),monitor=monitor['name'],width=sw,height=sh,pixelWidth=self.frame.width,pixelHeight=self.frame.height,factor=factor,uiScale=ui_scale,windows=[],cursorX=sw/2,cursorY=sh/2,editSelection=dict(x=x,y=y,w=dw,h=dh))
         emit('prepared',mode='annotate',**self.meta)
     def command(self,r):
         action=r.get('action')
@@ -178,7 +185,7 @@ class Worker:
                 if isinstance(error,ValueError) and str(error)=='Another screen recorder is active':raise
         monitors=json.loads(output(['hyprctl','monitors','-j']));monitor=next((m for m in monitors if m['name']==self.meta['monitor']),None)
         if monitor is None:raise ValueError('Capture display is unavailable')
-        x,y,w,h=box;geometry=f'{int(monitor["x"]+x)},{int(monitor["y"]+y)} {max(2,int(w))}x{max(2,int(h))}'
+        ui_scale=self.meta.get('uiScale',1);x,y,w,h=[float(value)*ui_scale for value in box];geometry=f'{int(monitor["x"]+x)},{int(monitor["y"]+y)} {max(2,int(w))}x{max(2,int(h))}'
         directory=Path(config.get('videoDirectory','~/Videos/Screencasts')).expanduser();directory.mkdir(parents=True,exist_ok=True)
         name='Recording_'+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_'+uuid.uuid4().hex[:4]
         source=directory/('.'+name+'.mp4');self.record_output=directory/(name+('.gif' if config.get('recordFormat')=='gif' else '.mp4'));self.record_config=dict(config,source=str(source))

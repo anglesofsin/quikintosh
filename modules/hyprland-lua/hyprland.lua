@@ -1,3 +1,5 @@
+-- Quickintosh entrypoint: packaged together with modules/infinite-desktop.
+-- Arch installs this at ~/.config/quickintosh/hypr/hyprland.lua and rewrites helper paths.
 hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_THEME", "Bibata-Modern-Classic")

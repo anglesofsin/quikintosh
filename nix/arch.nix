@@ -29,7 +29,12 @@ in pkgs.runCommand "quickintosh-arch-bundle" {} ''
   ln -s ${runtime} $out/runtime
   cp -r ${find "hyprland-config"} $out/hypr
   cp -r ${find "infinite-desktop-scripts"} $out/scripts
+  test -f $out/hypr/hyprland.lua
+  for helper in special-toggle.sh toggle-special-left.sh toggle-special-right.sh toggle-special-public.sh toggle-special-scratchpad.sh toggle-stream-hide.sh canvas-zoom-reset.sh infinite-desktop-scroll-sidemove.sh; do
+    test -x "$out/scripts/$helper" || { echo "Missing workspace helper: $helper" >&2; exit 1; }
+  done
   cp ${config.environment.etc."nixos-rice/shells.json".source} $out/config/shells.json
   cp ${../modules/rice/catalog.json} $out/config/rices.json
   cp -r ${../arch}/. $out/arch/
+  cp ${../modules/lickintosh/arch-pam.py} $out/arch/host-pam.py
 ''

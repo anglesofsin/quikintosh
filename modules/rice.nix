@@ -232,9 +232,14 @@ let
       qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o $out/components/icon-style.frag.qsb $out/components/icon-style.frag
       qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o $out/components/bar-tint.frag.qsb $out/components/bar-tint.frag
 
+      ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/lock-state-sync.py} $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/locale-auth-integrate.py} $out ${./lickintosh/arch-pam.py}
       ${pkgs.python3}/bin/python3 ${./lickintosh/localize-ui.py} $out ${./lickintosh/english-ui.json}
       cp -r ${../defaults} $out/quickintosh-defaults
       ${pkgs.python3}/bin/python3 ${./lickintosh/branding.py} $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/i18n}/integrate.py $out
       patchShebangs $out/tools $out/rosa/helpers
     '';
   };
@@ -275,6 +280,8 @@ let
       export GI_TYPELIB_PATH="${pkgs.glib.out}/lib/girepository-1.0:''${GI_TYPELIB_PATH:-}"
       export GIO_EXTRA_MODULES="${pkgs.gvfs}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"
       export XDG_DATA_DIRS="${lickintoshRoot}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
+      QT_SCALE_FACTOR="$(${pkgs.python3}/bin/python3 ${./lickintosh/interface-scale.py})"
+      export QT_SCALE_FACTOR
       exec ${lickintoshQs}/bin/qs -p ${lickintoshRoot} "$@"
     '';
   }).overrideAttrs { version = lickintoshRoot.version; };

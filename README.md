@@ -16,6 +16,7 @@ Este repositório contém as fontes da shell, os assets do upstream, as modifica
 - **Quickshot:** seleção de região, captura de monitor, edição, OCR para o clipboard, color picker, paleta, QR, régua, lupa e gravação. Capturas são salvas na Mesa por padrão.
 - **Mesa e widgets:** fotos/GIFs, relógios personalizáveis, clima, estilos de fundo e edição por arrastar; tamanho dos itens configurável.
 - **Settings:** aparência, ícones claros/escuros/tintados, cores do wallpaper, Liquid Glass, som, rede, privacidade, clima compartilhado, widgets, Dock, hot corners e outras opções.
+- **Idioma e escala:** português brasileiro com busca localizada e escala própria da shell de 75% a 200%; [como configurar](docs/LANGUAGE-AND-SCALE.md).
 - **Temas dos aplicativos:** templates/Matugen ao trocar wallpaper, com restauração de preferências ao sair desta rice.
 - **Hyprland:** atalhos por shell, janelas flutuantes com geometria persistida e patches do compositor necessários ao vidro e ao scrolling.
 - **Troca de shell:** Quickintosh, Noctalia C++, Noctalia Legacy, Caelestia e eqSh, com roteamento dos atalhos compatíveis.

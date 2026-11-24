@@ -1,0 +1,1047 @@
+About|Sobre
+Accessibility|Acessibilidade
+Account|Conta
+Account Picture|Foto da conta
+Accent Color|Cor de destaque
+Accent color|Cor de destaque
+Action|Ação
+Actions|Ações
+Active|Ativo
+Active window opacity|Opacidade da janela ativa
+Actual size|Tamanho real
+Add|Adicionar
+Add Controls|Adicionar controles
+Add Widget|Adicionar widget
+Add to favorites|Adicionar aos favoritos
+Alarm|Alarme
+Alarms|Alarmes
+All|Todos
+All Controls|Todos os controles
+All desktops|Todas as mesas
+All done|Tudo pronto
+Allow Notification Banners|Permitir banners de notificação
+Always|Sempre
+Animated wallpaper|Papel de parede animado
+Appearance|Aparência
+Applications|Aplicativos
+Apply|Aplicar
+Apply & Reload|Aplicar e recarregar
+Apply Shell Scale|Aplicar escala da interface
+Archive|Arquivo compactado
+Assign to|Atribuir a
+Attach|Anexar
+Audio|Áudio
+Audio output|Saída de áudio
+Automatic|Automático
+Automatically|Automaticamente
+Automatically hide and show the Dock|Ocultar e mostrar o Dock automaticamente
+Automatically hide and show the bar|Ocultar e mostrar a barra automaticamente
+Available|Disponível
+Available Controls|Controles disponíveis
+Back|Voltar
+Background|Fundo
+Backups|Backups
+Banners|Banners
+Battery|Bateria
+Battery health|Saúde da bateria
+Battery level|Nível da bateria
+Behavior|Comportamento
+Black|Preto
+Blue|Azul
+Bluetooth Settings…|Ajustes de Bluetooth…
+Blur|Desfoque
+Blur settings|Ajustes de desfoque
+Brightness|Brilho
+Brightness threshold|Limite de brilho
+Calculator|Calculadora
+Calculator (Enter to copy)|Calculadora (Enter para copiar)
+Calendar|Calendário
+Camera|Câmera
+Camera active|Câmera em uso
+Cancel|Cancelar
+Cancelled|Cancelado
+Can't turn off the only active display.|Não é possível desligar a única tela ativa.
+Capacity|Capacidade
+Categories|Categorias
+Center opacity|Opacidade central
+Certificates & Keys|Certificados e chaves
+Change Password…|Alterar senha…
+Change model|Alterar modelo
+Change provider|Alterar provedor
+Charge limit|Limite de carga
+Charge to|Carregar até
+Charging|Carregando
+Check|Verificar
+Checking…|Verificando…
+Choose|Escolher
+Choose an image|Escolher uma imagem
+Classic blur|Desfoque clássico
+Clear|Transparente
+Clear All History|Apagar todo o histórico
+Clear conversation|Limpar conversa
+Clear sky|Céu limpo
+Clipboard|Área de transferência
+Clock|Relógio
+Clock Appearance|Aparência do relógio
+Clock Display|Exibição do relógio
+Clock not synchronized|Relógio não sincronizado
+Clock synchronized|Relógio sincronizado
+Clock Synchronization|Sincronização do relógio
+Close|Fechar
+Close (Esc)|Fechar (Esc)
+Close Tab|Fechar aba
+Close Window|Fechar janela
+Color|Cor
+Color management|Gerenciamento de cores
+Color picker|Seletor de cores
+Colour temperature|Temperatura da cor
+Coming soon|Em breve
+Command Palette|Paleta de comandos
+Command list|Lista de comandos
+Completed|Concluído
+Components|Componentes
+Computer name|Nome do computador
+Computer Name|Nome do computador
+Configuration|Configuração
+Confirm|Confirmar
+Connect|Conectar
+Connected|Conectado
+Connecting…|Conectando…
+Connectivity|Conectividade
+Continue|Continuar
+Control Center|Central de Controle
+Conversation history|Histórico de conversas
+Copied image history|Histórico de imagens copiadas
+Copied text history|Histórico de textos copiados
+Copy|Copiar
+Copy Image|Copiar imagem
+Copy Path|Copiar caminho
+Custom|Personalizado
+Custom Color|Cor personalizada
+Custom instructions|Instruções personalizadas
+Cut|Recortar
+Dark|Escuro
+Dark Mode|Modo escuro
+Darken glass over bright wallpapers|Escurecer o vidro sobre papéis de parede claros
+Darkening strength|Intensidade de escurecimento
+Data|Dados
+Databases|Bancos de dados
+Date & Time|Data e hora
+Date & Time Format|Formato de data e hora
+Default|Padrão
+Default Applications|Aplicativos padrão
+Default web browser|Navegador padrão
+Delete|Apagar
+Delete a conversation|Apagar uma conversa
+Delete all history|Apagar todo o histórico
+Delete an API key|Apagar uma chave de API
+Dependencies|Dependências
+Deselect|Desmarcar
+Desktop|Mesa
+Desktop & Dock|Mesa e Dock
+Desktop (dark mode)|Mesa (modo escuro)
+Desktop (light mode)|Mesa (modo claro)
+Details|Detalhes
+Details…|Detalhes…
+Detected displays|Telas detectadas
+Development|Desenvolvimento
+Device|Dispositivo
+Devices|Dispositivos
+Disable|Desativar
+Disabled|Desativado
+Disconnect|Desconectar
+Display|Tela
+Display Name|Nome de exibição
+Displayed items|Itens exibidos
+Displays|Telas
+Dock scale|Escala do Dock
+Doctor|Diagnóstico
+Documents|Documentos
+Documents & Files|Documentos e arquivos
+Done|Concluído
+Done.|Concluído.
+Downloads|Downloads
+Duplicate|Duplicar
+Dynamic Island|Ilha Dinâmica
+E-books|Livros digitais
+Edit|Editar
+Edit Controls…|Editar controles…
+Edit Widgets|Editar widgets
+Edit file|Editar arquivo
+Education|Educação
+Eject|Ejetar
+Elapsed time|Tempo decorrido
+Email|E-mail
+Empty Trash|Esvaziar Lixeira
+Enable|Ativar
+Enabled|Ativado
+Energy usage|Consumo de energia
+Enter|Enter
+Enter a path|Digite um caminho
+Enter to copy|Enter para copiar
+Enter to mark as complete|Enter para marcar como concluído
+Enter to save|Enter para salvar
+Executables|Executáveis
+Expand Selection|Expandir seleção
+Explorer|Explorador
+Export|Exportar
+Favorites|Favoritos
+File|Arquivo
+File indexing|Indexação de arquivos
+Files|Arquivos
+First frame|Primeiro quadro
+Fit to window|Ajustar à janela
+Focus|Foco
+Folder|Pasta
+Folders excluded from search|Pastas excluídas da busca
+Follow text and icons|Acompanhar texto e ícones
+Font|Fonte
+Font Size|Tamanho da fonte
+Forget this network|Esquecer esta rede
+Forget this network…|Esquecer esta rede…
+Forward|Avançar
+Freezing drizzle|Garoa congelante
+Freezing rain|Chuva congelante
+Frost|Geada
+Full name|Nome completo
+Full reindex|Reindexação completa
+Full screen|Tela cheia
+Fullscreen|Tela cheia
+Fullscreen screenshot|Capturar tela inteira
+Game Mode|Modo de Jogo
+Game Mode on|Modo de Jogo ativado
+Gaming|Jogos
+General|Geral
+Glass tint intensity|Intensidade da tonalidade do vidro
+Global search|Busca global
+Go back|Voltar
+Go to|Ir para
+Go to Definition|Ir para definição
+Go to End|Ir para o fim
+Go to File|Ir para arquivo
+Go to Line|Ir para linha
+Green|Verde
+Grid|Grade
+Grid Size|Tamanho da grade
+Groups|Grupos
+Guided installation|Instalação guiada
+Hardware|Hardware
+Haze|Névoa
+Haze intensity|Intensidade da névoa
+Heavy freezing rain|Chuva congelante forte
+Hidden files|Arquivos ocultos
+Hide|Ocultar
+Highlight intensity|Intensidade do realce
+History|Histórico
+Home|Início
+Home folder|Pasta pessoal
+Home Folder|Pasta pessoal
+Horizontal mirror|Espelhamento horizontal
+Host|Host
+Icon|Ícone
+Icons|Ícones
+Icon overflow|Ícones excedentes
+Icon & Widget Style|Estilo de ícones e widgets
+Icon Appearance|Aparência dos ícones
+Icon Style|Estilo dos ícones
+Image|Imagem
+Image copied|Imagem copiada
+Image not found|Imagem não encontrada
+Inactive window opacity|Opacidade da janela inativa
+Incorrect password, try again|Senha incorreta. Tente novamente
+Incremental reindex|Reindexação incremental
+Information|Informações
+Input|Entrada
+Input volume|Volume de entrada
+Insert|Inserir
+Install|Instalar
+Install Quickintosh|Instalar Quickintosh
+Installation|Instalação
+Installed|Instalado
+Installer script|Script de instalação
+Installing…|Instalando…
+Install…|Instalar…
+Integrated terminal|Terminal integrado
+Intelligence & Assistant|Inteligência e Assistente
+Interface language|Idioma da interface
+Interface Scale|Escala da interface
+Interface style|Estilo da interface
+Interpreter|Interpretador
+Introduction|Introdução
+Invalid password (8 to 63 characters)|Senha inválida (8 a 63 caracteres)
+Keep in Dock|Manter no Dock
+Keep Awake|Manter acordado
+Keyboard|Teclado
+Keyboard brightness|Brilho do teclado
+Known network|Rede conhecida
+Known networks|Redes conhecidas
+Language|Idioma
+Language & Region|Idioma e região
+Last 10 Days|Últimos 10 dias
+Last 24 Hours|Últimas 24 horas
+Last image|Última imagem
+Layer menu blur|Desfoque dos menus
+Layer transparency threshold|Limite de transparência das camadas
+Light|Claro
+Light drizzle|Garoa leve
+Light rain|Chuva leve
+Light showers|Pancadas de chuva leves
+Light snow|Neve leve
+Light snow showers|Pancadas de neve leves
+Link|Link
+Liquid Glass per element|Liquid Glass por elemento
+Listening…|Ouvindo…
+Local Account|Conta local
+Local IP|IP local
+Location|Localização
+Lock|Bloquear
+Lock Now|Bloquear agora
+Lock Screen|Tela de bloqueio
+Lock the screen when the session starts|Bloquear a tela ao iniciar a sessão
+Log Out|Finalizar sessão
+Log Out…|Finalizar sessão…
+Log out|Finalizar sessão
+Login Items|Itens de início de sessão
+Logo|Logotipo
+Logo color|Cor do logotipo
+Logo size|Tamanho do logotipo
+Low Power Mode|Modo de Pouca Energia
+Magnify on cursor approach|Ampliar ao aproximar o cursor
+Maintenance|Manutenção
+Manage saved conversations|Gerenciar conversas salvas
+Mark as Read|Marcar como lida
+Material opacity|Opacidade do material
+Media|Mídia
+Media Player|Reprodutor de mídia
+Memory|Memória
+Menu Bar|Barra de menus
+Menu bar logo|Logotipo da barra de menus
+Microphone|Microfone
+Microphone active|Microfone em uso
+Mini Player|Minirreprodutor
+Mirror of|Espelho de
+Model|Modelo
+Monochrome icons|Ícones monocromáticos
+More|Mais
+Move to Trash|Mover para a Lixeira
+Music|Música
+Mute|Silenciar
+Mute microphone|Silenciar microfone
+My Devices|Meus dispositivos
+Nearby Devices|Dispositivos próximos
+Network|Rede
+Network name|Nome da rede
+Network not found or out of range|Rede não encontrada ou fora de alcance
+Never|Nunca
+New|Novo
+New file|Novo arquivo
+New folder|Nova pasta
+New message|Nova mensagem
+New tab|Nova aba
+New window|Nova janela
+Next|Próximo
+Next image|Próxima imagem
+Next page|Próxima página
+Next selection|Próxima seleção
+Next unread message|Próxima mensagem não lida
+No Wi-Fi adapter available|Nenhum adaptador Wi-Fi disponível
+No alarms|Nenhum alarme
+No completed tasks|Nenhuma tarefa concluída
+No devices found|Nenhum dispositivo encontrado
+No display detected.|Nenhuma tela detectada.
+No image|Nenhuma imagem
+No image found|Nenhuma imagem encontrada
+No key saved|Nenhuma chave salva
+No matches|Nenhum resultado
+No matches — choose a value from the list|Nenhum resultado — escolha um valor da lista
+No model|Nenhum modelo
+No saved conversations|Nenhuma conversa salva
+No saved conversations yet.|Ainda não há conversas salvas.
+No saved conversations.|Nenhuma conversa salva.
+No tasks|Nenhuma tarefa
+No volume detected.|Nenhum volume detectado.
+No wallpaper|Nenhum papel de parede
+None|Nenhum
+Not available|Indisponível
+Not connected|Desconectado
+Not installed yet|Ainda não instalado
+Not paired|Não emparelhado
+Not Playing|Nenhuma reprodução
+Nothing planned today|Nada planejado para hoje
+Nothing playing|Nenhuma reprodução
+Nothing to do|Nada a fazer
+Notification|Notificação
+Notifications|Notificações
+Number of entries kept|Número de itens mantidos
+Off|Desativado
+On|Ativado
+On Battery|Na bateria
+On Battery Only|Somente na bateria
+On Power Adapter Only|Somente na tomada
+Open|Abrir
+Open Trash|Abrir Lixeira
+Open URL|Abrir URL
+Open at Login|Abrir ao iniciar sessão
+Open at login|Abrir ao iniciar sessão
+Open file|Abrir arquivo
+Open folder|Abrir pasta
+Open start log|Abrir log de inicialização
+Open with|Abrir com
+Options|Opções
+Other|Outro
+Other Devices|Outros dispositivos
+Other Network|Outra rede
+Other Networks|Outras redes
+Other…|Outro…
+Output|Saída
+Output appears here|A saída aparece aqui
+Output volume|Volume de saída
+Packages|Pacotes
+Paired|Emparelhado
+Parent folder|Pasta superior
+Password|Senha
+Passwords|Senhas
+Paste|Colar
+Permission denied by NetworkManager|Permissão negada pelo NetworkManager
+Personal information|Informações pessoais
+Photos|Fotos
+Pictures|Imagens
+Pictures and links|Imagens e links
+Pink|Rosa
+Play|Reproduzir
+Play/Pause|Reproduzir/pausar
+Playback|Reprodução
+Position|Posição
+Preferred Language|Idioma preferido
+Presentations|Apresentações
+Preview|Pré-visualização
+Previous|Anterior
+Previous image|Imagem anterior
+Previous message|Mensagem anterior
+Previous page|Página anterior
+Print|Imprimir
+Printers & Scanners|Impressoras e scanners
+Privacy & Security|Privacidade e segurança
+Privacy Indicators|Indicadores de privacidade
+Profile|Perfil
+Project|Projeto
+Provider|Provedor
+Purple|Roxo
+Quick Access|Acesso rápido
+Quick Look|Visualização rápida
+Quick shortcuts|Atalhos rápidos
+Quickintosh Installer|Instalador do Quickintosh
+Quit|Sair
+Random wallpaper|Papel de parede aleatório
+Recent|Recentes
+Recent Apps|Aplicativos recentes
+Recent Files|Arquivos recentes
+Recently closed tabs|Abas fechadas recentemente
+Red|Vermelho
+Redo|Refazer
+Reduced|Reduzido
+Refraction|Refração
+Refresh|Atualizar
+Region screenshot|Capturar região
+Reindex files|Reindexar arquivos
+Reload|Recarregar
+Reload error|Erro ao recarregar
+Remind me later|Lembrar mais tarde
+Remove|Remover
+Remove from Dock|Remover do Dock
+Rename|Renomear
+Renew DHCP lease|Renovar concessão DHCP
+Reopen closed tab|Reabrir aba fechada
+Reopen session|Reabrir sessão
+Replace|Substituir
+Reply|Responder
+Reply All|Responder a todos
+Reset|Redefinir
+Reset blur|Redefinir desfoque
+Reset this item|Redefinir este item
+Reset zoom|Redefinir zoom
+Resolution|Resolução
+Restart|Reiniciar
+Restart into BIOS|Reiniciar no BIOS
+Restore|Restaurar
+Restore Defaults|Restaurar padrões
+Result sources|Fontes dos resultados
+Resume|Retomar
+Revert to default wallpaper|Restaurar papel de parede padrão
+Right-click › Choose an image|Clique com o botão direito › Escolher uma imagem
+Roughness|Rugosidade
+Run|Executar
+Run Doctor|Executar diagnóstico
+Run Without Debugging|Executar sem depuração
+Save|Salvar
+Save As|Salvar como
+Save Page|Salvar página
+Saved Conversations|Conversas salvas
+Scale|Escala
+Scanning…|Buscando…
+Screen|Tela
+Screen Activity|Atividade da tela
+Screen Sharing|Compartilhamento de tela
+Screen Time|Tempo de uso
+Screenshot|Captura de tela
+Screenshots and colours|Capturas de tela e cores
+Search|Buscar
+Search Controls|Buscar controles
+Search Results|Resultados da busca
+Search results|Resultados da busca
+Search…|Buscar…
+Secured network|Rede protegida
+Select All|Selecionar tudo
+Selection|Seleção
+Set API Key|Definir chave de API
+Set as Wallpaper|Definir como papel de parede
+Set automatically (NTP)|Definir automaticamente (NTP)
+Settings|Ajustes
+Share|Compartilhar
+Sharing|Compartilhamento
+Shell Language|Idioma da interface
+Shell Scale|Escala da interface
+Shell command|Comando do shell
+Shell folder|Pasta da interface
+Shell reloaded|Interface recarregada
+Shell surface opacity|Opacidade da superfície da interface
+Shortcuts|Atalhos
+Show|Mostrar
+Show all history|Mostrar todo o histórico
+Show all windows|Mostrar todas as janelas
+Show battery|Mostrar bateria
+Show clock|Mostrar relógio
+Show content preview|Mostrar prévia do conteúdo
+Show date|Mostrar data
+Show favorites|Mostrar favoritos
+Show icon|Mostrar ícone
+Show large clock|Mostrar relógio grande
+Show logo|Mostrar logotipo
+Show mini media player|Mostrar minirreprodutor
+Show notch|Mostrar ilha
+Show notification badge|Mostrar indicador de notificações
+Show notifications on the lock screen|Mostrar notificações na tela de bloqueio
+Show text|Mostrar texto
+Shuffle|Aleatório
+Shut Down|Desligar
+Size|Tamanho
+Slideshow|Apresentação de slides
+Snooze (9 min)|Adiar (9 min)
+Social media|Redes sociais
+Software Update|Atualização de software
+Sound|Som
+Speech recognition|Reconhecimento de fala
+Spotlight|Spotlight
+Start|Iniciar
+Start Debugging|Iniciar depuração
+Start a new conversation|Iniciar nova conversa
+Start over|Recomeçar
+Startup|Inicialização
+State|Estado
+Stop|Parar
+Stopwatch|Cronômetro
+Storage|Armazenamento
+Style|Estilo
+Style customization|Personalização do estilo
+Subnet mask|Máscara de sub-rede
+Subtitles|Legendas
+Summary|Resumo
+System|Sistema
+System Actions|Ações do sistema
+System Battery|Bateria do sistema
+System controls|Controles do sistema
+System icons (tray)|Ícones do sistema (bandeja)
+System language|Idioma do sistema
+System Locale|Localidade do sistema
+Tasks|Tarefas
+Text Size|Tamanho do texto
+Theme|Tema
+Thickness|Espessura
+This Computer|Este computador
+This Desktop|Esta mesa
+Time zone|Fuso horário
+Time Zone|Fuso horário
+Timer|Temporizador
+Tint Color|Cor da tonalidade
+Tint icons|Tingir ícones
+Tint intensity|Intensidade da tonalidade
+Tinted|Tonalizado
+To do|A fazer
+Tools|Ferramentas
+Trash|Lixeira
+Try the lock screen|Testar tela de bloqueio
+Turn Off|Desativar
+Turn On|Ativar
+Uninstall|Desinstalar
+Unknown|Desconhecido
+Unknown system|Sistema desconhecido
+Unlock|Desbloquear
+Unread|Não lidas
+Up to date|Atualizado
+Update|Atualizar
+Updates|Atualizações
+Used|Usado
+User Name|Nome de usuário
+Username|Nome de usuário
+Users|Usuários
+Users & Groups|Usuários e grupos
+Utilities|Utilitários
+Video|Vídeo
+Videos|Vídeos
+View|Visualizar
+View saved conversations|Ver conversas salvas
+Voice integration|Integração de chamadas
+Volume|Volume
+Wallpaper|Papel de parede
+Wallpapers|Papéis de parede
+Wallpapers folder|Pasta de papéis de parede
+Weather|Clima
+Weather Location|Localização do clima
+Weather location|Localização do clima
+Web Search|Busca na internet
+White|Branco
+Widgets|Widgets
+Wi-Fi Settings…|Ajustes de Wi-Fi…
+Wi-Fi disabled|Wi-Fi desativado
+Wi-Fi is turned off|O Wi-Fi está desativado
+Window screenshot|Capturar janela
+Windows and layers|Janelas e camadas
+World Clock|Relógio mundial
+Write your note…|Escreva sua nota…
+Wrong Password|Senha incorreta
+Yellow|Amarelo
+Your Account|Sua conta
+Your photos|Suas fotos
+Zoom In|Ampliar
+Zoom Out|Reduzir
+Zoom level|Nível de zoom
+Authentication service unavailable. Run Quickintosh Doctor.|Serviço de autenticação indisponível. Execute o diagnóstico do Quickintosh.
+Reloads only the shell. Application and monitor scaling are unchanged.|Recarrega apenas a interface. A escala dos aplicativos e do monitor não é alterada.
+The shell language is separate from the languages used by your applications.|O idioma da interface é independente do idioma dos seus aplicativos.
+The name shown by Quickintosh.|Nome exibido pelo Quickintosh.
+Path to your profile picture.|Caminho para sua foto de perfil.
+No desktop autostart entries found|Nenhum aplicativo de início automático encontrado
+Choose which applications start when you sign in.|Escolha quais aplicativos abrem ao iniciar a sessão.
+Select a device for sound output|Selecione um dispositivo para saída de som
+Select a device for sound input|Selecione um dispositivo para entrada de som
+No apps set to start automatically.|Nenhum aplicativo configurado para iniciar automaticamente.
+No saved conversations yet.|Ainda não há conversas salvas.
+Light Mode|Modo claro
+Full Color|Colorido
+Auto|Automático
+Manual|Manual
+Internet Accounts|Contas de internet
+AI Provider|Provedor de IA
+API Key|Chave de API
+Whisper model|Modelo Whisper
+Conversation history|Histórico de conversas
+Custom instructions|Instruções personalizadas
+Saved conversations:|Conversas salvas:
+Clear the current conversation|Limpar a conversa atual
+Conversation deleted.|Conversa apagada.
+All saved conversation history has been deleted.|Todo o histórico de conversas salvas foi apagado.
+No Ollama models installed|Nenhum modelo do Ollama instalado
+No Ollama model detected. Check that Ollama is running and at least one model is installed (ollama pull <model>).|Nenhum modelo do Ollama detectado. Verifique se o Ollama está em execução e se há um modelo instalado (ollama pull <modelo>).
+Invalid or rejected API key|Chave de API inválida ou rejeitada
+Stored in the system keyring (secret-tool).|Armazenada no chaveiro do sistema (secret-tool).
+System keyring unavailable — key stored as plain text in the config file.|Chaveiro indisponível — a chave é armazenada como texto no arquivo de configuração.
+Requires whisper-cpp and a compatible ggml model installed on the system.|Requer whisper-cpp e um modelo ggml compatível instalado no sistema.
+Appended to the end of the base system instructions in every conversation.|Adicionado ao fim das instruções do sistema em todas as conversas.
+Clear All|Limpar tudo
+Keep|Manter
+Cancel Download|Cancelar download
+Incoming Calls|Chamadas recebidas
+Incoming call|Chamada recebida
+Private call|Chamada privada
+In call|Em chamada
+Accept|Atender
+Decline|Recusar
+Answer|Atender
+End Call|Encerrar chamada
+Ringtone|Toque de chamada
+Notification Sounds|Sons de notificação
+Notification Sound|Som de notificação
+Default Sound|Som padrão
+Sound Effects|Efeitos sonoros
+Enable Sounds|Ativar sons
+Do Not Disturb|Não Perturbe
+Duration|Duração
+Seconds|Segundos
+seconds|segundos
+seconds.|segundos.
+Enabled|Ativado
+Disabled|Desativado
+Open Folder|Abrir pasta
+Desktop Widgets|Widgets da mesa
+Notification Center|Central de Notificações
+Recent Applications|Aplicativos recentes
+Restore defaults|Restaurar padrões
+Screenshot saved|Captura de tela salva
+Saved to Desktop|Salva na Mesa
+Copy to Clipboard|Copiar para a área de transferência
+Text copied|Texto copiado
+Color Palette|Paleta de cores
+Extract Text|Extrair texto
+OCR|OCR
+Reset to Default|Restaurar padrão
+Camera access|Acesso à câmera
+Microphone access|Acesso ao microfone
+Screen recording|Gravação de tela
+System audio|Áudio do sistema
+System Audio|Áudio do sistema
+Priority|Prioridade
+Exceptions|Exceções
+Add exception|Adicionar exceção
+Show in Full Screen|Mostrar em tela cheia
+Hide in Full Screen|Ocultar em tela cheia
+Auto-Hide|Ocultar automaticamente
+Idle Timeout|Tempo de inatividade
+Corner Radius|Raio dos cantos
+Hot Corners|Cantos de acesso rápido
+Bottom Left|Inferior esquerdo
+Bottom Right|Inferior direito
+Top Left|Superior esquerdo
+Top Right|Superior direito
+Current Date|Data atual
+Automatic Time|Hora automática
+Synchronized|Sincronizado
+Not synchronized|Não sincronizado
+Restore Default|Restaurar padrão
+Default Apps|Aplicativos padrão
+Not checked|Não verificado
+Check Now|Verificar agora
+Check for Updates|Verificar atualizações
+Install System Updates|Instalar atualizações do sistema
+Review Update…|Revisar atualização…
+Available Updates|Atualizações disponíveis
+Installed Version|Versão instalada
+Last Checked|Última verificação
+Storage Categories|Categorias de armazenamento
+Calculating…|Calculando…
+Calculate Sizes|Calcular tamanhos
+Connection|Conexão
+Connections|Conexões
+Connections…|Conexões…
+Edit Connections…|Editar conexões…
+Network Folders|Pastas de rede
+Open Finder…|Abrir Finder…
+Notifications Settings|Ajustes de notificações
+Notification Settings|Ajustes de notificações
+Allow Notifications|Permitir notificações
+Show Previews|Mostrar prévias
+When Unlocked|Quando desbloqueado
+Never|Nunca
+Always|Sempre
+Allow Notification Sounds|Permitir sons de notificação
+Keyboard Shortcuts|Atalhos de teclado
+Pointer|Ponteiro
+Mouse|Mouse
+Trackpad|Trackpad
+Battery Usage|Uso da bateria
+System Information|Informações do sistema
+Processor|Processador
+Architecture|Arquitetura
+Operating System|Sistema operacional
+Computer Name|Nome do computador
+Home Folder|Pasta pessoal
+Users & Groups|Usuários e grupos
+Login Password|Senha de início de sessão
+Sign-In & Security|Início de sessão e segurança
+Bluetooth|Bluetooth
+Wi-Fi|Wi-Fi
+AI|IA
+Search Settings|Buscar ajustes
+Search settings|Buscar ajustes
+No results|Nenhum resultado
+No results found|Nenhum resultado encontrado
+Show All|Mostrar tudo
+Small|Pequeno
+Medium|Médio
+Large|Grande
+Extra Large|Muito grande
+Default Size|Tamanho padrão
+Custom Size|Tamanho personalizado
+Opacity|Opacidade
+Transparency|Transparência
+Animation|Animação
+Animations|Animações
+Reduce Motion|Reduzir movimento
+Reduce Transparency|Reduzir transparência
+Increase Contrast|Aumentar contraste
+Text Scale|Escala do texto
+Access|Acesso
+Active Media Access|Acesso ativo à mídia
+Activity|Atividade
+Activity History|Histórico de atividade
+Add a Server|Adicionar servidor
+Allow Critical Alerts|Permitir alertas críticos
+App & Website Activity|Atividade de apps e sites
+App Activity|Atividade dos aplicativos
+Application|Aplicativo
+Application Notifications|Notificações dos aplicativos
+Automatic Locking|Bloqueio automático
+Back Up Files|Fazer backup de arquivos
+Banner Duration|Duração dos banners
+Camera Devices|Dispositivos de câmera
+Configurations|Configurações
+Connected Servers|Servidores conectados
+Custom Ringtone|Toque personalizado
+Custom Sound|Som personalizado
+Delay Until Repeat|Espera até repetir
+Disable While Typing|Desativar durante a digitação
+Downloads Folder|Pasta de downloads
+File Backups|Backups de arquivos
+From|De
+Game Library|Biblioteca de jogos
+Hide Pointer After Inactivity|Ocultar ponteiro após inatividade
+Input Source|Fonte de entrada
+Input Source Variant|Variante da fonte de entrada
+Interface Size|Tamanho dos ajustes
+Key Repeat Rate|Velocidade de repetição das teclas
+Lock Automatically When Idle|Bloquear automaticamente após inatividade
+Manage Printers|Gerenciar impressoras
+Name|Nome
+Natural Scrolling|Rolagem natural
+Network Services|Serviços de rede
+Notification Volume|Volume das notificações
+Passwords & Keys|Senhas e chaves
+Play Call Ringtone|Reproduzir toque de chamada
+Play Notification Sounds|Reproduzir sons de notificação
+Play Sound|Reproduzir som
+Point & Click|Apontar e clicar
+Pointer Acceleration|Aceleração do ponteiro
+Print & Scan|Imprimir e digitalizar
+Print Queue|Fila de impressão
+Printers|Impressoras
+Privacy|Privacidade
+Repeat|Repetir
+Restore Input Settings|Restaurar ajustes de entrada
+Ringtone Volume|Volume do toque
+Sandboxed Applications|Aplicativos isolados
+Scan Documents|Digitalizar documentos
+Scheduled|Agendado
+Scrolling Speed|Velocidade de rolagem
+Security|Segurança
+Server Address|Endereço do servidor
+Set a Schedule|Definir agendamento
+Show Banners|Mostrar banners
+Show Notifications on Lock Screen|Mostrar notificações na tela de bloqueio
+Start After|Iniciar após
+System Generations|Gerações do sistema
+Tap to Click|Tocar para clicar
+To|Até
+Today|Hoje
+Tracking Speed|Velocidade do cursor
+Two-Finger Secondary Click|Clique secundário com dois dedos
+Vision & Display|Visão e tela
+Your Keyring|Seu chaveiro
+Hide automatically|Ocultar automaticamente
+Hide when idle|Ocultar quando inativa
+Show desktop|Mostrar mesa
+Show Desktop|Mostrar Mesa
+Connected to the router but no IP address assigned (DHCP)|Conectado ao roteador, mas sem endereço IP (DHCP)
+Connection failed (unknown cause)|Falha na conexão (causa desconhecida)
+Connection timed out: the router is not responding|Tempo esgotado: o roteador não responde
+Enter the name of a hidden Wi-Fi network.|Digite o nome de uma rede Wi-Fi oculta.
+Set up Wi-Fi to connect this device to the internet.|Configure o Wi-Fi para conectar este dispositivo à internet.
+Ask to Join Hotspots|Perguntar ao conectar a hotspots
+Ask to Join Networks|Perguntar ao conectar a redes
+Known networks are joined automatically. If no known network is available, you will have to choose one manually.|Redes conhecidas são conectadas automaticamente. Se nenhuma estiver disponível, escolha uma rede manualmente.
+Connect to accessories to stream music, type, play games, and more.|Conecte acessórios para ouvir música, digitar, jogar e muito mais.
+No devices found|Nenhum dispositivo encontrado
+No Ollama models installed|Nenhum modelo do Ollama instalado
+Check the controls you want to appear in Control Center.|Selecione os controles que deseja mostrar na Central de Controle.
+Check the setup|Verificar a instalação
+Choose an image|Escolher uma imagem
+Bar, Dock, panels, Spotlight, notifications and OSD.|Barra, Dock, painéis, Spotlight, notificações e indicadores na tela.
+Locking only starts once per session, not on every shell reload.|O bloqueio ocorre uma vez ao iniciar a sessão, não a cada recarga da interface.
+Locks the session|Bloqueia a sessão
+Minimal Control Center access (Wi-Fi, Bluetooth, brightness, volume)|Acesso básico à Central de Controle (Wi-Fi, Bluetooth, brilho e volume)
+Are you sure you want to log out now?|Deseja finalizar a sessão agora?
+Are you sure you want to restart the computer now?|Deseja reiniciar o computador agora?
+Are you sure you want to restart to the BIOS now?|Deseja reiniciar no BIOS agora?
+Are you sure you want to shut down the computer now?|Deseja desligar o computador agora?
+No apps set to start automatically.|Nenhum aplicativo configurado para iniciar automaticamente.
+Not enough data collected yet to display the history.|Ainda não há dados suficientes para exibir o histórico.
+Number of entries kept|Número de itens mantidos
+Use the controls on this page to customize Quickintosh.|Use os controles desta página para personalizar o Quickintosh.
+This page could not be loaded. Reopen Settings after updating the shell.|Não foi possível carregar esta página. Reabra os Ajustes após atualizar a interface.
+The settings service stopped. Reopen Settings to reconnect.|O serviço de ajustes parou. Reabra os Ajustes para reconectar.
+Enter a valid time in 24-hour format.|Digite um horário válido no formato de 24 horas.
+Clear the locally recorded app activity?|Apagar o histórico local de atividade dos aplicativos?
+Allow this device to automatically discover nearby Personal Hotspots when no Wi-Fi network is available.|Permitir que este dispositivo encontre hotspots pessoais próximos quando não houver redes Wi-Fi disponíveis.
+Nothing you already have is replaced: packages you already have stay as they are.|Os pacotes já instalados são mantidos sem substituição.
+Animations, blur and shadows disabled|Animações, desfoque e sombras desativados
+No video found in|Nenhum vídeo encontrado em
+Warmer colours to reduce blue light|Cores mais quentes para reduzir a luz azul
+Sound, brightness, media, Bluetooth, Wi-Fi, battery and power profiles|Som, brilho, mídia, Bluetooth, Wi-Fi, bateria e perfis de energia
+Tints glass darker when what is behind it (wallpaper, video, window) is too bright|Escurece o vidro quando o conteúdo atrás dele (papel de parede, vídeo ou janela) está muito claro
+A video looped on the desktop (mp4, webm, mkv, mov). It pauses in Game Mode.|Um vídeo em repetição na mesa (mp4, webm, mkv, mov). Pausa no Modo de Jogo.
+Soft blur with pearlescent highlights.|Desfoque suave com reflexos perolados.
+Animated curtains of light.|Cortinas de luz animadas.
+Refraction through triangular facets.|Refração em facetas triangulares.
+Liquid Glass|Liquid Glass
+Tint Dock Icons|Tingir ícones do Dock
+Activity visibility|Visibilidade da atividade
+Always use the left bubble|Sempre usar a bolha esquerda
+Animate notifications flying in from the side|Animar notificações entrando pela lateral
+Animate the speaking ring|Animar o aro de fala
+Appearance and animations|Aparência e animações
+Apps, or “=” to calculate…|Aplicativos ou “=” para calcular…
+Aura glow|Brilho da aura
+Aura strength|Intensidade da aura
+Bar builder|Editor da barra
+Bar height|Altura da barra
+Bar look|Aparência da barra
+Bar shape|Formato da barra
+Battery low|Bateria fraca
+Between islands|Entre ilhas
+Between modules|Entre módulos
+Blur transitions|Transições do desfoque
+Border strength|Intensidade da borda
+Breathing glow|Brilho pulsante
+Builds in the terminal|Compila no terminal
+CPU temperature|Temperatura da CPU
+Call presentation|Apresentação da chamada
+Center alignment|Alinhamento central
+Center the island and side indicators together|Centralizar a ilha junto com os indicadores laterais
+Charger, low battery|Carregador e bateria fraca
+Click to apply · right-click to delete|Clique para aplicar · botão direito para apagar
+Click to paint · right-click to erase|Clique para pintar · botão direito para apagar
+Colour from album art|Cor da capa do álbum
+Command failed|Falha no comando
+Copy command|Copiar comando
+Corner radius|Raio dos cantos
+Cover art|Capa do álbum
+Cross out|Riscar
+Cursor magnet|Atração do cursor
+Custom command|Comando personalizado
+Custom text|Texto personalizado
+Desktop widgets|Widgets da mesa
+Detached media dot|Indicador de mídia separado
+Detect ongoing voice calls|Detectar chamadas em andamento
+Detect other communication apps (PipeWire)|Detectar outros aplicativos de chamada (PipeWire)
+Device battery|Bateria do dispositivo
+Do Not Disturb off|Não Perturbe desativado
+Do not disturb|Não Perturbe
+Dot gap|Espaçamento dos indicadores
+Doze after, s|Ocultar após, s
+Doze into a dot|Reduzir a um ponto
+Drag to arrange|Arraste para organizar
+Edge glint on motion|Reflexo nas bordas em movimento
+Edge hairline|Contorno fino
+Edge pulses with music|Bordas pulsantes com a música
+Empty the bar|Esvaziar a barra
+Enter — copy|Enter — copiar
+Event-coloured shadow|Sombra com a cor do evento
+Every, s|Intervalo, s
+Exit code|Código de saída
+Expand incoming calls|Expandir chamadas recebidas
+Expand when joining a call|Expandir ao entrar em uma chamada
+Expanded avatar size|Tamanho do avatar expandido
+Expanded call width|Largura da chamada expandida
+Fades in and out|Aparece e desaparece suavemente
+Fill on hover|Preencher ao passar o mouse
+Fully charged|Carga completa
+GPU temperature|Temperatura da GPU
+Gap from edge|Distância da borda
+Glide apart|Deslizar para separar
+Good afternoon|Boa tarde
+Good evening|Boa noite
+Good morning|Bom dia
+Good night|Boa noite
+Green ring while speaking|Aro verde durante a fala
+Grow on hover|Ampliar ao passar o mouse
+Heavy load and heat|Carga e temperatura elevadas
+Hero icon|Ícone principal
+Idle|Inativa
+Idle appearance|Aparência inativa
+Incoming call ringtone|Toque de chamada recebida
+Incoming calls|Chamadas recebidas
+Live preview|Prévia ao vivo
+Maximum width|Largura máxima
+Minimum width|Largura mínima
+Mute audio|Silenciar áudio
+Mute microphone|Silenciar microfone
+Notification duration|Duração da notificação
+Privacy dots|Indicadores de privacidade
+Screen sharing|Compartilhamento de tela
+Show clock when idle|Mostrar relógio quando inativa
+Show speaking ring|Mostrar aro de fala
+Speaking ring|Aro de fala
+System load and temperature|Carga e temperatura do sistema
+Task progress|Progresso das tarefas
+Weather alerts|Alertas do clima
+Workspace changes|Mudanças de área de trabalho
+Left bubble|Bolha esquerda
+Right bubble|Bolha direita
+Left|Esquerda
+Right|Direita
+Top|Superior
+Bottom|Inferior
+Center|Centro
+Accent|Destaque
+Avatar|Avatar
+Avatars|Avatares
+Background opacity|Opacidade do fundo
+Border|Borda
+Call controls|Controles da chamada
+Call duration|Duração da chamada
+Clock format|Formato do relógio
+Compact|Compacto
+Expanded|Expandido
+Height|Altura
+Width|Largura
+Horizontal padding|Espaçamento horizontal
+Vertical padding|Espaçamento vertical
+Padding|Espaçamento interno
+Margin|Margem
+Spacing|Espaçamento
+Offset|Deslocamento
+Duration, ms|Duração, ms
+Opacity|Opacidade
+Radius|Raio
+Shadow|Sombra
+Glow|Brilho
+Saturation|Saturação
+Contrast|Contraste
+Reset all|Redefinir tudo
+Restore defaults|Restaurar padrões
+Show while inactive|Mostrar quando inativa
+Hide when fullscreen|Ocultar em tela cheia
+Keep clock visible|Manter relógio visível
+Show album art|Mostrar capa do álbum
+Show media controls|Mostrar controles de mídia
+Show notifications|Mostrar notificações
+Show workspace changes|Mostrar mudanças de área de trabalho
+Show volume changes|Mostrar alterações de volume
+Show brightness changes|Mostrar alterações de brilho
+Settings saved|Ajustes salvos
+Automatic contrast|Contraste automático
+Light foreground|Texto e ícones claros
+Dark foreground|Texto e ícones escuros
+Custom color|Cor personalizada
+Original image colors|Cores originais da imagem
+Text and icons|Texto e ícones
+Text or symbol|Texto ou símbolo
+Custom image|Imagem personalizada
+Text, symbol or emoji|Texto, símbolo ou emoji
+Menu bar colors|Cores da barra de menus
+Original|Original
+Rounded|Arredondado
+Fan|Leque
+List|Lista
+Stack|Pilha
+Folder|Pasta
+Sort by|Ordenar por
+Date Added|Data de adição
+Date Modified|Data de modificação
+Date Created|Data de criação
+File Type|Tipo de arquivo
+Automatic appearance|Aparência automática
+Light icons|Ícones claros
+Dark icons|Ícones escuros
+Tinted light|Tonalizado claro
+Tinted dark|Tonalizado escuro
+Inherit|Herdar
+Custom image path|Caminho da imagem personalizada

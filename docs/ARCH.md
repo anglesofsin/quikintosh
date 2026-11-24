@@ -17,6 +17,43 @@ sudo bash arch/system-setup.sh
 
 A etapa de sistema faz uma atualização completa `pacman -Syu --needed`, instala Nix e serviços necessários e cria políticas PAM privadas para a tela de bloqueio, preservando políticas próprias do administrador. As referências aos módulos PAM usam caminhos absolutos do Arch, para não carregar inadvertidamente módulos/PAM helpers do Nix; os includes e controles do host são preservados. Reexecute a preparação após alterações relevantes do `pambase`. Pode haver perguntas/conflitos normais do pacman, por exemplo ao substituir PulseAudio por PipeWire; o OpenCode deve explicar e resolver isso com você, não forçar a remoção de pacotes. Não roda `--noconfirm` e não instala driver NVIDIA automaticamente.
 
+### Senha correta rejeitada na tela de bloqueio
+
+A autenticação do Arch agora usa **`/usr/bin/python3` e `/usr/lib/libpam.so.0`
+do próprio Arch**, com o ambiente do carregador limpo. A senha é enviada por
+stdin, nunca em argumentos, arquivos ou logs. Não é executado como root e não
+há senha alternativa ou desbloqueio sem autenticação. O NixOS continua usando
+seu PAM nativo pelo Quickshell.
+
+Para atualizar uma instalação Arch existente, antes de bloquear a tela:
+
+```sh
+git pull --ff-only
+sudo /usr/bin/python3 arch/pam_setup.py
+./arch/install.sh install --graphics mesa   # mantenha nvidia se já usa nvidia
+~/.local/bin/quickintosh-doctor
+~/.local/bin/quickintosh-auth-check
+```
+
+O último comando pede a senha no terminal e testa o PAM **sem bloquear a tela**.
+Uma instalação em execução precisa recarregar a shell para usar o novo código;
+faça isso quando não houver gravação ou outro fluxo que dependa dela.
+Não repita tentativas se o teste falhar: confira as mensagens de PAM no
+`journalctl -b` e o estado de `faillock --user "$USER"`. O instalador não remove
+limites de tentativas, não redefine bloqueios de conta e não altera permissões
+do `unix_chkpwd` para contornar uma falha.
+
+Falhas do serviço aparecem como indisponibilidade de autenticação; senhas
+rejeitadas continuam sendo rejeitadas. A consulta de impressão digital foi
+separada da pilha de senha para não enviar senhas vazias repetidamente ao
+`pam_faillock`. A detecção automática de impressão digital está desativada no
+caminho Arch nativo; políticas com múltiplos desafios/MFA precisam de integração
+própria e falham de forma fechada, sem reutilizar a senha como outro desafio.
+
+Os testes automatizados verificam políticas isoladas `pam_permit`/`pam_deny`,
+o protocolo da interface e mensagens de erro. Eles não verificam a senha real
+ou a configuração PAM de outra máquina: execute o teste de terminal nela.
+
 Se já usa Nix/serviços equivalentes e prefere instalação manual, consulte o script para a lista exata de pacotes e os dois arquivos PAM. O método é compatível com a [instalação Nix via pacman](https://nix.dev/install-nix.html) e com a [ArchWiki](https://wiki.archlinux.org/title/Nix). Abra um novo terminal/login se o Nix ainda não estiver no PATH ou seu usuário não conseguir acessar o daemon. Habilite os serviços de áudio/rede/contas que quiser usar; o diagnóstico diferencia os ausentes.
 
 ## 2. Diagnosticar e instalar como usuário normal
@@ -49,6 +86,29 @@ O instalador:
 Se um arquivo gerenciado foi editado, uma atualização para e preserva o arquivo em vez de sobrescrevê-lo. Uma falha de ativação reverte as escritas daquela tentativa. Preferências pessoais da shell permanecem em `~/.config/lickintosh`; o nome é mantido por compatibilidade.
 
 ## 3. Entrar na sessão
+
+### Hyprland Lua e special workspaces
+
+O arquivo-fonte completo está em
+[`modules/hyprland-lua/hyprland.lua`](../modules/hyprland-lua/hyprland.lua).
+O build inclui esse arquivo, os outros módulos Lua, o plugin compatível e os
+scripts de `modules/infinite-desktop`. A ativação instala a configuração em
+`~/.config/quickintosh/hypr/hyprland.lua` e os auxiliares em
+`~/.local/share/quickintosh/scripts`, substituindo os caminhos da máquina de
+origem pelos da pessoa que instala. Use a entrada de sessão Quickintosh para
+carregar **esse** arquivo e o Hyprland compatível; copiar o Lua para outra versão
+do compositor não é uma instalação equivalente.
+
+Atalhos incluídos: `Super+S` (scratchpad), `Super+W` (scratchpad público),
+`Super+A` (esquerdo), `Super+D` (direito). `Super+Alt+S/W/A/D` envia a janela
+para a special correspondente. O dispatcher compartilhado preserva a direção
+de abertura e fechamento ao alternar entre elas. O build do bundle falha se
+algum dos auxiliares obrigatórios não estiver presente.
+
+Para instalações anteriores sem esses arquivos, atualize o repositório e
+reexecute `arch/install.sh install` com a opção de GPU já utilizada. Confira os
+arquivos no diretório privado, `hyprctl configerrors` e `hyprctl binds -j` dentro
+da sessão Quickintosh. Nenhuma configuração Hyprland de outra rice é sobrescrita.
 
 Para adicionar uma entrada ao display manager:
 

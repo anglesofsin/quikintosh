@@ -114,7 +114,7 @@ class Activation:
         self.put(self.root/'rices.json',(bundle/'config/rices.json').read_text())
         self.put(self.root/'launcher.py',(REPO/'arch/launcher.py').read_text(),True)
         commands=['quickintosh','lickintosh','quickintosh-finder','lickintosh-finder','quickintosh-quicklook','lickintosh-quicklook',
-                  'rice-shell','rice-file-manager','lickintosh-desktop-profile','quickintosh-session','quickintosh-doctor',
+                  'rice-shell','rice-file-manager','lickintosh-desktop-profile','quickintosh-session','quickintosh-doctor','quickintosh-auth-check',
                   'quickintosh-session-ready','quickintosh-discord-install','kitty','playerctl','hyprctl','noctalia-legacy','noctalia','caelestia','eqsh']
         script='#!/bin/sh\nexec /usr/bin/python3 '+shlex.quote(str(self.root/'launcher.py'))+' '
         for command in commands:

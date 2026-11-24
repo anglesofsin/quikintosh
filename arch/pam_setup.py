@@ -16,13 +16,14 @@ def build_policies(directory, modules=Path('/usr/lib/security')):
         if target in policies:return target
         policies[target]='' # break include cycles while retaining PAM's own stack semantics
         rows=[]
-        for line in (directory/name).read_text().splitlines():
+        source=directory/name
+        if not source.exists():source=Path('/usr/lib/pam.d')/name
+        for line in source.read_text().splitlines():
             body,separator,comment=line.partition('#')
             match=INCLUDE.fullmatch(body) or AT_INCLUDE.fullmatch(body)
             if match:body=match[1]+copy(match[2])+match[3]
             def absolute(match):
                 path=modules/match[1]
-                if not path.is_file():raise ValueError('Host PAM module missing: '+str(path))
                 return str(path)
             body=MODULE.sub(absolute,body)
             rows.append(body+(separator+comment if separator else ''))

@@ -24,3 +24,5 @@ Os caminhos abreviados na tabela são relativos a `modules/lickintosh/`, exceto 
 O overlay Nix fornece o Hyprland modificado e o portal compatível. O módulo exportado configura o usuário indicado em `quickintosh.user`, sem fixar o monitor, resolução ou nome de usuário do desenvolvedor. Não importa módulos pessoais de rede, WireGuard, discos ou serviços privados.
 
 Os padrões de aparência ficam em `defaults/`, sanitizados. Não são exportados caches, históricos de clipboard, chamadas, recentes, fotos de perfil, contas, senhas ou a biblioteca pessoal de wallpapers. Assets de exemplo do upstream permanecem disponíveis.
+
+Ao atualizar a árvore vendorizada, preserve o inventário do Git upstream e use `git add -f upstream/lickintosh`: o `.gitignore` herdado ignora nomes como `dock/`, mesmo quando fazem parte das fontes rastreadas no upstream. Conferir esse inventário evita exportar uma shell incompleta.

@@ -13,6 +13,11 @@ Verificações realizadas no checkout exportado, sem automatizar a área de trab
 - Fontes, flake e templates exportados não dependem dos checkouts pessoais `/home/pg/...`.
 - Varredura de padrões comuns de tokens/chaves privadas não encontrou ocorrências; fotos de conta, histórico, caches, localização pessoal e credenciais não foram exportados.
 
-As verificações de build e avaliação Nix desta entrega são registradas no commit após sua execução. A shell instalada no PC de desenvolvimento foi renomeada e seus IPCs responderam após a ativação.
+- `nix build .#quickintosh` concluiu com sucesso, incluindo todos os integradores, fontes, ícones, Finder e Quick Look.
+- `nix flake check --no-build` passou, inclusive a avaliação da configuração NixOS de exemplo.
+- A opção Discord foi avaliada com Canary, PTB e Stable habilitados.
+- Título da janela, identificação QML, backend e regra Hyprland do Quick Look foram conferidos após a renomeação.
+
+A shell instalada no PC de desenvolvimento foi renomeada e seus IPCs responderam após a ativação. O status de voz real retornou Canary com metadados completos e controles disponíveis, sem reiniciar o cliente nesta tarefa.
 
 Não foi feita instalação em um segundo computador físico, teste visual em outra GPU nem chamada real em todos os canais Discord nesta exportação. Os testes de voz são fixtures, não comprovação de uma chamada real em cada cliente. O módulo opcional de Discord requer a primeira reinicialização manual do cliente.

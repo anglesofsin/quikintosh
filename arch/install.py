@@ -96,6 +96,7 @@ class Activation:
             if file.is_file():
                 text=file.read_text().replace('/home/demo',str(self.home)).replace('/home/pg',str(self.home))
                 text=text.replace(str(self.home)+'/scripts/',str(scriptdir)+'/').replace(str(self.home)+'/.config/hypr/',str(configdir)+'/')
+                text=text.replace('/run/current-system/sw/bin/',str(bundle/'runtime/bin')+'/')
                 self.put(scriptdir/file.name,text,True)
         for file in (bundle/'hypr').rglob('*.lua'):
             text=file.read_text().replace('/home/demo',str(self.home)).replace('/home/pg',str(self.home))

@@ -74,7 +74,7 @@ def main(argv):
     target=bundle/'runtime/bin'/name
     if not target.is_file():raise RuntimeError('Command not included in this bundle: '+name)
     command=[str(target),*args]
-    graphical=name in ['lickintosh','lickintosh-finder','kitty','noctalia','noctalia-legacy','caelestia','eqsh']
+    graphical=name in ['lickintosh','lickintosh-finder','rice-file-manager','kitty','noctalia','noctalia-legacy','caelestia','eqsh']
     if graphical and not (args and args[0] in ['ipc','list','log','--help','--version','brightness','settings-restore']):
         command=graphics_command(command,data)
     os.execvpe(command[0],command,env)

@@ -7,6 +7,7 @@ Este repositório contém as fontes da shell, os assets do upstream, as modifica
 ## O que está incluído
 
 - **Menu Bar:** menus do aplicativo, troca por hover, cores automáticas/manuais, logo personalizável e cantos configuráveis.
+- **Sons de notificação:** Rebound por padrão, alternativas/arquivo próprio, volume e controle por app; Não Perturbe silencia e interrompe os toques. Configure em Settings → Sound.
 - **Dynamic Island:** notificações, música, chamadas, avatares e indicadores de fala, controles de chamada, privacidade, fullscreen e ocultação por inatividade.
 - **Dock:** magnificação, apps instalados e recentes, bloqueio de apps nos recentes, Downloads/Recentes/Lixeira em pilhas, seleção múltipla, arrastar arquivos e menus de contexto.
 - **Finder:** Nautilus com tema Tahoe, sidebar e controles translúcidos, previews e integração ao Quick Look.

@@ -42,6 +42,8 @@ Scope {
   if(a.x===0 && a.y===0){Qt.exit(11);return}
   WidgetState.moveWidget('a',17,23,true);a=WidgetState.desktop[0]
   if(a.x!==17 || a.y!==23 || !a.freePosition || a.theme!=='color' || a.image!=='/test.gif'){Qt.exit(12);return}
+  const drop=WidgetState.snap('s',17,23,true)
+  if(drop.x!==17 || drop.y!==23){Qt.exit(18);return}
   WidgetState.allowCtrlFreePlacement=false;WidgetState.moveWidget('a',17,23,true);a=WidgetState.desktop[0]
   if(a.freePosition || a.x===17){Qt.exit(13);return}
   if(WidgetState.widgetMaterial!=='glass' || WidgetState.desktopMenuMaterial!=='glass'){Qt.exit(14);return}

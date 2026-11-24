@@ -2,6 +2,7 @@
 from pathlib import Path
 import json,sys
 root=Path(sys.argv[1]); source=Path(__file__).parent; base=root/'rosa'
+(root/'assets/icons/notch/call-handset.svg').write_text((source/'call-handset.svg').read_text())
 def edit(name,old,new):
  p=base/name; s=p.read_text()
  if s.count(old)!=1: raise ValueError(f'Voice anchor {name}: {old[:70]}')

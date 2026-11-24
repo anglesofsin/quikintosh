@@ -255,3 +255,23 @@ edit(name,'import qs.services\n','import qs.services\nimport qs.rosa.services\n'
 edit('services/WidgetState.qml','|| root.collides(list, id, next.x, next.y, d.w, d.h)) {','|| (!next.freePosition && root.collides(list, id, next.x, next.y, d.w, d.h))) {')
 # Clear the gallery grab state when closed from Escape or another surface.
 edit('services/WidgetState.qml','    function closeGallery() {','    function closeGallery() {\n        root.galleryDrag=null')
+
+# Layer-shell windows do not publish a reliable global window position to Qt.
+# Use a full-screen, input-masked gallery so pointer and desktop coordinates
+# share the same origin, and retain the input region throughout a drag.
+name='ui/widgets/WidgetGallery.qml'
+edit(name,'id:win;anchors{left:true;right:true;bottom:true}','id:win;anchors{left:true;right:true;top:true;bottom:true}')
+edit(name,"implicitHeight:Math.min(screen.height-60,580);color:'transparent';exclusiveZone:-1","color:'transparent';exclusiveZone:-1")
+edit(name,'mask:Region{item:panel}','mask:Region{item:WidgetState.galleryDrag ? win.contentItem:panel}')
+edit(name,'height:parent.height-24;radius:24','height:Math.min(parent.height-60,556);radius:24')
+edit(name,'const global=addMouse.mapToGlobal(event.x,event.y)\n                const gx=global.x-win.screen.x,gy=global.y-win.screen.y','const gx=point.x,gy=point.y')
+edit(name,'outside:point.y<panel.y','free:!!(event.modifiers & Qt.ControlModifier),outside:point.y<panel.y || point.x<panel.x || point.x>panel.x+panel.width || point.y>panel.y+panel.height')
+edit(name,'d.y-shape.h/2-WidgetState.desktopOffsetY,d.theme','d.y-shape.h/2-WidgetState.desktopOffsetY,d.theme,d.free')
+name='services/WidgetState.qml'
+edit(name,'function snap(size, x, y) {','function snap(size, x, y, free) {')
+edit(name,'        var list = root.listOf("desktop")\n        var d = root.sizeOf(size)','''        var list = root.listOf("desktop")
+        var d = root.sizeOf(size)
+        if(free && root.allowCtrlFreePlacement)return {x:Math.max(0,Math.min(x,root.areaWidth-d.w)),y:Math.max(0,Math.min(y,root.areaHeight-d.h))}''')
+edit(name,'function addWidgetAt(zone, type, size, variant, x, y, theme) {','function addWidgetAt(zone, type, size, variant, x, y, theme, free) {')
+edit(name,'var p = root.snap(size, x, y)','var p = root.snap(size, x, y, free)')
+edit(name,'theme: theme || "auto", x: p.x, y: p.y','theme: theme || "auto", x: p.x, y: p.y, freePosition:!!free && root.allowCtrlFreePlacement')

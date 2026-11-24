@@ -268,6 +268,7 @@ let
       qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o $out/components/bar-tint.frag.qsb $out/components/bar-tint.frag
 
       ${pkgs.python3}/bin/python3 ${./lickintosh/desktop-polish}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/finder-menus}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/lock-state-sync.py} $out

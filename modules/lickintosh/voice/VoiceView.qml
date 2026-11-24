@@ -49,7 +49,18 @@ Item {
                     Layout.preferredWidth:40; Layout.preferredHeight:40
                     text:modelData==="accept" ? "󰏲" : modelData==="reject" ? "󰏲" : modelData==="mute" ? (selected ? "󰍭" : "󰍬") : modelData==="deaf" ? (selected ? "󰟎" : "󰋋") : "󰏲"
                     font.pixelSize:21
-                    contentItem:Text { text:parent.text; font:parent.font; color:"white"; horizontalAlignment:Text.AlignHCenter; verticalAlignment:Text.AlignVCenter }
+                    contentItem:Item {
+                        Image {
+                            anchors.centerIn:parent;width:20;height:20
+                            source:Quickshell.shellDir+'/assets/icons/notch/'+(parent.parent.modelData==='mute' ? (parent.parent.selected ? 'mic-off.svg':'mic.svg') : parent.parent.modelData==='deaf' ? 'headphones.svg':'call-handset.svg')
+                            sourceSize:Qt.size(40,40);fillMode:Image.PreserveAspectFit;smooth:true
+                            rotation:['disconnect','reject'].includes(parent.parent.modelData) ? 135:0
+                        }
+                        Rectangle {
+                            anchors.centerIn:parent;width:24;height:2;radius:1;rotation:45;color:'white'
+                            visible:parent.parent.modelData==='deaf' && parent.parent.selected
+                        }
+                    }
                     background:Rectangle { radius:width/2; color:parent.modelData==="accept" ? "#23a55a" : ["reject","disconnect"].includes(parent.modelData) ? "#ed4245" : parent.selected ? "#5865f2" : "#393b46"; opacity:parent.hovered ? 1 : 0.9 }
                     Accessible.name:modelData==="accept" ? "Answer call" : modelData==="reject" ? "Decline call" : modelData==="mute" ? "Toggle microphone" : modelData==="deaf" ? "Toggle deafen" : "Leave call"
                     onClicked:VoiceCalls.control(modelData)

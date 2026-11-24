@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.rosa.services
+import qs.services as Native
 Singleton {
     id: root
     IpcHandler{
@@ -47,7 +48,7 @@ Singleton {
     readonly property bool incomingControls:incoming && call.incomingControls===true && !!call.session
     property string dismissedIncoming:''
     function dismissIncoming(){dismissedIncoming=callKey}
-    readonly property bool showIncoming:incoming && dismissedIncoming!==callKey && IslandConfig.s('voiceIncoming')
+    readonly property bool showIncoming:incoming && !Native.ShellConfig.options.session.focus && dismissedIncoming!==callKey && IslandConfig.s('voiceIncoming')
     readonly property bool active: enabled && call !== null
     readonly property var participants: {
         if (!active) return []

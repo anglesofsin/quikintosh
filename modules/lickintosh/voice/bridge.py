@@ -88,7 +88,7 @@ async def pipewire(broker):
                 external_changed=external!=broker.external
                 broker.external=external
                 calls=sorted({str(p.get('application.name') or p.get('application.process.binary') or 'Communication app')[:100]
-                    for p in nodes.values() if str(p.get('media.role','')).lower()=='communication'
+                    for p in nodes.values() if str(p.get('media.role','')).lower() in ('communication','phone')
                     and p.get('_state')=='running' and str(p.get('media.class','')).startswith('Stream/')
                     and not any(x in str(p.get('application.name','')).lower() for x in ('discord','equibop'))})
                 value=dict(client='system',active=True,channel=' · '.join(calls),guild='',streamer=False,participants=[]) if calls else None

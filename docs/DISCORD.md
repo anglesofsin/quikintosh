@@ -83,3 +83,9 @@ O Não Perturbe impede a expansão automática. Ative/desative a expansão em Se
 Outros aplicativos podem fornecer uma notificação com categoria `call.incoming` (ou `x-quickintosh.call.incoming`) e ações `accept`/`answer`/`call.accept` e `reject`/`decline`/`call.reject`. A ilha invoca as ações publicadas pelo próprio aplicativo; não simula cliques nem captura credenciais. Notificações comuns de mensagem não são tratadas como ligações. O app precisa encerrar a notificação ao cancelar/atender a chamada. Uma chamada atendida pode continuar sendo identificada pelo PipeWire quando o app publica streams ativos com `media.role=Communication` ou `phone`.
 
 Não existe uma API universal Linux para atender chamadas em qualquer aplicativo: apps que não publicam o estado/ações precisam de um adaptador próprio. Navegadores que não expõem a função de comunicação no PipeWire não podem ser classificados como chamada apenas por usarem o microfone. Controles e participantes não são inventados no fallback.
+
+### Toque da shell
+
+Settings → Sound → Incoming Calls permite habilitar o toque da shell, ajustar o volume e escolher Opening (FaceTime), Reflection ou arquivo local. Opening é o padrão tradicional do FaceTime adotado por esta rice; o padrão pode variar conforme a versão/configuração do macOS. As fontes dos arquivos Apple estão em `modules/lickintosh/voice/ringtones/SOURCES.json` e conservam seus direitos originais.
+
+O toque da shell para ao atender, recusar, recolher o cartão, cancelar a ligação, sair/bloquear a shell ou ativar Não Perturbe. Ele não altera as preferências de som dos aplicativos. Para evitar dois toques simultâneos, desative o toque nativo do app quando optar pelo da shell. O Não Perturbe silencia os sons emitidos pela shell; não consegue impedir todo áudio que terceiros decidam reproduzir.

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Quickintosh macOS application library (Darling compatibility runtime)."""
 import argparse
+from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
@@ -17,6 +18,63 @@ APPLICATIONS = DATA / 'Applications'
 DESKTOPS = Path(os.environ.get('XDG_DATA_HOME', Path.home() / '.local/share')) / 'applications'
 PREFIX = Path(os.environ.get('DPREFIX', Path.home() / '.local/share/quickintosh/darling/prefix'))
 GUI = False
+
+
+@contextmanager
+def disk_image(source):
+    """Mount HFS images on the host, outside Darling's user namespace.
+
+    Never remove a directory while it is mounted. Unsupported images and
+    hosts without FUSE retain the existing 7-Zip extraction path.
+    """
+    DATA.mkdir(parents=True, exist_ok=True)
+    root = Path(tempfile.mkdtemp(prefix='.image-', dir=DATA))
+    mount = root / 'volume'
+    mount.mkdir()
+    try:
+        tool = shutil.which('darling-dmg')
+        if tool and Path('/dev/fuse').exists():
+            try:
+                result = subprocess.run([tool, str(source), str(mount), '-o', 'ro'],
+                                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                        text=True, timeout=20)
+                if result.returncode and not mount.is_mount():
+                    print('DMG mount unavailable; trying extraction.\n' + result.stdout[-1500:], file=sys.stderr)
+            except (OSError, subprocess.TimeoutExpired) as error:
+                print('DMG mount unavailable; trying extraction: ' + str(error), file=sys.stderr)
+        if mount.is_mount():
+            yield mount
+        else:
+            image = root / 'image'
+            extract_image(source, image)
+            # Some UDIF images expose a filesystem image before its files.
+            if not any(image.rglob('*.app')):
+                images = [p for p in image.rglob('*') if p.is_file() and
+                          p.suffix.lower() in ('.hfs', '.hfsx', '.apfs')]
+                for index, inner in enumerate(images):
+                    extract_image(inner, image / ('filesystem-' + str(index)))
+            yield image
+    finally:
+        try:
+            if mount.is_mount():
+                # Prefer the host's privileged FUSE helper, never a guest tool.
+                helper = next((str(p) for p in (Path('/run/wrappers/bin/fusermount'),
+                                                Path('/usr/bin/fusermount'), Path('/usr/bin/fusermount3'))
+                               if p.is_file()), None) or shutil.which('fusermount') or shutil.which('fusermount3')
+                if not helper:
+                    raise RuntimeError('FUSE unmount helper missing. Image retained at ' + str(mount))
+                subprocess.run([helper, '-u', str(mount)], check=True, timeout=15)
+        finally:
+            if not mount.is_mount():
+                shutil.rmtree(root)
+
+
+def extract_image(image, destination):
+    destination.mkdir(parents=True, exist_ok=True)
+    result = subprocess.run(['7zz', 'x', '-y', '-bd', '-bb0', '-o' + str(destination), '--', str(image)],
+                            text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=180)
+    if result.returncode > 1:
+        raise RuntimeError('Cannot read this disk image.\n' + result.stdout[-2500:])
 
 
 def guest(path):
@@ -188,28 +246,9 @@ def install(source, app_choice=None):
     if source.suffix.lower() == '.app':
         return install_app(source)
     if source.suffix.lower() == '.dmg':
-        # The release's FUSE hdiutil does not mount reliably in user namespaces.
-        # Extract read-only in a private directory, without loop devices or sudo.
-        DATA.mkdir(parents=True, exist_ok=True)
-        with tempfile.TemporaryDirectory(prefix='.image-', dir=DATA) as temporary:
-            root = Path(temporary)
-            def extract(image, destination):
-                destination.mkdir(parents=True, exist_ok=True)
-                result = subprocess.run(['7zz', 'x', '-y', '-bd', '-bb0', '-o' + str(destination), '--', str(image)],
-                                        text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=180)
-                if result.returncode > 1:
-                    raise RuntimeError('Cannot read this disk image.\n' + result.stdout[-2500:])
-            extract(source, root / 'image')
-            applications = [p for p in (root / 'image').rglob('*.app') if p.is_dir() and
+        with disk_image(source) as root:
+            applications = [p for p in root.rglob('*.app') if p.is_dir() and
                             not any(parent.suffix.lower() == '.app' for parent in p.relative_to(root).parents)]
-            if not applications:
-                # Some UDIF images expose an inner filesystem image first.
-                images = [p for p in (root / 'image').rglob('*') if p.is_file() and p.suffix.lower() in ('.hfs', '.hfsx', '.apfs')]
-                for index, image in enumerate(images):
-                    inner = root / ('filesystem-' + str(index))
-                    extract(image, inner)
-                    applications.extend(p for p in inner.rglob('*.app') if p.is_dir() and
-                                        not any(parent.suffix.lower() == '.app' for parent in p.relative_to(inner).parents))
             if app_choice:
                 applications = [p for p in applications if p.name == app_choice]
             if not applications:
@@ -243,6 +282,8 @@ def main():
           (args.action in ('open', 'install') and not sys.stdin.isatty()))
     if args.action == 'doctor':
         print('Runtime:', shutil.which('darling') or 'NOT INSTALLED')
+        print('DMG reader:', shutil.which('darling-dmg') or 'NOT INSTALLED (7-Zip fallback)')
+        print('Host FUSE:', 'available' if os.access('/dev/fuse', os.R_OK | os.W_OK) else 'unavailable (7-Zip fallback)')
         print('Applications:', APPLICATIONS)
         run('/usr/bin/uname', '-s')
     elif args.action == 'terminal':
@@ -303,7 +344,7 @@ def eject(path):
 if __name__ == '__main__':
     try:
         main()
-    except (ValueError, RuntimeError, OSError, subprocess.CalledProcessError, plistlib.InvalidFileException) as error:
+    except (ValueError, RuntimeError, OSError, subprocess.SubprocessError, plistlib.InvalidFileException) as error:
         print(str(error), file=sys.stderr)
         if GUI:
             dialog('--error', '--text=' + str(error))

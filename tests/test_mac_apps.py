@@ -2,6 +2,7 @@ import importlib.util
 from pathlib import Path
 import plistlib
 import struct
+import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -65,6 +66,55 @@ class Applications(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Only applications'):
                 manager.main()
             run.assert_not_called()
+
+    def test_image_falls_back_without_mount_tool(self):
+        def extract(source, destination):
+            destination.mkdir(parents=True)
+            (destination / 'Example.app').mkdir()
+        with patch.object(manager.shutil, 'which', return_value=None), \
+             patch.object(manager, 'extract_image', side_effect=extract):
+            with manager.disk_image(self.root / 'Example.dmg') as image:
+                self.assertTrue((image / 'Example.app').is_dir())
+                temporary = image.parent
+            self.assertFalse(temporary.exists())
+
+    def test_image_unmounts_even_when_install_fails(self):
+        mounted = False
+        commands = []
+        def run(command, **kwargs):
+            nonlocal mounted
+            commands.append(command)
+            mounted = '-u' not in command
+            return subprocess.CompletedProcess(command, 0, '')
+        with patch.object(manager.shutil, 'which', return_value='darling-dmg'), \
+             patch.object(Path, 'is_mount', lambda _: mounted), \
+             patch.object(Path, 'exists', return_value=True), \
+             patch.object(manager.subprocess, 'run', side_effect=run):
+            with self.assertRaisesRegex(ValueError, 'installation failure'):
+                with manager.disk_image(self.root / 'Example.dmg') as image:
+                    temporary = image.parent
+                    raise ValueError('installation failure')
+        self.assertFalse(temporary.exists())
+        self.assertIn('ro', commands[0])
+        self.assertIn('-u', commands[-1])
+
+    def test_busy_mount_is_retained_without_recursive_deletion(self):
+        mounted = False
+        def run(command, **kwargs):
+            nonlocal mounted
+            if '-u' in command:
+                raise subprocess.CalledProcessError(1, command)
+            mounted = True
+            return subprocess.CompletedProcess(command, 0, '')
+        with patch.object(manager.shutil, 'which', return_value='darling-dmg'), \
+             patch.object(Path, 'is_mount', lambda _: mounted), \
+             patch.object(Path, 'exists', return_value=True), \
+             patch.object(manager.subprocess, 'run', side_effect=run), \
+             patch.object(manager.shutil, 'rmtree') as cleanup:
+            with self.assertRaises(subprocess.CalledProcessError):
+                with manager.disk_image(self.root / 'Example.dmg'):
+                    pass
+            cleanup.assert_not_called()
 
 
 if __name__ == '__main__':

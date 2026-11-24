@@ -3,7 +3,7 @@ let
   runtime = import ./darling-runtime.nix { inherit pkgs; };
   command = pkgs.writeShellApplication {
     name = "quickintosh-mac";
-    runtimeInputs = [ runtime (pkgs.python3.withPackages (p: [ p.pillow ])) pkgs.zenity pkgs.xdg-utils pkgs.glib pkgs.kitty pkgs._7zz ];
+    runtimeInputs = [ runtime pkgs.darling-dmg (pkgs.python3.withPackages (p: [ p.pillow ])) pkgs.zenity pkgs.xdg-utils pkgs.glib pkgs.kitty pkgs._7zz ];
     text = ''exec python3 ${../modules/lickintosh/mac-apps/manager.py} "$@"'';
   };
   desktop = pkgs.makeDesktopItem {
@@ -36,5 +36,5 @@ let
   '';
 in pkgs.symlinkJoin {
   name = "quickintosh-mac-apps";
-  paths = [ runtime command desktop installer mime ];
+  paths = [ runtime pkgs.darling-dmg command desktop installer mime ];
 }

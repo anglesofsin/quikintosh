@@ -40,11 +40,15 @@ a Darwin terminal and a runtime check. It uses the existing GTK theme.
   library, preserves framework symlinks, reads its Info.plist and exports its
   icon and desktop launcher. It then appears alongside installed applications. The bundle executable is
   launched directly because this release’s LaunchServices `open` is a stub.
-- **`.dmg`:** open with **macOS Installer**. The image is extracted read-only
-  into temporary storage, then the chosen `.app` is installed into the library.
-  This avoids the release's unreliable FUSE mounting in user namespaces; no
-  root/loop-device mount is needed. Common UDIF/HFS images work through 7-Zip;
-  encrypted or unusual images may not. Images containing a `.pkg` need that
+- **`.dmg`:** open with **macOS Installer**. The installer uses
+  [darling-dmg](https://github.com/darlinghq/darling-dmg) to mount HFS+/HFSX
+  images read-only on the Linux host, then copies the chosen `.app` into the
+  library and unmounts the image. It does not mount inside Darling's user
+  namespace or require root/loop devices. A working host `/dev/fuse` and
+  `fusermount` helper are needed. If mounting is unavailable or the image uses
+  an unsupported filesystem, 7-Zip extraction remains the fallback; encrypted
+  or unusual images may not work. A busy mount is retained rather than
+  recursively deleted. Images containing a `.pkg` need that
   package extracted first. This is not the macOS disk-image Finder window.
 - **`.pkg`:** the installer asks for confirmation, then runs Darwin's `installer`
   against the guest root. Package scripts are code: use trusted installers.
@@ -90,6 +94,22 @@ It does not terminate running apps automatically.
 Troubleshoot with `quickintosh-mac doctor`, then inspect the runtime log and the
 application's terminal output. The manager checks both initialization and guest
 command completion so a failed installer is not reported as a success.
+
+`darling-dmg` is also installed as a standalone command for manual read-only
+mounts: `darling-dmg '/path/Example.dmg' '/existing/empty/mountpoint' -o ro`.
+Unmount with the host `fusermount -u '/existing/empty/mountpoint'` before
+removing the mount directory. The package is pinned through this repository's
+Nixpkgs lock, including its upstream revision and source hash.
+
+### Arc Browser compatibility
+
+Arc **1.174.2 (91442)** was tested with this integration. Its HFS+ image mounts
+successfully with `darling-dmg`, and the installed bundle includes both Intel
+and ARM executables. Launching its Intel executable on the packaged Darling
+release aborts at `Combine.framework: image not found`. Its Info.plist requires
+macOS 13. Installing the disk-image reader does not provide missing macOS
+frameworks or make this Arc release runnable. The original DMG and installed
+bundle are preserved; no fake framework or version spoof is used.
 
 The Nix recipe also repairs the release's missing private-extern corecrypto
 exports, publishing the existing function addresses required by Security/AppKit.

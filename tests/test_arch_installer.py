@@ -12,7 +12,7 @@ class Install(unittest.TestCase):
   for name in ['runtime/bin','runtime/share/applications','hypr','scripts','config']:(self.bundle/name).mkdir(parents=True)
   for name in ['lickintosh','Hyprland']:(self.bundle/'runtime/bin'/name).write_text('#!/bin/sh\n')
   (self.bundle/'hypr/hyprland.lua').write_text('local rice="/run/current-system/sw/bin/rice-shell"\nlocal f=dofile(os.getenv("HOME") .. "/.config/hypr/remember-floating.lua")\nlocal s="/home/demo/scripts/test.sh"\nlocal state="/home/demo/.local/state/nixos-rice/active-shell"\n')
-  (self.bundle/'scripts/test.sh').write_text('#!/bin/sh\necho /home/demo\n')
+  (self.bundle/'scripts/test.sh').write_text('#!/bin/sh\necho /home/demo\n/home/demo/scripts/other.sh\n')
   (self.bundle/'config/shells.json').write_text('{"default":"noctalia","shells":{}}')
   (self.bundle/'config/rices.json').write_text('{}')
  def test_private_config_and_roundtrip_backup(self):
@@ -23,6 +23,7 @@ class Install(unittest.TestCase):
   self.assertNotIn('/run/current-system',config);self.assertNotIn('/home/demo',config)
   self.assertIn('dofile("'+str(self.home)+'/.config/quickintosh/hypr/remember-floating.lua")',config)
   self.assertEqual(hypr.read_text(),'do not change');self.assertTrue((a.root/'bin/quickintosh').exists())
+  self.assertIn(str(a.root/'scripts/other.sh'),(a.root/'scripts/test.sh').read_text())
   a.uninstall();self.assertEqual(old.read_text(),'existing\n');self.assertEqual(hypr.read_text(),'do not change')
  def test_modified_file_not_deleted(self):
   a=mod.Activation(self.home);a.activate(self.bundle)

@@ -12,6 +12,7 @@ let
       (find "quickintosh-discord-install") config.system.build.noctaliaLegacy
       config.system.build.eqsh pkgs.noctalia-shell
       (builtins.head (builtins.filter (p: pkgs.lib.hasPrefix "caelestia-shell-" p.name) config.environment.systemPackages)) ] ++ (with pkgs; [
+        jq bc python3 coreutils findutils gnugrep gawk gnused curl procps
         hyprland xdg-desktop-portal-hyprland xdg-desktop-portal-gtk
         kitty matugen mpv playerctl wl-clipboard cliphist grim slurp satty
         hyprpicker hyprsunset brightnessctl ddcutil wireplumber pipewire

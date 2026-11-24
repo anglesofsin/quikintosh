@@ -11,7 +11,13 @@ let cfg = config.quickintosh; in {
     (import ./discord.nix)
     ({ config, lib, pkgs, ... }: lib.mkIf config.quickintosh.enable (import ../modules/rice.nix {
       inherit config lib pkgs;
-      inherit (inputs) caelestia-shell noctalia-legacy-src lickintosh-src rosa-src eqsh-src;
+      inherit (inputs) caelestia-shell noctalia-legacy-src rosa-src eqsh-src;
+      # A path input nested in this repository can inherit the parent Git rev.
+      # Normalize its source so docs/installer commits don't rebuild all assets.
+      lickintosh-src = {
+        outPath = builtins.path { path = inputs.lickintosh-src.outPath; name = "quickintosh-upstream"; };
+        rev = (builtins.fromJSON (builtins.readFile ../upstream/SOURCES.json)).lickintosh.revision;
+      };
     }))
     ({ config, lib, pkgs, ... }: lib.mkIf config.quickintosh.enable (import ../modules/hyprland.nix { inherit config lib pkgs; }))
     ({ config, pkgs, ... }: lib.mkIf config.quickintosh.enable ((import ./overlay.nix { inherit inputs; }) { inherit pkgs; }))

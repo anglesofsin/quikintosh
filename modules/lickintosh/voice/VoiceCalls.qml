@@ -66,7 +66,7 @@ Singleton {
     readonly property bool selfDeaf: active && call.participants.some(p=>p.self && p.deaf)
     property string callKey: active ? call.client+":"+(call.channelId || call.channel)+":"+(call.state || "active") : ""
     property double observedAt: Date.now()
-    onCallKeyChanged: observedAt=Date.now()
+    onCallKeyChanged:{observedAt=Date.now();dismissedIncoming=""}
     readonly property string duration: {
         const seconds=Math.max(0,Math.floor((durationClock.date.getTime()-(active && call.joinedAt ? call.joinedAt : observedAt))/1000))
         return (seconds>=3600 ? Math.floor(seconds/3600)+":" : "")+String(Math.floor(seconds/60)%60).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0")

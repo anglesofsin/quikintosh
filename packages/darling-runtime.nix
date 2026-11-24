@@ -1,4 +1,4 @@
-{ pkgs, extension ? null, commandName ? "darling", profileName ? "darling" }:
+{ pkgs, extension ? null, commandName ? "darling", profileName ? "darling", languageProvider ? null }:
 let
   release = pkgs.stdenvNoCC.mkDerivation {
     pname = "darling-official-runtime";
@@ -30,13 +30,21 @@ let
     chmod -R u+w $out
     cp -a --remove-destination ${extension}/. $out/libexec/darling/
   '';
+  # The Darwin image is bound separately below. Expanding its framework/Ruby
+  # symlink trees in the generic FHS merger can exhaust millions of inodes.
+  hostRuntime = pkgs.runCommand "${commandName}-host-tools" {} ''
+    mkdir -p $out
+    for directory in bin lib share; do
+      ln -s ${runtime}/$directory $out/$directory
+    done
+  '';
   entry = pkgs.writeShellScript "quickintosh-darling-entry" ''
     export QUICKINTOSH_SETPRIV=${pkgs.util-linux}/bin/setpriv
     exec ${pkgs.python3}/bin/python3 ${../modules/lickintosh/mac-apps/session.py} --namespace-server
   '';
   fhs = pkgs.buildFHSEnv {
     name = "quickintosh-darling-fhs";
-    targetPkgs = p: [ runtime p.bash p.python3 p.coreutils p.util-linux p.glibc p.zlib p.libbsd p.libmd
+    targetPkgs = p: [ (if extension == null then runtime else hostRuntime) p.bash p.python3 p.coreutils p.util-linux p.glibc p.zlib p.libbsd p.libmd
       p.xdg-user-dirs p.libcap p.libelf p.fuse p.systemdLibs p.dbus p.libxml2 p.openssl p.libedit
       p.libGL p.libGLU p.mesa p.vulkan-loader p.cairo p.freetype p.fontconfig
       p.libpng p.libjpeg8 p.libtiff p.giflib p.ffmpeg_6 p.llvmPackages_18.libllvm
@@ -77,6 +85,11 @@ in pkgs.writeShellApplication {
       if [ "''${1:-}" = shell ]; then
         shift
         if [ "$#" -eq 0 ]; then set -- /bin/sh; fi
+        ${pkgs.lib.optionalString (languageProvider != null) ''
+          language_socket="$(${languageProvider}/bin/quickintosh-darling-language --ensure)"
+          # shellcheck disable=SC2016
+          set -- /bin/sh -c 'export QUICKINTOSH_NL_SOCKET="$1"; shift; exec "$@"' quickintosh-language "$language_socket" "$@"
+        ''}
         # These variables belong to the guest shell, not the Linux wrapper.
         # shellcheck disable=SC2016
         set -- shell /bin/sh -c 'export DYLD_LIBRARY_PATH="/usr/lib/swift''${DYLD_LIBRARY_PATH:+:$DYLD_LIBRARY_PATH}"; exec "$@"' quickintosh-swift "$@"

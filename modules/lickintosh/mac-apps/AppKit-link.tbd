@@ -1,0 +1,10 @@
+--- !tapi-tbd-v3
+archs: [ x86_64 ]
+platform: macosx
+install-name: /System/Library/Frameworks/AppKit.framework/Versions/C/AppKit
+current-version: 1.0.0
+compatibility-version: 1.0.0
+exports:
+  - archs: [ x86_64 ]
+    symbols: [ '_OBJC_CLASS_$_NSImage' ]
+...

@@ -1,5 +1,7 @@
 { pkgs }:
 let
+  languageProvider = import ./darling-language.nix { inherit pkgs; };
+  languageFrameworks = import ./darling-naturallanguage.nix { inherit pkgs; };
   manifest = builtins.fromJSON (builtins.readFile ./darling-swift-payload.json);
   payloads = map (file: {
     inherit (file) path;
@@ -12,6 +14,8 @@ let
   extension = pkgs.runCommand "darling-swift-experimental-${builtins.substring 0 8 manifest.revision}" {
     nativeBuildInputs = [ pkgs.llvmPackages_18.clang-unwrapped pkgs.llvmPackages_18.lld ];
   } ''
+    cp -a ${languageFrameworks}/. $out/
+    chmod -R u+w $out
     mkdir -p $out/usr/lib/swift
     ${pkgs.lib.concatMapStringsSep "\n" (file:
       let target = if pkgs.lib.hasInfix ".framework/" file.path
@@ -41,7 +45,7 @@ let
     ln -s Versions/Current/GameplayKit $out/System/Library/Frameworks/GameplayKit.framework/GameplayKit
   '';
   runtime = import ./darling-runtime.nix {
-    inherit pkgs extension;
+    inherit pkgs extension languageProvider;
     commandName = "darling-experimental";
     profileName = "darling-experimental";
   };
@@ -53,5 +57,5 @@ let
   '';
 in pkgs.symlinkJoin {
   name = "darling-experimental-with-notices";
-  paths = [ runtime notices ];
+  paths = [ runtime notices languageProvider ];
 }

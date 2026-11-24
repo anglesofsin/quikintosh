@@ -30,6 +30,8 @@
     packages.${system} = {
       darling = import ./packages/mac-apps.nix { pkgs = import nixpkgs { inherit system; config.allowUnfree = true; }; };
       darling-experimental = import ./packages/darling-experimental.nix { pkgs = import nixpkgs { inherit system; config.allowUnfree = true; }; };
+      darling-language = import ./packages/darling-language.nix { pkgs = import nixpkgs { inherit system; config.allowUnfree = true; }; };
+      darling-naturallanguage = import ./packages/darling-naturallanguage.nix { pkgs = import nixpkgs { inherit system; config.allowUnfree = true; }; };
       default = demo.config.system.build.quickintosh;
       quickintosh = demo.config.system.build.quickintosh;
       shell = demo.config.system.build.lickintosh;

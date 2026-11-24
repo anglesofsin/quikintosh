@@ -159,7 +159,7 @@ In the private test environment, Darwin commands ran and Python's `ctypes`
 loaded the real Combine framework after resolving its auxiliary-library and
 Swift search-path dependencies. This is a loader test, not proof of complete
 Combine behavior. Arc progressed past missing Combine, CryptoKit and GameplayKit
-to missing NaturalLanguage; no Arc browser window was established. Intel import
+past missing NaturalLanguage to missing QuickLookUI; no Arc browser window was established. Intel import
 analysis of the Arc 1.174.2 main executable found 33 CryptoKit and 1,615 SwiftUI
 references. Those are
 imported-reference counts, not counts of implemented features. The pinned
@@ -197,7 +197,9 @@ bounded; stable and experimental launch logs use separate filenames.
 
 The Nix recipe also repairs the release's missing private-extern corecrypto
 exports, publishing the existing function addresses required by Security/AppKit.
-It does not substitute cryptographic implementations. A writable, versioned
+It does not substitute cryptographic implementations. The experimental FHS environment merges only the native host tools; the Darwin
+image is bound separately. This avoids expanding framework/Ruby symlink trees
+and exhausting filesystem inodes during packaging. A writable, versioned
 Darwin base is prepared on first use; this initial copy can take a minute.
 
 ## Validation of this integration
@@ -219,3 +221,67 @@ tests implies universal third-party macOS application compatibility.
 Upstream: [DarlingHQ](https://github.com/darlinghq/darling),
 [official release](https://github.com/darlinghq/darling/releases/tag/v0.1.20260608),
 [documentation](https://docs.darlinghq.org/).
+
+
+## Experimental local language and thumbnail APIs
+
+The experimental runtime includes a clean-room `NaturalLanguage` subset:
+`NLLanguageRecognizer` and the four `NLTokenizer` units. CLD2 performs real,
+local language classification and ICU supplies UTF-16 token boundaries, including
+emoji and paragraph separators. Input text is not saved, logged or sent over a
+network. Classification models and hint weighting are our implementation, not
+Apple's models; identical classifications or probabilities are not promised.
+
+A private Unix socket connects Darwin clients to a small Linux helper. The
+helper starts on demand as `quickintosh-darling-language.service` in the user's
+runtime systemd directory. Directory/socket permissions, peer credentials,
+request/response sizes, timeouts and service memory are bounded. Startup warms
+the classifier and ICU rules before accepting clients. The native integration
+test also delays a real backend response by 3.5 seconds to cover cold-start/I/O
+latency; the previous three-second transport failed this regression control.
+Updating the
+helper restarts only that helper. The bridge uses Linux socket syscalls for its
+own private IPC because the deployed Darling release returns ENOENT when connecting to the
+otherwise visible host socket; it does not replace the application's Darwin socket APIs.
+
+The experimental `QuickLookThumbnailing` subset decodes AppKit-supported images,
+returns aspect-preserving NSImage/CGImage thumbnails and delivers asynchronous
+success/error callbacks. Tests verify actual pixels and 1x/2x dimensions, not
+just a non-null object. This is not full macOS Quick Look: saving thumbnails,
+icon representations, cancellation and document/video generators are not
+implemented. Unsupported generation/saving reports an error.
+
+Optional native validation uses a disposable prefix; it does not open a desktop
+window or reuse the personal prefix:
+
+```sh
+nix build .#darling-experimental
+QUICKINTOSH_TEST_DARLING="$PWD/result/bin/darling-experimental" \
+  python3 tests/test_darling_language.py
+```
+
+Run `tests/test_language_provider.py` using the CLD2/ICU Python environment
+referenced by the `darling-language` wrapper for backend/framing validation.
+Without these optional Python modules those tests explicitly skip.
+
+### Arc compatibility remains incomplete
+
+The original Arc 1.174.2 executable was tested on an isolated Xvfb display after
+adding the language and thumbnail implementations. Its loader now stops at
+`QuickLookUI.framework`. The deployed base also lacks `ScreenCaptureKit` and
+`SwiftUI`, and the Arc main executable alone imports 1,615 SwiftUI symbols.
+These are additional known blockers, not a complete list of remaining defects.
+No Arc browser window or working page renderer has been established.
+
+A dummy library that only satisfies framework names would not implement Swift
+metadata, layout or rendering. OpenSwiftUI is not currently a drop-in Linux
+replacement for this macOS executable; its published integration still requires
+Apple-platform dependencies. See the primary projects' status:
+[Darling](https://github.com/darlinghq/darling) and
+[OpenSwiftUI integration](https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/main/INTEGRATION.md).
+
+The new experimental package also created a real NSWindow on a dedicated Xvfb
+display; `xwininfo` observed its title and geometry. The optional fixture is
+`tests/fixtures/appkit-window-runtime.py`; it opens a window for ten seconds and
+must be run only on an explicitly chosen virtual test display. This demonstrates
+basic AppKit operation, not Arc or SwiftUI compatibility.

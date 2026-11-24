@@ -11,16 +11,21 @@ Item {
  property var widgetData:null
  property bool isSnapshot:false
  readonly property bool fullBleed:true
- readonly property var style:LockClockStyle.styleAt(widgetData?.clockStyle || 0)
+ readonly property string composition:widgetData?.variant || 'classic'
+ readonly property bool stacked:composition==='stacked'
+ readonly property real weight:widgetData?.clockWeight ?? (composition==='minimal' ? .25:stacked ? .4:.6)
+ readonly property bool showDate:widgetData?.clockDate ?? (composition!=='minimal')
+ readonly property bool dateBelow:(widgetData?.clockDatePosition || (stacked ? 'below':'above'))==='below'
+ readonly property var style:LockClockStyle.styleAt(widgetData?.clockStyle ?? (composition==='minimal' ? 3:stacked ? 1:0))
  readonly property bool automatic:widgetData?.clockAutoSize ?? (widgetData?.clockSize===undefined)
- readonly property real basePixelSize:automatic ? Math.max(24,Math.min((width-32)*.34,(height-24)*.56)):widgetData?.clockSize || 76
+ readonly property real basePixelSize:automatic ? Math.max(24,Math.min((width-32)*(stacked ? .60:.34),(height-24)*(stacked ? .30:.56))):widgetData?.clockSize || 76
  readonly property string timeFormat:widgetData?.clockFormat || (widgetData?.clock12Hour ? (widgetData?.clockSeconds ? 'h:mm:ss AP':'h:mm AP'):(widgetData?.clockSeconds ? 'HH:mm:ss':'HH:mm'))
- readonly property string timeText:Qt.formatDateTime(clock.date,timeFormat)
+ readonly property string timeText:stacked ? Qt.formatDateTime(clock.date,widgetData?.clock12Hour ? 'hh':'HH')+'\n'+Qt.formatDateTime(clock.date,widgetData?.clockSeconds ? 'mm:ss':'mm'):Qt.formatDateTime(clock.date,timeFormat)
  readonly property string family:widgetData?.clockFont || style.family
  readonly property color ink:widgetData?.clockColorMode==='accent' ? Theme.accent:widgetData?.clockColor || look?.primary || Theme.textPrimary
  readonly property string effect:widgetData?.clockEffect || 'solid'
  readonly property int alignment:widgetData?.clockAlign==='left' ? Text.AlignLeft:widgetData?.clockAlign==='right' ? Text.AlignRight:Text.AlignHCenter
- readonly property real fittedSize:Math.min(basePixelSize,basePixelSize*Math.max(1,width-40)/Math.max(1,Math.max(measure.advanceWidth(timeText),measure.boundingRect(timeText).width)))
+ readonly property real fittedSize:Math.min(basePixelSize,basePixelSize*Math.max(1,width-40)/Math.max(1,Math.max(...timeText.split('\n').map(line=>Math.max(measure.advanceWidth(line),measure.boundingRect(line).width)))))
  readonly property var hostBackdrop:GlassRegistry.lookup(QsWindow.window)
  readonly property var backdrop:{
   const shared=WidgetState.desktopBackdrop
@@ -29,7 +34,7 @@ Item {
  }
  readonly property bool glassReady:effect==='glass' && !!backdrop?.captureSettled
  SystemClock{id:clock;precision:widgetData?.clockSeconds ? SystemClock.Seconds:SystemClock.Minutes}
- FontMetrics{id:measure;font:Qt.font({family:root.family,pixelSize:root.basePixelSize,weight:LockClockStyle.weightFor(root.widgetData?.clockWeight ?? .6),italic:root.widgetData?.clockItalic ?? root.style.italic,letterSpacing:root.widgetData?.clockSpacing ?? root.style.spacing})}
+ FontMetrics{id:measure;font:Qt.font({family:root.family,pixelSize:root.basePixelSize,weight:LockClockStyle.weightFor(root.weight),italic:root.widgetData?.clockItalic ?? root.style.italic,letterSpacing:root.widgetData?.clockSpacing ?? root.style.spacing})}
  Column {
   id:stack;anchors.centerIn:parent;width:parent.width-24;spacing:root.widgetData?.clockDateGap ?? 6
   component DateLine:Text{
@@ -38,12 +43,12 @@ Item {
    layer.enabled:root.effect==='glass';layer.effect:MultiEffect{shadowEnabled:true;shadowColor:'#80000000';shadowBlur:.4;shadowVerticalOffset:1;autoPaddingEnabled:true}
    font.family:root.widgetData?.clockDateFont || root.family;font.pixelSize:root.widgetData?.clockDateSize || Math.max(11,Math.min(28,root.fittedSize*.17));elide:Text.ElideRight
   }
-  DateLine{visible:root.widgetData?.clockDate!==false && root.widgetData?.clockDatePosition!=='below'}
+  DateLine{visible:root.showDate && !root.dateBelow}
   Item{
    width:parent.width;height:digits.implicitHeight
    LockMac.MorphText{
     id:digits;anchors.fill:parent;text:root.timeText;horizontalAlignment:root.alignment;color:root.ink
-    font:Qt.font({family:root.family,pixelSize:root.fittedSize,weight:LockClockStyle.weightFor(root.widgetData?.clockWeight ?? .6),italic:root.widgetData?.clockItalic ?? root.style.italic,letterSpacing:root.widgetData?.clockSpacing ?? root.style.spacing})
+    font:Qt.font({family:root.family,pixelSize:root.fittedSize,weight:LockClockStyle.weightFor(root.weight),italic:root.widgetData?.clockItalic ?? root.style.italic,letterSpacing:root.widgetData?.clockSpacing ?? root.style.spacing})
     duration:root.widgetData?.clockAnimate && !SettingsPreferences.accessibility.reduceMotion ? 420:0
     useBlur:duration>0;animateWidth:false;layer.enabled:true
     layer.effect:MultiEffect{shadowEnabled:root.effect==='shadow';shadowColor:'#90000000';shadowBlur:.65;shadowVerticalOffset:2;autoPaddingEnabled:true}
@@ -74,6 +79,6 @@ Item {
     fragmentShader:Qt.resolvedUrl(Quickshell.shellDir+'/assets/shaders/liquidglass/WidgetGlyphGlass.frag.qsb')
    }
   }
-  DateLine{visible:root.widgetData?.clockDate!==false && root.widgetData?.clockDatePosition==='below'}
+  DateLine{visible:root.showDate && root.dateBelow}
  }
 }

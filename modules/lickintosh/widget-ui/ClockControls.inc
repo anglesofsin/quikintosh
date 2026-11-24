@@ -1,10 +1,14 @@
      ColumnLayout{visible:root.entry.type==='personalclock';Layout.fillWidth:true;spacing:14
+      RowLayout{Layout.fillWidth:true
+       Text{text:'Design';color:Theme.textPrimary;Layout.fillWidth:true}
+       TahoeCombo{model:['Classic','Stacked','Minimal'];currentIndex:Math.max(0,['classic','stacked','minimal'].indexOf(root.entry.variant || 'classic'));onActivated:i=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{variant:['classic','stacked','minimal'][i]})}
+      }
       Text{text:'Clock Typography';color:Theme.textSecondary;font.pixelSize:12;font.weight:Font.DemiBold}
-      TahoeCombo{Layout.fillWidth:true;model:LockClockStyle.styles.map(style=>style.name);currentIndex:root.entry.clockStyle || 0;onActivated:index=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockStyle:index,clockFont:''})}
+      TahoeCombo{Layout.fillWidth:true;model:LockClockStyle.styles.map(style=>style.name);currentIndex:root.entry.clockStyle ?? (root.entry.variant==='minimal' ? 3:root.entry.variant==='stacked' ? 1:0);onActivated:index=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockStyle:index,clockFont:''})}
       TahoeField{Layout.fillWidth:true;text:root.entry.clockFont || '';placeholderText:'Custom font family';onEditingFinished:WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockFont:text.trim()})}
       ConfigSwitch{text:'Scale text with widget';checked:root.entry.clockAutoSize ?? (root.entry.clockSize===undefined);onToggled:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockAutoSize:value})}
       ConfigSlider{visible:!(root.entry.clockAutoSize ?? (root.entry.clockSize===undefined));text:'Font size';from:20;to:500;decimals:0;value:root.entry.clockSize || 76;onMoved:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockSize:Math.round(value),clockAutoSize:false})}
-      ConfigSlider{text:'Weight';from:0;to:1;decimals:2;value:root.entry.clockWeight ?? .6;onMoved:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockWeight:value})}
+      ConfigSlider{text:'Weight';from:0;to:1;decimals:2;value:root.entry.clockWeight ?? (root.entry.variant==='minimal' ? .25:root.entry.variant==='stacked' ? .4:.6);onMoved:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockWeight:value})}
       ConfigSlider{text:'Letter spacing';from:-4;to:20;decimals:1;value:root.entry.clockSpacing ?? LockClockStyle.styleAt(root.entry.clockStyle || 0).spacing;onMoved:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockSpacing:value})}
       ConfigSwitch{text:'Italic';checked:root.entry.clockItalic ?? LockClockStyle.styleAt(root.entry.clockStyle || 0).italic;onToggled:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockItalic:value})}
       RowLayout{Layout.fillWidth:true
@@ -24,12 +28,12 @@
       ConfigSwitch{text:'12-hour clock';checked:!!root.entry.clock12Hour;onToggled:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clock12Hour:value})}
       ConfigSwitch{text:'Show seconds';checked:!!root.entry.clockSeconds;onToggled:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockSeconds:value})}
       TahoeField{Layout.fillWidth:true;text:root.entry.clockFormat || '';placeholderText:'Custom time format';onEditingFinished:WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockFormat:text.trim()})}
-      ConfigSwitch{text:'Show date';checked:root.entry.clockDate!==false;onToggled:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockDate:value})}
-      RowLayout{visible:root.entry.clockDate!==false;Layout.fillWidth:true
+      ConfigSwitch{text:'Show date';checked:root.entry.clockDate ?? (root.entry.variant!=='minimal');onToggled:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockDate:value})}
+      RowLayout{visible:root.entry.clockDate ?? (root.entry.variant!=='minimal');Layout.fillWidth:true
        Text{text:'Date position';color:Theme.textPrimary;Layout.fillWidth:true}
-       TahoeCombo{model:['Above time','Below time'];currentIndex:root.entry.clockDatePosition==='below' ? 1:0;onActivated:i=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockDatePosition:i ? 'below':'above'})}
+       TahoeCombo{model:['Above time','Below time'];currentIndex:(root.entry.clockDatePosition || (root.entry.variant==='stacked' ? 'below':'above'))==='below' ? 1:0;onActivated:i=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockDatePosition:i ? 'below':'above'})}
       }
-      TahoeField{visible:root.entry.clockDate!==false;Layout.fillWidth:true;text:root.entry.clockDateFormat || '';placeholderText:'Custom date format';onEditingFinished:WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockDateFormat:text.trim()})}
-      ConfigSlider{visible:root.entry.clockDate!==false;text:'Date size';from:10;to:72;decimals:0;value:root.entry.clockDateSize || 14;onMoved:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockDateSize:Math.round(value)})}
-      ConfigSlider{visible:root.entry.clockDate!==false;text:'Date spacing';from:0;to:40;decimals:0;value:root.entry.clockDateGap ?? 6;onMoved:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockDateGap:Math.round(value)})}
+      TahoeField{visible:root.entry.clockDate ?? (root.entry.variant!=='minimal');Layout.fillWidth:true;text:root.entry.clockDateFormat || '';placeholderText:'Custom date format';onEditingFinished:WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockDateFormat:text.trim()})}
+      ConfigSlider{visible:root.entry.clockDate ?? (root.entry.variant!=='minimal');text:'Date size';from:10;to:72;decimals:0;value:root.entry.clockDateSize || 14;onMoved:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockDateSize:Math.round(value)})}
+      ConfigSlider{visible:root.entry.clockDate ?? (root.entry.variant!=='minimal');text:'Date spacing';from:0;to:40;decimals:0;value:root.entry.clockDateGap ?? 6;onMoved:value=>WidgetState.configure(WidgetState.editingZone,WidgetState.editingId,{clockDateGap:Math.round(value)})}
      }

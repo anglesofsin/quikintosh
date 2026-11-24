@@ -138,3 +138,6 @@ shader.parent.mkdir(parents=True,exist_ok=True)
 shutil.copyfile(here/'WidgetGlyphGlass.frag',shader)
 qsb=os.environ.get('QUICKINTOSH_TEST_QSB','qsb')
 subprocess.run([qsb,'--glsl','100 es,120,150,300 es,320 es,440','--hlsl','50','--msl','12','-o',str(shader)+'.qsb',str(shader)],check=True)
+
+# A gallery offers clock compositions, not seven copies of one design.
+edit('services/WidgetRegistry.qml','    function tilesOf(type) {',"    function tilesOf(type) {\n        if(type==='personalclock')return [\n            {size:'m',variant:'classic',label:'Classic'},\n            {size:'l',variant:'stacked',label:'Stacked'},\n            {size:'m',variant:'minimal',label:'Minimal'}\n        ]")

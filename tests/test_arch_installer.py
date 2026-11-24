@@ -48,4 +48,17 @@ class Install(unittest.TestCase):
   self.assertEqual(env['QUICKINTOSH_PLATFORM'],'arch')
  def test_graphics_missing_fails_explicitly(self):
   with self.assertRaises(RuntimeError):launcher.graphics_command(['test'],{'graphics':str(self.bundle)})
+class Pam(unittest.TestCase):
+ def test_host_modules_absolute_and_includes_preserved(self):
+  spec=importlib.util.spec_from_file_location('pam_setup',ROOT/'arch/pam_setup.py');pam=importlib.util.module_from_spec(spec);spec.loader.exec_module(pam)
+  with tempfile.TemporaryDirectory() as d:
+   base=Path(d);modules=base/'modules';modules.mkdir()
+   (modules/'pam_unix.so').touch();(modules/'pam_deny.so').touch()
+   (base/'system-auth').write_text('auth [success=1 default=bad] pam_unix.so try_first_pass\naccount include child\n')
+   (base/'child').write_text('account required pam_deny.so\n')
+   result=pam.build_policies(base,modules)
+   self.assertIn(str(modules/'pam_unix.so'),result['quickintosh-system-auth'])
+   self.assertIn('account include quickintosh-child',result['quickintosh-system-auth'])
+   self.assertIn('[success=1 default=bad]',result['quickintosh-system-auth'])
 if __name__=='__main__':unittest.main()
+

@@ -15,7 +15,7 @@ cd ~/quickintosh
 sudo bash arch/system-setup.sh
 ```
 
-A etapa de sistema faz uma atualização completa `pacman -Syu --needed`, instala Nix e serviços necessários e cria as políticas PAM da tela de bloqueio apenas se ausentes. Pode haver perguntas/conflitos normais do pacman, por exemplo ao substituir PulseAudio por PipeWire; o OpenCode deve explicar e resolver isso com você, não forçar a remoção de pacotes. Não roda `--noconfirm` e não instala driver NVIDIA automaticamente.
+A etapa de sistema faz uma atualização completa `pacman -Syu --needed`, instala Nix e serviços necessários e cria políticas PAM privadas para a tela de bloqueio, preservando políticas próprias do administrador. As referências aos módulos PAM usam caminhos absolutos do Arch, para não carregar inadvertidamente módulos/PAM helpers do Nix; os includes e controles do host são preservados. Reexecute a preparação após alterações relevantes do `pambase`. Pode haver perguntas/conflitos normais do pacman, por exemplo ao substituir PulseAudio por PipeWire; o OpenCode deve explicar e resolver isso com você, não forçar a remoção de pacotes. Não roda `--noconfirm` e não instala driver NVIDIA automaticamente.
 
 Se já usa Nix/serviços equivalentes e prefere instalação manual, consulte o script para a lista exata de pacotes e os dois arquivos PAM. O método é compatível com a [instalação Nix via pacman](https://nix.dev/install-nix.html) e com a [ArchWiki](https://wiki.archlinux.org/title/Nix). Abra um novo terminal/login se o Nix ainda não estiver no PATH ou seu usuário não conseguir acessar o daemon. Habilite os serviços de áudio/rede/contas que quiser usar; o diagnóstico diferencia os ausentes.
 

@@ -5,7 +5,7 @@ Esta implementação foi preparada no computador de desenvolvimento NixOS. Não 
 Verificações realizadas:
 
 - Build do bundle Arch (`.#arch`) e do wrapper Mesa (`.#arch-mesa`).
-- Seis testes de ativação em home temporário: instalação isolada, restauração de backup, preservação de arquivo editado, reinstalação, rollback de falha e ambiente de execução.
+- Sete testes: política PAM com caminhos de módulos do host e preservação de includes/controles; mais seis testes de ativação em home temporário: instalação isolada, restauração de backup, preservação de arquivo editado, reinstalação, rollback de falha e ambiente de execução.
 - Ativação/desinstalação do bundle real em home temporário; conferência de ausência dos caminhos do desenvolvedor e caminhos de comandos NixOS na configuração gerada.
 - Dois arquivos Lua reais da rice analisados com `luac -p` após a adaptação dos caminhos.
 - Launchers gerados analisados com `bash -n`; fontes Python verificadas com `py_compile`.

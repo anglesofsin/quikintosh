@@ -3,6 +3,7 @@
 let cfg = config.quickintosh; in {
   options.quickintosh = {
     enable = lib.mkEnableOption "the Quickintosh desktop";
+    macApps.enable = lib.mkEnableOption "experimental macOS application compatibility with Darling";
     user = lib.mkOption { type = lib.types.str; description = "Existing normal user receiving the desktop configuration"; };
     discord.enable = lib.mkEnableOption "Discord clients with the Dynamic Island companion built in";
     discord.clients = lib.mkOption { type = lib.types.listOf (lib.types.enum [ "canary" "ptb" "stable" ]); default = [ "canary" ]; description = "Discord channels to install with the companion"; };
@@ -35,7 +36,8 @@ let cfg = config.quickintosh; in {
     programs.dconf.enable = true;
     programs.gamemode.enable = true;
     users.users.${cfg.user}.extraGroups = [ "video" "audio" "input" "i2c" "networkmanager" ];
-    environment.systemPackages = with pkgs; [ kitty matugen mpv pavucontrol kdePackages.kdeconnect-kde bibata-cursors ];
+    environment.systemPackages = with pkgs; [ kitty matugen mpv pavucontrol kdePackages.kdeconnect-kde bibata-cursors ]
+      ++ lib.optionals cfg.macApps.enable [ (import ../packages/mac-apps.nix { inherit pkgs; }) ];
     fonts.packages = with pkgs; [ nerd-fonts.jetbrains-mono liberation_ttf ];
     xdg.portal.extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
   };

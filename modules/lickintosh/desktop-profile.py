@@ -1,5 +1,5 @@
 """Reversible GTK and directory defaults, selected only for Lickintosh."""
-import base64, configparser, fcntl, json, os, subprocess, sys
+import base64, configparser, fcntl, json, os, shutil, subprocess, sys
 from pathlib import Path
 from quicklook.mime_types import supported_mimes,DESKTOP_ID
 HOME=Path.home(); CONFIG=HOME/'.config'; STATE=HOME/'.local/state/lickintosh/desktop-profile'
@@ -109,6 +109,10 @@ def apply(theme_root,icon_root,color):
  for section in ['Default Applications','Added Associations']:
   if not c.has_section(section):c.add_section(section)
   c[section]['inode/directory']='lickintosh-finder.desktop;'
+ if shutil.which('quickintosh-mac'):
+  for mime in ['application/x-apple-diskimage','application/vnd.apple.installer+xml','application/x-quickintosh-macos-package']:
+   c['Default Applications'][mime]='quickintosh-mac-installer.desktop;'
+   c['Added Associations'][mime]='quickintosh-mac-installer.desktop;'
  quicklook_defaults(c)
  try:
   overrides=json.loads((CONFIG/'lickintosh/core/settings-preferences.json').read_text()).get('defaultApps',{})

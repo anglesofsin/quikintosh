@@ -10,6 +10,7 @@ Quickintosh é um fork/integrador; não reivindica autoria dos projetos abaixo.
 | Noctalia | https://github.com/noctalia-dev/noctalia | Licença do checkout fixado; não é re-licenciado aqui |
 | Caelestia | https://github.com/caelestia-dots/shell | Licença do input fixado |
 | eqSh | https://github.com/eq-desktop/eqsh | Licença do input fixado |
+| Darling | https://github.com/darlinghq/darling/releases/tag/v0.1.20260608 | GPL-3.0-or-later e licenças de cada componente Darwin; avisos dos pacotes oficiais preservados na derivação |
 | GTK Tahoe | https://github.com/vinceliuice/MacTahoe-gtk-theme | GPL-3.0; baixado pela receita Nix |
 | Ícones adicionais | https://github.com/MiaowCham/macOS_Tahoe_Themes_for_MDF e https://github.com/Scrimas/MacOS-Like | Consulte licenças/avisos das fontes; assets não são re-licenciados pelo GPL do código |
 | Quickshell, Nautilus, Matugen, Equicord e demais dependências | Inputs/Nixpkgs fixados em flake.lock | Cada dependência conserva sua licença |

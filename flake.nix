@@ -28,6 +28,7 @@
   in {
     nixosModules.default = import ./nix/module.nix { inherit inputs; };
     packages.${system} = {
+      darling = import ./packages/mac-apps.nix { pkgs = import nixpkgs { inherit system; config.allowUnfree = true; }; };
       default = demo.config.system.build.quickintosh;
       quickintosh = demo.config.system.build.quickintosh;
       shell = demo.config.system.build.lickintosh;

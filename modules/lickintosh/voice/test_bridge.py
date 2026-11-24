@@ -26,3 +26,12 @@ class ExternalFallbackTests(unittest.TestCase):
   broker.update('client',dict(type='voice',version=1,client='canary',active=True,channel='Actual server',participants=[]))
   self.assertEqual(values[-1]['clients']['canary']['channel'],'Actual server')
   broker.remove('client');self.assertTrue(values[-1]['clients']['canary']['external'])
+
+class IncomingTests(unittest.TestCase):
+ def test_incoming_state_and_capability_are_kept(self):
+  event=dict(type='voice',version=1,client='stable',active=True,state='incoming',incomingControls=True,channelId='22',participants=[])
+  value=clean(event)
+  self.assertEqual(value['state'],'incoming');self.assertTrue(value['incomingControls'])
+ def test_unknown_state_cannot_become_incoming(self):
+  event=dict(type='voice',version=1,client='stable',active=True,state='unknown',participants=[])
+  self.assertEqual(clean(event)['state'],'active');self.assertFalse(clean(event)['incomingControls'])

@@ -11,6 +11,7 @@ for name,target in [('VoiceCalls.qml','services/VoiceCalls.qml'),('VoiceView.qml
 for directory,entry in [('services','singleton VoiceCalls VoiceCalls.qml'),('overlays','VoiceView VoiceView.qml\nVoiceAvatar VoiceAvatar.qml')]:
  p=base/directory/'qmldir';p.write_text(p.read_text()+'\n'+entry+'\n')
 options={
+ 'voiceIncoming':('bool',True,'Expand incoming calls'),
  'voiceLayout':('pick','auto','Call presentation'),
  'voiceBackground':('bool',True,'Minimize beside music or video'),
  'voiceClock':('bool',True,'Keep the clock in the center'),
@@ -120,3 +121,11 @@ edit('overlays/IslandWindow.qml','            scale: privacy.on ? 1 : 0\n       
 # Keep the update repair worker outside the client and preserve its logs.
 for name in ['guard.py','install-clients.py','main-hook.cjs','discord-bridge.js']:(base/name).write_text((source/name).read_text())
 p=base/'services/VoiceCalls.qml';s=p.read_text();s=s.replace('    Process {\n        id: process','    Process{running:root.enabled;command:["'+sys.argv[2]+'",Quickshell.shellDir+"/rosa/guard.py"]}\n    Process {\n        id: process');p.write_text(s)
+
+# Incoming metadata interrupts media until dismissed; hover cannot immediately reopen it.
+edit('overlays/Island.qml','        if (VoiceCalls.active && (!root.voiceSide || root.voicePeek))', '        if (VoiceCalls.showIncoming) return "voice";\n        if (VoiceCalls.incoming && !VoiceCalls.showIncoming) return Media.has && Media.playing ? "media":"clock";\n        if (VoiceCalls.active && (!root.voiceSide || root.voicePeek))')
+edit('overlays/IslandWindow.qml','    readonly property bool wide:\n','    readonly property bool wide:\n        !(VoiceCalls.incoming && !VoiceCalls.showIncoming) &&\n')
+edit('overlays/IslandWindow.qml','|| win.hub.voicePeek || win.replying','|| win.hub.voicePeek || VoiceCalls.showIncoming || win.replying')
+edit('overlays/IslandWindow.qml','                onTapped: {\n                    if (win.hub.kind === "call"', '                onTapped: {\n                    if(VoiceCalls.incoming){VoiceCalls.dismissIncoming();win.hub.voicePeek=false;win.forced=false;win.hub.pinned=false;win.hushed=true;return}\n                    if (win.hub.kind === "call"')
+
+p=root/'ui/topbar/statusarea/notifcenter/NotifService.qml';s=p.read_text();anchor='        _centerModel.append({ notifObj: notification })';assert s.count(anchor)==1;s=s.replace(anchor,'        if(!root.dndEnabled)Rosa.VoiceCalls.receiveNotification(notification)\n'+anchor,1);p.write_text(s)

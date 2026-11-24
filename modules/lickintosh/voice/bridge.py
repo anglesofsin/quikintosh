@@ -21,7 +21,7 @@ def clean(value):
         if not re.fullmatch(r'https://cdn\.discordapp\.com/avatars/\d{1,24}/[a-zA-Z0-9_]+\.png\?size=80',avatar): avatar=''
         participants.append(dict(id=str(p['id']),name=str(p.get('name','Participant'))[:100],avatar=avatar,
             **{k:p.get(k) is True for k in ('self','muted','deaf','speaking')}))
-    return dict(client=value['client'],active=value.get('active') is True,channel=str(value.get('channel',''))[:160],
+    return dict(state=value.get('state') if value.get('state') in ('incoming','active','idle') else 'active',incomingControls=value.get('incomingControls') is True,client=value['client'],active=value.get('active') is True,channel=str(value.get('channel',''))[:160],
         channelId=str(value.get('channelId',''))[:24],
         image=str(value.get('image','')) if re.fullmatch(r'https://cdn\.discordapp\.com/(?:icons|channel-icons|avatars)/\d{1,24}/[a-zA-Z0-9_]+\.png\?size=80',str(value.get('image',''))) else '',
         controls=value.get('controls') is True, joinedAt=min(time.time()*1000,max(0,float(value.get('joinedAt') or time.time()*1000))),
@@ -89,7 +89,7 @@ async def pipewire(broker):
                 broker.external=external
                 calls=sorted({str(p.get('application.name') or p.get('application.process.binary') or 'Communication app')[:100]
                     for p in nodes.values() if str(p.get('media.role','')).lower()=='communication'
-                    and str(p.get('media.class','')).startswith('Stream/')
+                    and p.get('_state')=='running' and str(p.get('media.class','')).startswith('Stream/')
                     and not any(x in str(p.get('application.name','')).lower() for x in ('discord','equibop'))})
                 value=dict(client='system',active=True,channel=' · '.join(calls),guild='',streamer=False,participants=[]) if calls else None
                 if value!=previous or external_changed: previous=value; broker.generic=value; broker.publish()
@@ -111,9 +111,9 @@ async def main():
                     value=json.loads(data)
                     if isinstance(value,dict) and value.get('type')=='control':
                         action=value.get('action')
-                        if action not in ('mute','deaf','disconnect'): continue
+                        if action not in ('mute','deaf','disconnect','accept','reject'): continue
                         for target,call in list(broker.sessions.items()):
-                            if call.get('controls') and call.get('active') and call.get('session')==value.get('session') and call.get('channelId')==value.get('channelId'):
+                            if (call.get('incomingControls') and call.get('state')=='incoming' if action in ('accept','reject') else call.get('controls') and call.get('state')!='incoming') and call.get('active') and call.get('session')==value.get('session') and call.get('channelId')==value.get('channelId'):
                                 await target.send(json.dumps(dict(type='control',action=action,channelId=call['channelId'])))
                                 break
                     else: broker.update(ws,value)

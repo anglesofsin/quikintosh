@@ -12,6 +12,7 @@ Item {
     implicitWidth: expanded ? 500 : bubble ? 24 : 106
     implicitHeight: expanded ? 68 : 24
     property real wantH: implicitHeight
+    TapHandler{enabled:view.expanded && VoiceCalls.incoming;onTapped:VoiceCalls.dismissIncoming()}
     VoiceAvatar {
         visible:!view.expanded
         width:view.bubble ? parent.width-4 : 20; height:width
@@ -37,20 +38,20 @@ Item {
             ColumnLayout {
                 Layout.fillWidth:true; spacing:4
                 Text { Layout.fillWidth:true; text:VoiceCalls.title; textFormat:Text.PlainText; elide:Text.ElideRight; color:"white"; font.pixelSize:17; font.bold:true }
-                Text { Layout.fillWidth:true; text:(IslandConfig.s("voiceGuild") && VoiceCalls.call && VoiceCalls.call.guild ? VoiceCalls.call.guild+" · " : "")+"In call"+(IslandConfig.s("voiceDuration") ? " · "+VoiceCalls.duration : ""); textFormat:Text.PlainText; elide:Text.ElideRight; color:"#b9bcc9"; font.pixelSize:12 }
+                Text { Layout.fillWidth:true; text:(IslandConfig.s("voiceGuild") && VoiceCalls.call && VoiceCalls.call.guild ? VoiceCalls.call.guild+" · " : "")+(VoiceCalls.incoming ? "Incoming call":"In call")+(!VoiceCalls.incoming && IslandConfig.s("voiceDuration") ? " · "+VoiceCalls.duration : ""); textFormat:Text.PlainText; elide:Text.ElideRight; color:"#b9bcc9"; font.pixelSize:12 }
             }
             Repeater {
-                model:IslandConfig.s("voiceControls") && VoiceCalls.active && VoiceCalls.call.client !== "system" ? ["mute","deaf","disconnect"] : []
+                model:IslandConfig.s("voiceControls") && VoiceCalls.active && (VoiceCalls.incoming ? VoiceCalls.incomingControls:VoiceCalls.controlsAvailable) ? (VoiceCalls.incoming ? ["reject","accept"]:["mute","deaf","disconnect"]) : []
                 delegate: ToolButton {
                     required property string modelData
-                    enabled:VoiceCalls.controlsAvailable
+                    enabled:VoiceCalls.incoming ? VoiceCalls.incomingControls:VoiceCalls.controlsAvailable
                     readonly property bool selected:modelData==="mute" ? VoiceCalls.selfMuted : modelData==="deaf" ? VoiceCalls.selfDeaf : true
                     Layout.preferredWidth:40; Layout.preferredHeight:40
-                    text:modelData==="mute" ? (selected ? "󰍭" : "󰍬") : modelData==="deaf" ? (selected ? "󰟎" : "󰋋") : "󰏲"
+                    text:modelData==="accept" ? "󰏲" : modelData==="reject" ? "󰏲" : modelData==="mute" ? (selected ? "󰍭" : "󰍬") : modelData==="deaf" ? (selected ? "󰟎" : "󰋋") : "󰏲"
                     font.pixelSize:21
                     contentItem:Text { text:parent.text; font:parent.font; color:"white"; horizontalAlignment:Text.AlignHCenter; verticalAlignment:Text.AlignVCenter }
-                    background:Rectangle { radius:width/2; color:parent.modelData==="disconnect" ? "#ed4245" : parent.selected ? "#5865f2" : "#393b46"; opacity:parent.hovered ? 1 : 0.9 }
-                    Accessible.name:modelData==="mute" ? "Toggle microphone" : modelData==="deaf" ? "Toggle deafen" : "Leave call"
+                    background:Rectangle { radius:width/2; color:parent.modelData==="accept" ? "#23a55a" : ["reject","disconnect"].includes(parent.modelData) ? "#ed4245" : parent.selected ? "#5865f2" : "#393b46"; opacity:parent.hovered ? 1 : 0.9 }
+                    Accessible.name:modelData==="accept" ? "Answer call" : modelData==="reject" ? "Decline call" : modelData==="mute" ? "Toggle microphone" : modelData==="deaf" ? "Toggle deafen" : "Leave call"
                     onClicked:VoiceCalls.control(modelData)
                 }
             }

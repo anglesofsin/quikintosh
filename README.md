@@ -9,7 +9,7 @@ Este repositório contém as fontes da shell, os assets do upstream, as modifica
 - **Menu Bar:** menus do aplicativo, troca por hover, cores automáticas/manuais, logo personalizável e cantos configuráveis.
 - **Sons de notificação:** Rebound por padrão, alternativas/arquivo próprio, volume e controle por app; Não Perturbe silencia e interrompe os toques. Configure em Settings → Sound.
 - **Dynamic Island:** notificações, música, chamadas, avatares e indicadores de fala, controles de chamada, privacidade, fullscreen e ocultação por inatividade.
-- **Dock:** magnificação, apps instalados e recentes, bloqueio de apps nos recentes, Downloads/Recentes/Lixeira em pilhas, seleção múltipla, arrastar arquivos e menus de contexto.
+- **Dock:** ocultação automática inteligente (fica visível na mesa e só se recolhe quando uma janela ocupa sua área), magnificação, apps instalados e recentes, bloqueio de apps nos recentes, Downloads/Recentes/Lixeira em pilhas, seleção múltipla, arrastar arquivos e menus de contexto.
 - **Apps macOS (opcional):** Darling em ambiente persistente, biblioteca de `.app`, instaladores `.dmg`/`.pkg` e atalhos integrados. Compatibilidade experimental; [instalação e limites](docs/MACOS-APPS.md).
 - **Finder:** Nautilus com tema Tahoe, sidebar e controles translúcidos, previews e integração ao Quick Look.
 - **Quick Look / Quickview:** imagens, GIFs, vídeos, áudio, texto e outros formatos suportados; navegação, zoom, controles de mídia e Liquid Glass. Espaço/Esc/clique fora fecham a prévia.

@@ -46,6 +46,40 @@ Scope {
   const current=controller.pinnedApps.findIndex(a=>controller.pinnedKey(a)===draggedKey)
   if(current>=0 && current!==target)controller.reorderPinnedApps(current,target)
  }
+ // Keep the existing shared geometry inventory updating even while hidden.
+ // This subscription creates no screencopy surfaces or additional IPC process.
+ Loader {
+  id:windowWatcher
+  active:root.options.hoverToReveal
+  sourceComponent:DockOcclusion {
+   property bool subscribed:false
+   Component.onCompleted:{subscribed=true;GlassTracker.captureUsers++;GlassTracker.refreshMonitorSnapshot();GlassTracker.refreshWindows()}
+   Component.onDestruction:if(subscribed)GlassTracker.captureUsers--
+   clients:Hyprland.toplevels.values.map(client=>client.lastIpcObject)
+   monitors:GlassTracker.monitorSnapshots.map(m=>{
+    const live=Hyprland.monitors.values.find(item=>item.name===m.name)
+    return Object.assign({},m,{activeWorkspace:{id:live?.activeWorkspace?.id ?? m.activeWorkspace?.id}})
+   })
+   monitorName:dock.screen?.name || ''
+   shellScale:Number(Quickshell.env('QT_SCALE_FACTOR') || 1)
+   // Use resting bounds: hover magnification and the hide animation must not
+   // change collision detection and cause the dock to oscillate in/out.
+   dockRect:Qt.rect(root.origin.x+(root.vertical ? (options.position==='right' ? dock.width-root.thickness-8:0):(dock.width-tiles.implicitWidth-24)/2),
+                    root.origin.y+(root.vertical ? (dock.height-tiles.implicitHeight-24)/2:dock.height-root.thickness-8),
+                    root.vertical ? root.thickness+8:tiles.implicitWidth+24,
+                    root.vertical ? tiles.implicitHeight+24:root.thickness+8)
+  }
+ }
+ IpcHandler {
+  target:'dock'
+  function state():string {
+   const r=windowWatcher.item?.dockRect
+   return JSON.stringify({automatic:options.hoverToReveal,visible:dock.shown,
+    obstructed:!!windowWatcher.item?.blocked,monitor:dock.screen?.name,
+    rectangle:r ? [r.x,r.y,r.width,r.height]:null,
+    scale:windowWatcher.item?.shellScale || 1})
+  }
+ }
  property bool revealed:false
  property int hoveredIndex:-1
  property string hoverLabel:''
@@ -168,7 +202,7 @@ Scope {
  Timer{id:springDismiss;interval:1000;running:root.stackOpen && root.stackDropMode && root.dragHoveredPath==='' && !receiverStack.dropInside;onTriggered:{root.stackOpen=false;root.stackPending=false;root.stackDropMode=false}}
  Timer{id:stackRefresh;interval:120;onTriggered:root.send({action:'list',folder:root.folder,sort:root.preference(root.folder,'sort')})}
  Timer {interval:2500;running:root.options.showTrash;repeat:true;onTriggered:root.send({action:'refresh'})}
- Timer {id:hideDelay;interval:root.options.hideDelay;onTriggered:if(!root.stackOpen && !root.stackPending && !root.controller.menuVisible)root.revealed=false}
+ Timer {id:hideDelay;interval:root.options.hideDelay;onTriggered:if(!root.lensHovered && !edgeHover.hovered && !root.stackOpen && !root.stackPending && !root.controller.menuVisible)root.revealed=false}
  onStackOpenChanged:if(stackOpen){hideDelay.stop();revealed=true}else{root.hoveredIndex=-1;root.frozenZoomIndex=-1;if(options.hoverToReveal || controller.fullscreenActive)hideDelay.restart()}
  Connections {target:root.options;function onHoverToRevealChanged(){root.revealed=!root.options.hoverToReveal}function onPositionChanged(){root.controller.closeContextMenu();root.stackOpen=false;root.stackPending=false}function onStackSortChanged(){root.refreshPreviews()}function onStackDisplayChanged(){root.refreshPreviews()}}
  PanelWindow {
@@ -180,8 +214,8 @@ Scope {
   exclusiveZone:options.hoverToReveal || controller.fullscreenActive ? 0 : root.thickness+8
   color:'transparent'
   WlrLayershell.namespace:'quickshell:dock';WlrLayershell.layer:WlrLayer.Top;WlrLayershell.keyboardFocus:WlrKeyboardFocus.None
-  readonly property bool shown:DockDrag.desktopDragging || DockDrag.stackDragging || root.stackOpen || root.stackPending || controller.menuVisible || root.revealed || (!options.hoverToReveal && !controller.fullscreenActive)
-  mask:Region{item:dock.shown ? inputRegion : edge;radius:dock.shown ? 24:0}
+  readonly property bool shown:DockDrag.desktopDragging || DockDrag.stackDragging || root.stackOpen || root.stackPending || controller.menuVisible || root.revealed || (!options.hoverToReveal && !controller.fullscreenActive) || (options.hoverToReveal && !windowWatcher.item?.blocked)
+  mask:Region{Region{item:dock.shown ? inputRegion:edge;radius:dock.shown ? 24:0}Region{item:edge}}
   Item{id:inputRegion;x:plate.x;y:plate.y;width:plate.width;height:plate.height
    HoverHandler{id:lensHover;parent:plate
     onHoveredChanged:{root.lensHovered=hovered;controller.hoverActive=hovered;if(hovered){root.revealed=true;hideDelay.stop()}else{if(!root.stackOpen && !root.stackPending)root.hoveredIndex=-1;root.hoverLabel='';if(options.hoverToReveal || controller.fullscreenActive)hideDelay.restart()}}
@@ -193,7 +227,7 @@ Scope {
    width:root.vertical ? 4 : plate.width;height:root.vertical ? plate.height : 4
    x:root.vertical ? (options.position==='right' ? dock.width-4 : 0) : plate.x
    y:root.vertical ? plate.y : dock.height-4
-   HoverHandler{onHoveredChanged:if(hovered){root.revealed=true;hideDelay.stop()}}
+   HoverHandler{id:edgeHover;onHoveredChanged:{if(hovered){root.revealed=true;hideDelay.stop()}else if(options.hoverToReveal || controller.fullscreenActive)hideDelay.restart()}}
    DropArea{anchors.fill:parent;onEntered:drag=>{if(drag.hasUrls){root.revealed=true;hideDelay.stop()}}}
   }
   LiquidGlassBackdrop {

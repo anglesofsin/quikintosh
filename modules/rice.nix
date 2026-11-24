@@ -227,6 +227,7 @@ let
       ln -s ${tahoeIconBank}/layered-icons/bank.json $out/layered-icons/bank.json
       ${pkgs.python3}/bin/python3 ${./lickintosh/performance}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/tahoe-feedback}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/voice}/incoming-ui.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/notification-sounds}/integrate.py $out
       qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o $out/components/icon-style.frag.qsb $out/components/icon-style.frag
       qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o $out/components/bar-tint.frag.qsb $out/components/bar-tint.frag

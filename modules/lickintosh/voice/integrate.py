@@ -124,8 +124,5 @@ p=base/'services/VoiceCalls.qml';s=p.read_text();s=s.replace('    Process {\n   
 
 # Incoming metadata interrupts media until dismissed; hover cannot immediately reopen it.
 edit('overlays/Island.qml','        if (VoiceCalls.active && (!root.voiceSide || root.voicePeek))', '        if (VoiceCalls.showIncoming) return "voice";\n        if (VoiceCalls.incoming && !VoiceCalls.showIncoming) return Media.has && Media.playing ? "media":"clock";\n        if (VoiceCalls.active && (!root.voiceSide || root.voicePeek))')
-edit('overlays/IslandWindow.qml','    readonly property bool wide:\n','    readonly property bool wide:\n        !(VoiceCalls.incoming && !VoiceCalls.showIncoming) &&\n')
-edit('overlays/IslandWindow.qml','|| win.hub.voicePeek || win.replying','|| win.hub.voicePeek || VoiceCalls.showIncoming || win.replying')
-edit('overlays/IslandWindow.qml','                onTapped: {\n                    if (win.hub.kind === "call"', '                onTapped: {\n                    if(VoiceCalls.incoming){VoiceCalls.dismissIncoming();win.hub.voicePeek=false;win.forced=false;win.hub.pinned=false;win.hushed=true;return}\n                    if (win.hub.kind === "call"')
 
 p=root/'ui/topbar/statusarea/notifcenter/NotifService.qml';s=p.read_text();anchor='        _centerModel.append({ notifObj: notification })';assert s.count(anchor)==1;s=s.replace(anchor,'        if(!root.dndEnabled)Rosa.VoiceCalls.receiveNotification(notification)\n'+anchor,1);p.write_text(s)

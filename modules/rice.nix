@@ -269,6 +269,7 @@ let
 
       ${pkgs.python3}/bin/python3 ${./lickintosh/desktop-polish}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/finder-menus}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/widget-ui}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/lock-state-sync.py} $out

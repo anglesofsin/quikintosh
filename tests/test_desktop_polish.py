@@ -50,6 +50,15 @@ Scope {
   for(const size of ['s','m','l','portrait','banner','wide','tall','square']){
    const d=WidgetState.sizeOf(size);if(d.w<153 || d.h<153){Qt.exit(15);return}
   }
+  WidgetState.allowCtrlFreePlacement=true
+  if(!WidgetState.resizeWidgetTo('a',500,250,false)){Qt.exit(19);return}
+  let dimensions=WidgetState.sizeOf(WidgetState.desktop[0])
+  if(dimensions.w!==500 || dimensions.h!==250 || WidgetState.desktop[0].image!=='/test.gif'){Qt.exit(20);return}
+  DesktopFiles.layout=[{x:WidgetState.desktop[0].x+216,y:WidgetState.desktop[0].y+44,w:50,h:50}]
+  if(WidgetState.resizeWidgetTo('a',600,280,false)){Qt.exit(21);return}
+  if(!WidgetState.resizeWidgetTo('a',600,280,true)){Qt.exit(22);return}
+  WidgetState.resizeWidget('desktop','a','m');dimensions=WidgetState.sizeOf(WidgetState.desktop[0])
+  if(dimensions.w!==320 || dimensions.h!==153){Qt.exit(23);return}
   PrivacyPresentation.setCorner('test',true)
   if(!PrivacyPresentation.corner.test){Qt.exit(16);return}
   PrivacyPresentation.setCorner('test',false)

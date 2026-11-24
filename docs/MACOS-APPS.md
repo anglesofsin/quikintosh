@@ -55,7 +55,9 @@ a Darwin terminal and a runtime check. It uses the existing GTK theme.
 
 The `.dmg`/Apple installer default associations apply through Quickintosh's
 reversible desktop profile and are restored when leaving this rice. Other
-desktop file associations are preserved. `.app` directories are not made the
+desktop file associations are preserved. Linux may classify `.pkg` as XAR, so
+Quickintosh also associates XAR with the installer while this rice is active;
+the manager refuses unrelated non-`.pkg` XAR archives. `.app` directories are not made the
 default handler for all Linux folders.
 
 ```sh

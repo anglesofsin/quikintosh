@@ -110,7 +110,7 @@ def apply(theme_root,icon_root,color):
   if not c.has_section(section):c.add_section(section)
   c[section]['inode/directory']='lickintosh-finder.desktop;'
  if shutil.which('quickintosh-mac'):
-  for mime in ['application/x-apple-diskimage','application/vnd.apple.installer+xml','application/x-quickintosh-macos-package']:
+  for mime in ['application/x-apple-diskimage','application/vnd.apple.installer+xml','application/x-quickintosh-macos-package','application/x-xar']:
    c['Default Applications'][mime]='quickintosh-mac-installer.desktop;'
    c['Added Associations'][mime]='quickintosh-mac-installer.desktop;'
  quicklook_defaults(c)

@@ -73,7 +73,7 @@ let
   };
   tahoeIconBank = pkgs.runCommand "lickintosh-native-icon-bank" {} ''
     mkdir -p $out/layered-icons
-    ${pkgs.python3}/bin/python3 ${./lickintosh/layered-icons/bank.py} $out ${tahoeDesignIcons} ${tahoeLinuxIcons} ${pkgs.librsvg}/bin/rsvg-convert
+    ${pkgs.python3}/bin/python3 ${./lickintosh/layered-icons/bank.py} $out ${tahoeDesignIcons} ${tahoeLinuxIcons} ${pkgs.librsvg}/bin/rsvg-convert ${./lickintosh/layered-icons/artwork/discord-canary.png}
   '';
   tahoeIcons = pkgs.runCommand "lickintosh-tahoe-icons" {} ''
     mkdir -p $out/share/icons
@@ -270,6 +270,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/desktop-polish}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/finder-menus}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/widget-ui}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/widget-stability}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock}/identity-integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out

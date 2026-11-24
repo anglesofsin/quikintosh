@@ -1,7 +1,7 @@
 """Loopback call metadata broker. Only bounded avatar images are cached on disk."""
 import asyncio,json,re,sys,os,signal,ctypes,time,uuid
 from websockets.asyncio.server import serve
-from avatar_cache import AvatarCache
+from avatar_cache import AvatarCache, normalize_image
 CLIENTS=('canary','ptb','stable','equibop')
 ORIGINS=('https://canary.discord.com','https://ptb.discord.com','https://discord.com')
 
@@ -17,13 +17,12 @@ def clean(value):
     if not isinstance(value.get('participants'),list): return None
     for p in value['participants'][:64]:
         if not isinstance(p,dict) or not re.fullmatch(r'\d{1,24}',str(p.get('id',''))): continue
-        avatar=str(p.get('avatar',''))
-        if not re.fullmatch(r'https://cdn\.discordapp\.com/avatars/\d{1,24}/[a-zA-Z0-9_]+\.png\?size=80',avatar): avatar=''
+        avatar=normalize_image(p.get('avatar',''))
         participants.append(dict(id=str(p['id']),name=str(p.get('name','Participant'))[:100],avatar=avatar,
             **{k:p.get(k) is True for k in ('self','muted','deaf','speaking')}))
     return dict(state=value.get('state') if value.get('state') in ('incoming','active','idle') else 'active',incomingControls=value.get('incomingControls') is True,client=value['client'],active=value.get('active') is True,channel=str(value.get('channel',''))[:160],
         channelId=str(value.get('channelId',''))[:24],
-        image=str(value.get('image','')) if re.fullmatch(r'https://cdn\.discordapp\.com/(?:icons|channel-icons|avatars)/\d{1,24}/[a-zA-Z0-9_]+\.png\?size=80',str(value.get('image',''))) else '',
+        image=normalize_image(value.get('image','')),
         controls=value.get('controls') is True, joinedAt=min(time.time()*1000,max(0,float(value.get('joinedAt') or time.time()*1000))),
         guild=str(value.get('guild',''))[:160],streamer=value.get('streamer') is True,participants=participants)
 

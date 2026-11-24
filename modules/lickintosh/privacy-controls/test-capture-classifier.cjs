@@ -13,4 +13,6 @@ r=run([node(3,'Audio/Source'),node(4,'Stream/Input/Audio',{'application.name':'W
 r=run([node(3,'Audio/Source'),node(4,'Stream/Input/Audio',{'application.name':'Discord','application.process.binary':'equibop'}),link(3,4)]);assert.deepEqual(r.mic,['Equibop']);
 r=run([node(3,'Video/Source',{'media.role':'Camera'}),node(4,'Stream/Input/Video',{'application.name':'Camera Test'}),link(3,4)]);assert.deepEqual(r.camera,['Camera Test']);
 r=run([node(3,'Video/Source',{'node.name':'screen-cast'}),node(4,'Stream/Input/Video',{'application.name':'Screen Test'}),link(3,4)]);assert.deepEqual(r.screen,['Screen Test']);
-console.log('10 capture graph regressions passed');
+r=run([node(3,'Audio/Source'),node(4,'Stream/Input/Audio',{'application.name':'Discord'},'suspended'),link(3,4)]);assert.deepEqual(r.details,[]);
+r=run([node(3,'Audio/Source'),node(4,'Stream/Input/Audio',{'application.name':'Discord','node.disabled':true}),link(3,4)]);assert.deepEqual(r.details,[]);
+console.log('12 capture graph regressions passed');

@@ -63,7 +63,7 @@ setTimeout(()=>{
  handlers.VOICE_STATE_UPDATES({});
  setTimeout(()=>{
   assert.equal(sent.at(-1).channel,'Other');
-  assert.equal(sent.at(-1).image,'https://cdn.discordapp.com/avatars/20/a_hash.png?size=80');
+  assert.equal(sent.at(-1).image,'https://cdn.discordapp.com/avatars/20/a_hash.png?size=128');
   assert.equal(sent.at(-1).participants.length,1);
   console.log('Ringing DM: recipient name/avatar available before answer; no fake participants');
  },60);

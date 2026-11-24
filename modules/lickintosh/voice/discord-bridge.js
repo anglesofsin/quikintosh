@@ -12,6 +12,13 @@
     const client = ['canary','ptb','stable','equibop'].includes(nativeChannel) ? nativeChannel : globalThis.VesktopNative ? 'equibop'
         : location.hostname.startsWith('canary.') ? 'canary'
         : location.hostname.startsWith('ptb.') ? 'ptb' : 'stable';
+    function avatarOf(user,guildId) {
+        if(!user)return '';
+        if(user.avatar)return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`;
+        try {const url=user.getAvatarURL?.(guildId || null,128,false);if(url)return url;}catch{}
+        const index=user.discriminator && user.discriminator!=='0' ? Number(user.discriminator)%5:Number((BigInt(user.id)>>22n)%6n);
+        return `https://cdn.discordapp.com/embed/avatars/${index}.png?size=128`;
+    }
     function incoming() {
         const self=common?.UserStore?.getCurrentUser();
         const calls=common?.CallStore?.getAllCalls?.() || {};
@@ -41,7 +48,7 @@
                 const user = UserStore.getUser(s.userId);
                 const hash = user?.avatar;
                 return {id:s.userId, name:(guildId ? GuildMemberStore?.getNick?.(guildId, s.userId) : null) || user?.globalName || user?.username || 'Participant',
-                    avatar:hash ? `https://cdn.discordapp.com/avatars/${s.userId}/${hash}.png?size=80` : '',
+                    avatar:avatarOf(user,guildId),
                     self:s.userId === self.id, muted:s.userId===self.id && typeof localMute==="boolean" ? !!(localMute || localDeaf || s.mute) : !!(s.mute || s.selfMute),
                     deaf:s.userId===self.id && typeof localDeaf==="boolean" ? !!(localDeaf || s.deaf) : !!(s.deaf || s.selfDeaf),
                     speaking:speaking.has(s.userId) ? speaking.get(s.userId) : rtc.some(p => p.user?.id === s.userId && p.speaking)};
@@ -53,16 +60,14 @@
                 .map(id=>UserStore.getUser(id)).filter(Boolean) : [];
             const recipientNames=recipients.map(user=>user.globalName || user.global_name || user.username).filter(Boolean);
             const recipient=recipients[0];
-            let recipientAvatar='';
-            try { recipientAvatar=recipient?.getAvatarURL?.(null,80,false) || ''; } catch {}
-            if(!recipientAvatar && recipient?.avatar)recipientAvatar=`https://cdn.discordapp.com/avatars/${recipient.id}/${recipient.avatar}.png?size=80`;
+            const recipientAvatar=avatarOf(recipient,null);
             const payload=JSON.stringify({type:'voice', version:1, client, active:!!channelId, state,
                 channelId:channelId || '', channel:channel?.name || recipientNames.join(', ') || participants.filter(p=>!p.self).map(p=>p.name).join(', ') || 'Private call',
                 guild:guild?.name || '', joinedAt, controls:true,
                 incomingControls:!!ringing && typeof common.VoiceActions?.selectVoiceChannel==='function' && typeof common.CallActions?.stopRinging==='function',
                 image:guild?.icon
-                    ? `https://cdn.discordapp.com/icons/${guildId}/${guild.icon}.png?size=80`
-                    : channel?.icon ? `https://cdn.discordapp.com/channel-icons/${channelId}/${channel.icon}.png?size=80`
+                    ? `https://cdn.discordapp.com/icons/${guildId}/${guild.icon}.png?size=128`
+                    : channel?.icon ? `https://cdn.discordapp.com/channel-icons/${channelId}/${channel.icon}.png?size=128`
                     : recipientAvatar || participants.find(p=>!p.self)?.avatar || '',
                 streamer:!!StreamerModeStore?.enabled, participants});
             if(payload!==lastSnapshot) {ws.send(payload);lastSnapshot=payload;}

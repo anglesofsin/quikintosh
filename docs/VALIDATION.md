@@ -21,3 +21,12 @@ Verificações realizadas no checkout exportado, sem automatizar a área de trab
 A shell instalada no PC de desenvolvimento foi renomeada e seus IPCs responderam após a ativação. O status de voz real retornou Canary com metadados completos e controles disponíveis, sem reiniciar o cliente nesta tarefa.
 
 Não foi feita instalação em um segundo computador físico, teste visual em outra GPU nem chamada real em todos os canais Discord nesta exportação. Os testes de voz são fixtures, não comprovação de uma chamada real em cada cliente. O módulo opcional de Discord requer a primeira reinicialização manual do cliente.
+
+## Correções de widgets, ilha e imagens de chamada
+
+- 15 testes Python do broker/cache de voz passaram, incluindo normalização de WebP, avatares padrão, cache offline e separação dos clientes.
+- 12 regressões do grafo de captura passaram: microfone, monitor de áudio, câmera, tela, links pausados, stream suspenso e stream desabilitado.
+- Os testes Node do renderer verificam nome/foto de uma DM antes de atender e atualizações locais de mute/deafen.
+- Uma sessão Sway/Quickshell isolada confirmou que ocultar o relógio mantém a largura da ilha e que o fechamento da galeria preserva a seleção de estilo e não dessatura o widget. O relógio foi renderizado com a nova refração sobre o wallpaper; não houve erro de link do shader.
+- O download real de um avatar padrão do CDN retornou PNG válido com o cabeçalho corrigido. Isso não substitui a validação de uma chamada real em todos os clientes ou de condições de rede de outra máquina.
+- A página da Dynamic Island deixou de ter filtro interno; a busca geral das Settings permanece disponível. O ícone oficial amarelo do Canary tem identidade própria no banco e precedência sobre o arquivo genérico do Discord.

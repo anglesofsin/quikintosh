@@ -19,7 +19,7 @@ function classify(nodes) {
  }
  for(const node of nodes){
   const info=node.info || {},p=props(node),kind=p['media.class'] || ''
-  if(info.state!=='running' || !kind.startsWith('Stream/Input/'))continue
+  if(info.state!=='running' || truth(p['node.disabled']) || !kind.startsWith('Stream/Input/'))continue
   const client=props(byId[String(p['client.id'])]),binary=String(p['application.process.binary'] || client['application.process.binary'] || ''),raw=String(p['application.name'] || client['application.name'] || binary || p['node.name'] || '')
   if(/cava|lickintosh.*spectrum/i.test(raw+' '+binary))continue
   let name=raw || 'Application'

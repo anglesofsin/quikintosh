@@ -16,7 +16,7 @@ float coverage(vec2 uv){
 void main(){
  float a=coverage(v_TexCoord);
  if(a<=0.003){fragColor=vec4(0.0);return;}
- vec2 stepSize=vec2(clamp(ringRadius,0.75,2.5))/max(size,vec2(1.0));
+ vec2 stepSize=vec2(clamp(ringRadius,0.75,4.0))/max(size,vec2(1.0));
  float l=coverage(v_TexCoord-vec2(stepSize.x,0.0));
  float r=coverage(v_TexCoord+vec2(stepSize.x,0.0));
  float t=coverage(v_TexCoord-vec2(0.0,stepSize.y));
@@ -25,8 +25,13 @@ void main(){
  float len=length(gradient);
  vec2 normal=len>0.0001 ? -gradient/len:vec2(0.0);
  float edge=clamp(1.0-min(min(l,r),min(t,b)),0.0,1.0);
- vec2 uv=(screenOrigin+v_TexCoord*size-normal*min(thickness,3.0)*edge)/max(backgroundSize,vec2(1.0));
+ vec2 uv=(screenOrigin+v_TexCoord*size-normal*min(thickness,6.0)*edge)/max(backgroundSize,vec2(1.0));
+ // Crisp transmitted scene with a restrained chromatic edge, not a
+ // pre-blurred frosted panel stretched across the digits.
+ vec2 dispersion=normal*edge*0.35/max(backgroundSize,vec2(1.0));
  vec3 col=texture(backTex,clamp(uv,0.0,1.0)).rgb;
+ col.r=texture(backTex,clamp(uv+dispersion,0.0,1.0)).r;
+ col.b=texture(backTex,clamp(uv-dispersion,0.0,1.0)).b;
  float lum=dot(col,vec3(0.2126,0.7152,0.0722));
  col=mix(vec3(lum),col,saturation)+lift;
  // A restrained adaptive fill keeps the glyph legible without a second,

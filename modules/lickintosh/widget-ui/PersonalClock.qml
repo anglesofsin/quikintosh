@@ -62,12 +62,12 @@ Item {
    ShaderEffect{
     id:glyphGlass;anchors.fill:parent;visible:root.glassReady;blending:true
     property variant maskTex:mask
-    property variant backTex:root.backdrop?.blurSource || null
+    property variant backTex:root.backdrop?.glyphSource || root.backdrop?.blurSource || null
     property vector2d size:Qt.vector2d(width,height)
     property vector2d screenOrigin:Qt.vector2d(0,0)
     property vector2d backgroundSize:root.backdrop ? Qt.vector2d(root.backdrop.screenSize.width,root.backdrop.screenSize.height):Qt.vector2d(1,1)
-    property real ringRadius:Math.max(.75,Math.min(2.5,root.fittedSize*.018))
-    property real thickness:Math.max(.5,Math.min(3,root.fittedSize*(root.widgetData?.clockGlassDepth ?? .016)))
+    property real ringRadius:Math.max(.75,Math.min(4,root.fittedSize*.025))
+    property real thickness:Math.max(.5,Math.min(6,root.fittedSize*(root.widgetData?.clockGlassDepth ?? .028)))
     property real highlightStrength:root.widgetData?.clockGlassHighlight ?? .55
     property real highlightWidth:Math.max(1.5,root.fittedSize*.033)
     property real saturation:1.08

@@ -95,9 +95,11 @@ for name in ['ui/widgets/WidgetView.qml','ui/widgets/WidgetSnapshot.qml']:
  s=s[:i]+'''    readonly property string style:root.requestedStyle==='auto' ? 'color':root.requestedStyle
     readonly property string material:root.widgetData.material || (['glass','clear','transparent'].includes(root.style) ? (root.style==='transparent' ? 'transparent':'glass'):WidgetState.widgetMaterial)
 '''+s[i:]
- s=s.replace('readonly property bool muted:','readonly property bool muted:root.widgetData.type!=="image" && root.style!=="color" && root.widgetData.dimWithDesktop!==false && ')
+ s=s.replace('readonly property bool muted:','readonly property bool muted:root.widgetData.type!=="image" && root.style!=="color" && root.widgetData.dimWithDesktop===true && ')
  s=s.replace('visible: palette.glass','visible:root.material==="glass"').replace('visible: !palette.glass && root.style!=="transparent"','visible:root.material==="solid"')
  s=s.replace('visible:root.style!=="transparent"','visible:root.material!=="transparent"').replace('palette.glass ?','root.material==="glass" ?')
+ # Dimming must never desaturate the captured desktop or user photos.
+ s=s.replace('saturation: -1','saturation: 0').replace('saturation:-1','saturation:0')
  write(name,s)
 
 name='ui/desktop/DesktopLayer.qml'

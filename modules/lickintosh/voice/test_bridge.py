@@ -6,6 +6,9 @@ class BridgeTests(unittest.TestCase):
  def test_validation(self):
   self.assertIsNone(clean({'type':'MESSAGE_NOTIFICATION'}));self.assertIsNone(clean(self.event('unknown')))
   self.assertEqual(clean(self.event())['participants'][0]['avatar'],'')
+ def test_cdn_webp_photo_survives_sanitizer_before_answer(self):
+  v=self.event(image='https://cdn.discordapp.com/avatars/20/photo.webp?size=128',state='incoming')
+  self.assertEqual(clean(v)['image'],'https://cdn.discordapp.com/avatars/20/photo.png?size=128')
  def test_clients_are_isolated(self):
   events=[];b=Broker(events.append);b.update('a',self.event());b.update('b',self.event('stable'))
   self.assertEqual(set(events[-1]['clients']),{'canary','stable'});b.remove('a')

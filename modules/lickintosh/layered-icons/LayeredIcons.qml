@@ -27,7 +27,7 @@ Singleton {
  function lookup(mode,source,name){
   const table=bank[mode] || ({})
   const base=String(source).split('/').pop().split('?')[0]
-  for(const key of [normalize(base),normalize(name)])if(table[key])return table[key]
+  for(const key of [normalize(name),normalize(base)])if(table[key])return table[key]
   return ''
  }
  function resolve(source,name){

@@ -89,3 +89,9 @@ Não existe uma API universal Linux para atender chamadas em qualquer aplicativo
 Settings → Sound → Incoming Calls permite habilitar o toque da shell, ajustar o volume e escolher Opening (FaceTime), Reflection ou arquivo local. Opening é o padrão tradicional do FaceTime adotado por esta rice; o padrão pode variar conforme a versão/configuração do macOS. As fontes dos arquivos Apple estão em `modules/lickintosh/voice/ringtones/SOURCES.json` e conservam seus direitos originais.
 
 O toque da shell para ao atender, recusar, recolher o cartão, cancelar a ligação, sair/bloquear a shell ou ativar Não Perturbe. Ele não altera as preferências de som dos aplicativos. Para evitar dois toques simultâneos, desative o toque nativo do app quando optar pelo da shell. O Não Perturbe silencia os sons emitidos pela shell; não consegue impedir todo áudio que terceiros decidam reproduzir.
+
+### Fotos e indicadores de acesso
+
+Fotos recebidas como WebP, GIF, JPEG ou PNG do CDN oficial são normalizadas para PNG de 128 px, inclusive antes de o destinatário atender. O cache preserva a última foto durante falhas de rede e as tentativas de download não bloqueiam eventos de mute/deafen. Avatares padrão do Discord também são aceitos. A normalização segue os [formatos e tamanhos documentados pelo Discord](https://github.com/discord/discord-api-docs/blob/main/developers/reference.mdx#image-formatting).
+
+O indicador de microfone representa uma conexão de captura ativa no PipeWire, não uma confirmação de que sua voz está sendo transmitida pela rede. Um cliente pode manter o microfone aberto mesmo sem estar transmitindo na chamada. Streams suspensos, desabilitados e conexões pausadas não ativam o indicador; uma captura real ativa continua sendo informada. As exceções por aplicativo permanecem nas configurações de privacidade.

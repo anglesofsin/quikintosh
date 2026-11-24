@@ -1,0 +1,1 @@
+Discord Canary icon: official Discord Canary Linux package 1.0.1756, https://discord.com/api/download/canary?platform=linux&format=tar.gz . Discord artwork remains property of Discord Inc. Used to identify the installed application.

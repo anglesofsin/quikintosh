@@ -22,7 +22,7 @@ Singleton {
  Connections{target:SettingsPreferences.notifications;function onSoundsChanged(){if(!root.preferences.sounds)root.stop()}}
  function play(preview,notification,rule){
   const hints=notification?.hints || {}
-  if(!Policy.permitted({dnd:root.dnd,preview:preview,enabled:root.preferences.sounds,
+  if(!Policy.permitted({dnd:root.dnd,replayed:!!notification?.lastGeneration,preview:preview,enabled:root.preferences.sounds,
       allowed:ShellConfig.options.notifications.enable && rule?.allowed!==false,
       appSound:rule?.sounds!==false,suppress:!preview && (hints['suppress-sound']===true || hints['suppress-sound']===1),
       volume:root.preferences.soundVolume}))return false

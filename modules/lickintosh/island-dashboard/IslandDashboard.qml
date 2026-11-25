@@ -29,6 +29,30 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
+    FontLoader { id: sfText; source: Quickshell.shellPath("assets/fonts/SFPT/SF-Pro-Text-Regular.otf") }
+    FontLoader { source: Quickshell.shellPath("assets/fonts/SFPT/SF-Pro-Text-Semibold.otf") }
+    FontLoader { id: sfDisplay; source: Quickshell.shellPath("assets/fonts/SFPD/SF-Pro-Display-Regular.otf") }
+    FontLoader { source: Quickshell.shellPath("assets/fonts/SFPD/SF-Pro-Display-Light.otf") }
+
+    function weatherImage(code, daytime) {
+        if (!daytime && code <= 1) return "night"
+        if (code >= 95) return "storm"
+        if ((code >= 71 && code <= 77) || code === 85 || code === 86) return "snow"
+        if (code === 65 || code === 67 || code === 82) return "heavy-rain"
+        if (code >= 51 && code <= 82) return "rain"
+        if (code === 2) return "partly"
+        if (code >= 3) return "clouds"
+        return "sun"
+    }
+    component WeatherArt: Image {
+        required property int code
+        property bool daytime: true
+        source: Qt.resolvedUrl("assets/weather-" + panel.weatherImage(code, daytime) + ".png")
+        sourceSize: Qt.size(128,128)
+        fillMode: Image.PreserveAspectFit
+        asynchronous: true
+    }
+
     component IslandButton: Button {
         id: control
         implicitHeight: 30
@@ -43,7 +67,7 @@ PanelWindow {
             id: label
             text: control.text
             color: control.enabled ? "#f5f5f7" : "#77777c"
-            font.family: "SF Pro Text"
+            font.family: sfText.name
             font.pixelSize: 12
             font.weight: Font.Medium
             horizontalAlignment: Text.AlignHCenter
@@ -74,7 +98,7 @@ PanelWindow {
             id: caption
             text: control.text
             color: "#eeeeef"
-            font.family: "SF Pro Text"
+            font.family: sfText.name
             font.pixelSize: 13
             verticalAlignment: Text.AlignVCenter
             rightPadding: 48
@@ -198,7 +222,7 @@ PanelWindow {
                                 color: parent.checked ? "#30ffffff" : parent.hovered ? "#26ffffff" : "transparent"
                                 border.color: parent.checked ? "#36ffffff" : "transparent"
                             }
-                            contentItem: Text {
+                            contentItem: Text { font.family: sfText.name;
                                 text: modelData
                                 color: "#f1f5ff"
                                 horizontalAlignment: Text.AlignHCenter
@@ -273,15 +297,15 @@ PanelWindow {
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                 }
-                Text { anchors.centerIn: parent; visible: !MprisState.artUrl; text: "♫"; color: "#aaa"; font.pixelSize: 34 }
+                Text { font.family: sfText.name; anchors.centerIn: parent; visible: !MprisState.artUrl; text: "♫"; color: "#aaa"; font.pixelSize: 34 }
             }
             ColumnLayout {
                 Layout.preferredWidth: 240
                 Layout.alignment: Qt.AlignVCenter
                 spacing: 7
-                Text { Layout.fillWidth: true; text: MprisState.trackTitle || qsTr("Nothing playing"); color: "white"; font.pixelSize: 16; font.weight: Font.DemiBold; elide: Text.ElideRight }
-                Text { Layout.fillWidth: true; text: MprisState.trackArtist || MprisState.identity; color: "#a6a6ac"; font.pixelSize: 12; elide: Text.ElideRight }
-                Text { Layout.fillWidth: true; text: MprisState.trackAlbum; color: "#818188"; font.pixelSize: 11; elide: Text.ElideRight }
+                Text { font.family: sfText.name; Layout.fillWidth: true; text: MprisState.trackTitle || qsTr("Nothing playing"); color: "white"; font.pixelSize: 16; font.weight: Font.DemiBold; elide: Text.ElideRight }
+                Text { font.family: sfText.name; Layout.fillWidth: true; text: MprisState.trackArtist || MprisState.identity; color: "#a6a6ac"; font.pixelSize: 12; elide: Text.ElideRight }
+                Text { font.family: sfText.name; Layout.fillWidth: true; text: MprisState.trackAlbum; color: "#818188"; font.pixelSize: 11; elide: Text.ElideRight }
             }
             ColumnLayout {
                 Layout.fillWidth: true
@@ -302,9 +326,9 @@ PanelWindow {
                     Accessible.name: qsTr("Playback position")
                 }
                 RowLayout {
-                    Text { text: panel.clockText(MprisState.position); color: "#99999f"; font.pixelSize: 11 }
+                    Text { font.family: sfText.name; text: panel.clockText(MprisState.position); color: "#99999f"; font.pixelSize: 11 }
                     Item { Layout.fillWidth: true }
-                    Text { text: panel.clockText(MprisState.length); color: "#99999f"; font.pixelSize: 11 }
+                    Text { font.family: sfText.name; text: panel.clockText(MprisState.length); color: "#99999f"; font.pixelSize: 11 }
                 }
                 Component.onCompleted: MprisState.watchPosition(true)
                 Component.onDestruction: MprisState.watchPosition(false)
@@ -313,8 +337,8 @@ PanelWindow {
                 Layout.preferredWidth: 190; Layout.fillHeight: true
                 ColumnLayout {
                     anchors.fill: parent; anchors.margins: 15
-                    Text { text: qsTr("Now playing"); color: "#99999f"; font.pixelSize: 11 }
-                    Text { Layout.fillWidth: true; text: MprisState.identity || qsTr("No player"); color: "white"; elide: Text.ElideRight; font.pixelSize: 14 }
+                    Text { font.family: sfText.name; text: qsTr("Now playing"); color: "#99999f"; font.pixelSize: 11 }
+                    Text { font.family: sfText.name; Layout.fillWidth: true; text: MprisState.identity || qsTr("No player"); color: "white"; elide: Text.ElideRight; font.pixelSize: 14 }
                     Item { Layout.fillHeight: true }
                     IslandButton { text: qsTr("Sound settings"); onClicked: SettingsLauncher.open("sound") }
                 }
@@ -326,7 +350,7 @@ PanelWindow {
         id: notifications
         ColumnLayout {
             RowLayout {
-                Label { text: qsTr("Recent notifications"); color: "white"; Layout.fillWidth: true }
+                Label { font.family: sfText.name; text: qsTr("Recent notifications"); color: "white"; Layout.fillWidth: true }
                 IslandSwitch {
                     text: qsTr("Do Not Disturb"); checked: NotifService.dndEnabled
                     onToggled: NotifService.dndEnabled = checked
@@ -343,7 +367,7 @@ PanelWindow {
                     width: ListView.view.width; height: 38; radius: 9; color: "#1dffffff"
                     RowLayout {
                         anchors.fill: parent; anchors.margins: 6
-                        Label {
+                        Label { font.family: sfText.name;
                             Layout.fillWidth: true
                             text: (modelData.appName || "") + "  ·  " + (modelData.summary || "")
                             textFormat: Text.PlainText
@@ -355,7 +379,7 @@ PanelWindow {
                         }
                     }
                 }
-                Label { anchors.centerIn: parent; visible: notificationList.count === 0; text: qsTr("No notifications"); color: "#c0ffffff" }
+                Label { font.family: sfText.name; anchors.centerIn: parent; visible: notificationList.count === 0; text: qsTr("No notifications"); color: "#c0ffffff" }
             }
         }
     }
@@ -364,15 +388,17 @@ PanelWindow {
         required property string heading
         required property int code
         required property string temperature
+        property string low: ""
         property bool daytime: true
         spacing: 7
-        Text { Layout.alignment: Qt.AlignHCenter; text: heading; color: "#b8b8c0"; font.pixelSize: 11 }
-        WeatherIconGlyph {
+        Text { font.family: sfText.name; Layout.alignment: Qt.AlignHCenter; text: heading; color: "#b8b8c0"; font.pixelSize: 11 }
+        WeatherArt {
             Layout.alignment: Qt.AlignHCenter
-            kind: WeatherState._kindFor(code, daytime)
-            size: 26
+            Layout.preferredWidth: 38; Layout.preferredHeight: 34
+            code: parent.code; daytime: parent.daytime
         }
-        Text { Layout.alignment: Qt.AlignHCenter; text: temperature; color: "white"; font.pixelSize: 13; font.weight: Font.DemiBold }
+        Text { font.family: sfText.name; Layout.alignment: Qt.AlignHCenter; text: temperature; color: "white"; font.pixelSize: 13; font.weight: Font.DemiBold }
+        Text { font.family: sfText.name; Layout.alignment: Qt.AlignHCenter; text: low; visible: !!low; color: "#888890"; font.pixelSize: 11 }
     }
 
     Component {
@@ -380,25 +406,28 @@ PanelWindow {
         RowLayout {
             spacing: 24
             ColumnLayout {
-                Layout.preferredWidth: 190
-                spacing: 4
-                Text {
+                Layout.preferredWidth: 240
+                spacing: 7
+                Text { font.family: sfText.name;
                     Layout.fillWidth: true
                     text: IslandConfig.s("dashboardWeatherLocation") ? WeatherState.city : qsTr("Weather")
                     color: "#d0d0d6"; font.pixelSize: 12; elide: Text.ElideRight
                 }
                 RowLayout {
-                    WeatherIconGlyph { kind: WeatherState._kindFor(panel.displayedCode,panel.displayedDay); size: 48 }
-                    Text { text: WeatherState.available ? Math.round(panel.selectedHour?.temp ?? WeatherState.tempC)+"°" : "—°"; color: "white"; font.pixelSize: 44; font.weight: Font.Light }
+                    WeatherArt {
+                        Layout.preferredWidth: 74; Layout.preferredHeight: 78
+                        code: panel.displayedCode; daytime: panel.displayedDay
+                    }
+                    Text { font.family: sfText.name; text: WeatherState.available ? Math.round(panel.selectedHour?.temp ?? WeatherState.tempC)+"°" : "—°"; color: "white"; font.pixelSize: 48; font.weight: Font.Light }
                 }
-                Text { text: WeatherState.available ? panel.condition(panel.displayedCode) : qsTr("Weather unavailable"); color: "#c5c5cd"; font.pixelSize: 12 }
-                Text { text: qsTr("Feels like")+" "+Math.round(WeatherState.feelsLikeC)+"°"; visible: WeatherState.available; color: "#9d9da7"; font.pixelSize: 11 }
-                Text { text: Math.round(WeatherState.windSpeed)+" km/h · "+WeatherState.humidity+"%"; visible: WeatherState.available; color: "#9d9da7"; font.pixelSize: 11 }
+                Text { font.family: sfText.name; text: WeatherState.available ? panel.condition(panel.displayedCode) : qsTr("Weather unavailable"); color: "#c5c5cd"; font.pixelSize: 12 }
+                Text { font.family: sfText.name; text: qsTr("Feels like")+" "+Math.round(WeatherState.feelsLikeC)+"°"; visible: WeatherState.available; color: "#9d9da7"; font.pixelSize: 11 }
+                Text { font.family: sfText.name; text: Math.round(WeatherState.windSpeed)+" km/h · "+WeatherState.humidity+"%"; visible: WeatherState.available; color: "#9d9da7"; font.pixelSize: 11 }
             }
             Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#25ffffff" }
             ColumnLayout {
                 Layout.fillWidth: true
-                Text { text: qsTr("Hourly forecast"); color: "#aaaab3"; font.pixelSize: 11 }
+                Text { font.family: sfText.name; text: qsTr("Hourly forecast"); color: "#aaaab3"; font.pixelSize: 11 }
                 RowLayout {
                     Layout.fillWidth: true
                     Repeater {
@@ -417,7 +446,7 @@ PanelWindow {
             Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#25ffffff" }
             ColumnLayout {
                 Layout.fillWidth: true
-                Text { text: qsTr("This week"); color: "#aaaab3"; font.pixelSize: 11 }
+                Text { font.family: sfText.name; text: qsTr("This week"); color: "#aaaab3"; font.pixelSize: 11 }
                 RowLayout {
                     Layout.fillWidth: true
                     Repeater {
@@ -427,7 +456,8 @@ PanelWindow {
                             Layout.fillWidth: true
                             heading: Qt.formatDate(new Date(modelData.date+"T12:00:00"),"ddd")
                             code: modelData.code
-                            temperature: modelData.tempMin+"° / "+modelData.tempMax+"°"
+                            temperature: modelData.tempMax+"°"
+                            low: modelData.tempMin+"°"
                         }
                     }
                 }
@@ -443,8 +473,8 @@ PanelWindow {
                 Layout.preferredWidth: 230; Layout.fillHeight: true
                 ColumnLayout {
                     anchors.fill: parent; anchors.margins: 18
-                    Text { text: qsTr("Camera preview"); color: "white"; font.pixelSize: 17; font.weight: Font.DemiBold }
-                    Text { Layout.fillWidth: true; text: qsTr("See yourself in the island"); color: "#a0a0aa"; wrapMode: Text.WordWrap; font.pixelSize: 12 }
+                    Text { font.family: sfText.name; text: qsTr("Camera preview"); color: "white"; font.pixelSize: 17; font.weight: Font.DemiBold }
+                    Text { font.family: sfText.name; Layout.fillWidth: true; text: qsTr("See yourself in the island"); color: "#a0a0aa"; wrapMode: Text.WordWrap; font.pixelSize: 12 }
                     Item { Layout.fillHeight: true }
                     IslandSwitch {
                         text: qsTr("Profile preview")
@@ -458,8 +488,8 @@ PanelWindow {
                 Layout.preferredWidth: 220; Layout.fillHeight: true
                 ColumnLayout {
                     anchors.fill: parent; anchors.margins: 18
-                    Text { text: qsTr("Privacy"); color: "white"; font.pixelSize: 15 }
-                    Text { Layout.fillWidth: true; text: qsTr("Camera starts when you open the preview and stops when you leave this page."); color: "#a0a0aa"; wrapMode: Text.WordWrap; font.pixelSize: 12 }
+                    Text { font.family: sfText.name; text: qsTr("Privacy"); color: "white"; font.pixelSize: 15 }
+                    Text { font.family: sfText.name; Layout.fillWidth: true; text: qsTr("Camera starts when you open the preview and stops when you leave this page."); color: "#a0a0aa"; wrapMode: Text.WordWrap; font.pixelSize: 12 }
                     Item { Layout.fillHeight: true }
                     IslandButton { text: qsTr("Privacy settings"); onClicked: SettingsLauncher.open("privacy-indicators") }
                 }
@@ -496,7 +526,7 @@ PanelWindow {
                         visible: devices.videoInputs.length > 0
                         fillMode: VideoOutput.PreserveAspectCrop
                     }
-                    Text {
+                    Text { font.family: sfText.name;
                         Layout.fillWidth: true
                         visible: devices.videoInputs.length === 0 || camera.error !== Camera.NoError
                         text: devices.videoInputs.length ? camera.errorString : qsTr('No camera found')

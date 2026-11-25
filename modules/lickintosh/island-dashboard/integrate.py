@@ -138,3 +138,10 @@ text = path.read_text()
 text = text.replace('privacy.restOffset+privacy.restWidth/2+7',
                     'privacy.restOffset+Math.max(privacy.restWidth,surface.width)/2+9')
 path.write_text(text)
+
+# Pin typography to the packaged SF faces instead of the host's fallback.
+directory = root / 'ui/topbar/notch/dashboard'
+for path in directory.glob('*.qml'):
+    text = path.read_text()
+    text = text.replace('font.family: "Sans Serif"', 'font.family: "SF Pro Text"')
+    path.write_text(text)

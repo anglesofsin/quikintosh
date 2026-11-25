@@ -81,6 +81,12 @@ let
       ln -s "$theme" "$out/share/icons/$(basename "$theme")"
     done
   '';
+  desktopProfileSource = pkgs.runCommand "quickintosh-desktop-profile-source" {} ''
+    mkdir -p $out/quicklook
+    cp ${./lickintosh/desktop-profile.py} $out/desktop-profile.py
+    cp ${./lickintosh/finder-glass.css} $out/finder-glass.css
+    cp ${./lickintosh/quicklook/mime_types.py} $out/quicklook/mime_types.py
+  '';
   desktopProfile = pkgs.writeShellApplication {
     name = "lickintosh-desktop-profile";
     runtimeInputs = [ quickLookPython pkgs.glib pkgs.gsettings-desktop-schemas ];
@@ -89,7 +95,7 @@ let
       action="''${1:-enter}"
       shift || true
       export GI_TYPELIB_PATH="${pkgs.glib.out}/lib/girepository-1.0:''${GI_TYPELIB_PATH:-}"
-      exec python3 ${./lickintosh}/desktop-profile.py "$action" ${tahoeGtk} ${tahoeIcons} "$@"
+      exec python3 ${desktopProfileSource}/desktop-profile.py "$action" ${tahoeGtk} ${tahoeIcons} "$@"
     '';
   };
   quickLookOpener = pkgs.writeShellApplication {
@@ -149,6 +155,8 @@ let
       exec ${pkgs.kdePackages.dolphin}/bin/dolphin "$@"
     '';
   };
+  quickintoshGeometry = pkgs.callPackage ./lickintosh/rendering/geometry {};
+  quickintoshRendering = pkgs.callPackage ./lickintosh/rendering/native {};
   lickintoshRoot = pkgs.stdenvNoCC.mkDerivation {
     pname = "lickintosh-source";
     version = "unstable-${builtins.substring 0 8 (lickintosh-src.rev or "6e8f51b8")}";
@@ -280,6 +288,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/display-wallpaper}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock}/identity-integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/runtime-efficiency}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/rendering}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/lock-state-sync.py} $out
@@ -322,12 +331,16 @@ let
       ${pkgs.python3}/bin/python3 ${../scripts/setup-defaults.py} ${lickintoshRoot}/quickintosh-defaults ${lickintoshRoot}/assets/wallpapers/daniel-leone.jpg
       mkdir -p "$HOME/.config/lickintosh/core" "$HOME/.config/lickintosh/rosa"
       ${pkgs.python3}/bin/python3 ${./lickintosh/bootstrap.py} ${lickintoshRoot}/assets/wallpapers/daniel-leone.jpg
-      export QML_IMPORT_PATH="${lib.makeSearchPath "lib/qt-6/qml" (with pkgs.qt6; [ qtgraphs qtquick3d qtquicktimeline qtmultimedia qt5compat qtsvg ])}:''${QML_IMPORT_PATH:-}"
+      export QML_IMPORT_PATH="${quickintoshRendering}/lib/qt-6/qml:${lib.makeSearchPath "lib/qt-6/qml" (with pkgs.qt6; [ qtgraphs qtquick3d qtquicktimeline qtmultimedia qt5compat qtsvg ])}:''${QML_IMPORT_PATH:-}"
       export QT_PLUGIN_PATH="${lib.makeSearchPath "lib/qt-6/plugins" (with pkgs.qt6; [ qtmultimedia qtimageformats ])}:''${QT_PLUGIN_PATH:-}"
       export FONTCONFIG_FILE=${pkgs.makeFontsConf { fontDirectories = [ (lickintosh-src + "/assets/fonts") ./lickintosh/widget-review/fonts (pkgs.nerd-fonts.symbols-only + "/share/fonts") ]; }}
       export GI_TYPELIB_PATH="${pkgs.glib.out}/lib/girepository-1.0:''${GI_TYPELIB_PATH:-}"
       export GIO_EXTRA_MODULES="${pkgs.gvfs}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"
       export XDG_DATA_DIRS="${lickintoshRoot}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
+      ${pkgs.python3}/bin/python3 ${./lickintosh/rendering/ensure-geometry.py} ${quickintoshGeometry}/lib/quickintosh-geometry.so
+      QUICKINTOSH_RENDERER="$(${pkgs.python3}/bin/python3 ${./lickintosh/rendering/launcher-env.py})"
+      export QUICKINTOSH_RENDERER
+      case "$QUICKINTOSH_RENDERER" in threaded|basic) export QSG_RENDER_LOOP="$QUICKINTOSH_RENDERER" ;; esac
       QT_SCALE_FACTOR="$(${pkgs.python3}/bin/python3 ${./lickintosh/interface-scale.py})"
       export QT_SCALE_FACTOR
       exec ${lickintoshQs}/bin/qs -p ${lickintoshRoot} "$@"

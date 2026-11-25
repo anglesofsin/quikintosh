@@ -10,7 +10,8 @@ class Efficiency(unittest.TestCase):
   with tempfile.TemporaryDirectory() as directory:
    root=Path(directory);services=root/'services';services.mkdir();bin=root/'bin';bin.mkdir()
    fake=bin/'hyprctl';fake.write_text('#!/bin/sh\nprintf "[]"\n');fake.chmod(0o700)
-   (services/'qmldir').write_text('module qs.services\nsingleton Hyprland Hyprland.qml\n')
+   (services/'RenderingState.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject{property int geometryFps:0;property bool geometryAvailable:false;function updateGeometry(){}}')
+   (services/'qmldir').write_text('module qs.services\nsingleton Hyprland Hyprland.qml\nsingleton RenderingState RenderingState.qml\n')
    (services/'Hyprland.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject{property int calls:0;property var toplevels:({values:[]});property var monitors:({values:[]});function refreshToplevels(){calls++}function refreshMonitors(){}signal rawEvent(var event)}')
    source=(Path(SOURCE)/'components/glass/GlassTracker.qml').read_text().replace('pragma Singleton','',1).replace('Singleton {','Scope {',1).replace('import Quickshell.Hyprland','import qs.services')
    (root/'Tracker.qml').write_text(source)
@@ -41,7 +42,8 @@ Scope{
    stubs={
     'Hyprland':'property var toplevels:[];property var monitors:({values:[]})',
     'GlassTracker':"property var monitorSnapshots:[{name:'TEST',id:0,x:0,y:0,width:1280,height:720,scale:1,activeWorkspace:{id:1},specialWorkspace:{id:0}}];property var clientsSnapshot:[];property int captureMargin:200;property int snapshotSerial:0;property int transitionEpoch:0;property bool captureBlocked:false;property int captureUsers:0;property bool closing:false;property string closingAddress:'';function captureSnapshot(){return 0}",
-    'ShellMotion':'property var effectsCurve:[.2,0,0,1,1,1]',
+    'RenderingState':'property var geometry:({});property int glassFps:0',
+    'ShellMotion':'property var effectsCurve:[.2,0,0,1,1,1];function duration(ms){return ms}',
    }
    for name,body in stubs.items():(services/(name+'.qml')).write_text('pragma Singleton\nimport QtQuick\nQtObject{'+body+'}')
    (services/'qmldir').write_text('module qs.services\n'+''.join('singleton '+name+' '+name+'.qml\n' for name in stubs))
@@ -64,7 +66,8 @@ Scope{
   if(!view){console.error('NO_VIEW',Hyprland.toplevels.length,glass.children.length);Qt.exit(5);return}
   if(step===1){if(view.captureSource!==source || !view.live){console.error('CAPTURE_NOT_STARTED');Qt.exit(6);return}glass.capturing=false;step++;return}
   if(step===2){if(view.live || view.captureSource!==source){console.error('PAUSED_CAPTURE_DISCARDED');Qt.exit(8);return}glass.capturing=true;step++;return}
-  if(step===3){if(!view.live || view.captureSource!==source){Qt.exit(9);return}source.closed();step++;return}
+  if(step===3){if(!view.live || view.captureSource!==source){Qt.exit(9);return}RenderingState.geometry={'1':{at:[-50,10],size:[120,100],clip:[-100,0,1000,720],visible:true,opacity:1}};step++;return}
+  if(step===4){if(view.x+view.parent.x!==-50 || view.y+view.parent.y!==10 || view.width!==120 || view.parent.width!==1000 || !view.parent.clip){console.error('RENDERED_VIEWPORT_GEOMETRY_FAILED');Qt.exit(10);return}source.closed();step++;return}
   for(let n=0;n<10;n++){view.stopped();view.restart()}
   if(view.captureSource!==null || view.live || view.restartFailures!==0){console.error('CLOSED_CAPTURE_RESTARTED');Qt.exit(7);return}
   console.log('CLOSED_CAPTURE_DETACHED_OK');Qt.quit()

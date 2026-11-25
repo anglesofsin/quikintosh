@@ -224,3 +224,4 @@ s=s.replace('&& !restarting && !dying ? modelData.wayland','&& !restarting && !d
 write(p,s)
 
 exec(compile((here/"responsiveness.py").read_text(),str(here/"responsiveness.py"),"exec"))
+exec(compile((here/"widget-interaction.py").read_text(),str(here/"widget-interaction.py"),"exec"))

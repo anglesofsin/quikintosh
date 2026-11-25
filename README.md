@@ -153,3 +153,5 @@ The [widget review](docs/WIDGET-REVIEW.md) documents the unified Clock gallery, 
 [Displays and wallpapers](docs/DISPLAYS-WALLPAPERS.md): monitor arrangement, preview with automatic rollback, display profiles, individual wallpaper selections and library controls.
 
 [Runtime performance audit](docs/PERFORMANCE.md): measured optimizations, first-frame glass preparation, cache/queue limits and diagnostics.
+
+[Rendering controls](docs/RENDERING.md): native refresh rate, optional FPS limits, animation/effect quality profiles and compositor-synchronized glass.

@@ -5,6 +5,8 @@ import os
 import subprocess
 import sys
 
+from workspace_identity import workspace_identity
+
 STATE_DIR = os.path.expanduser("~/.local/state/infinite-desktop")
 CANVAS_TAG = "infinite-desktop-canvas"
 HYPRCTL = "/run/current-system/sw/bin/hyprctl"
@@ -27,8 +29,8 @@ def active_workspace():
     monitor = next((m for m in monitors if m.get("focused")), monitors[0] if monitors else None)
     if monitor:
         sw = monitor.get("specialWorkspace") or {}
-        if sw.get("id"):
-            return {"id": sw["id"], "key": sw.get("name") or str(sw["id"])}
+        if sw.get("name"):
+            return {"id": workspace_identity(sw), "key": sw["name"]}
     ws = hypr_json("activeworkspace", "-j", fallback={}) or {}
     return {"id": ws.get("id"), "key": str(ws.get("id", "unknown"))}
 
@@ -42,7 +44,7 @@ def managed_windows(ws_id):
     clients = hypr_json("clients", "-j", fallback=[]) or []
     windows = []
     for window in clients:
-        if window.get("workspace", {}).get("id") != ws_id:
+        if workspace_identity(window.get("workspace", {})) != ws_id:
             continue
         if window.get("fullscreen", 0) != 0:
             continue

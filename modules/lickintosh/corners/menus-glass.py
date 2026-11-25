@@ -35,8 +35,12 @@ s=s[:a]+'''    function workspaceVisible(ipc, workspace) {
             if(monitor.id!==ipc.monitor && monitor.id!==root.monitorObject.id)continue
             const live=Hyprland.monitors.values.find(item=>item.name===monitor.name)
             const regular=live?.activeWorkspace?.id ?? monitor.activeWorkspace?.id
-            const special=monitor.specialWorkspace?.id
-            if(id===regular || (special!==0 && special!==undefined && id===special))return true
+            const special=monitor.specialWorkspace
+            const target=ipc.workspace
+            const specialName=special?.address || special?.name
+            if((id!==undefined && id===regular)
+                || (special?.id && id===special.id)
+                || (specialName && specialName===(target?.address || target?.name)))return true
         }
         return false
     }

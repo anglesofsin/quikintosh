@@ -575,7 +575,7 @@ local function workspaceStateKey(ws)
 end
 
 local function readWorkspaceMode(ws)
-    if not ws or not ws.id then return "tiled" end
+    if not ws or (not ws.id and not ws.special) then return "tiled" end
 
     local path = workspaceStateDir .. "/state-" .. workspaceStateKey(ws)
     local mode = readModeFile(path)
@@ -583,7 +583,7 @@ local function readWorkspaceMode(ws)
 
     -- Migrate the old negative-ID files while the old ID still maps to this
     -- special workspace. Names are stable across Hyprland restarts; IDs are not.
-    if ws.special then
+    if ws.special and ws.id then
         mode = readModeFile(workspaceStateDir .. "/state-" .. tostring(ws.id))
         if mode then
             local out = io.open(path, "w")
@@ -604,7 +604,7 @@ local function workspaceSelector(ws)
 end
 
 local function setWorkspaceModeRule(ws)
-    if not ws or not ws.id then return false end
+    if not ws or (not ws.id and not ws.special) then return false end
     local mode = readWorkspaceMode(ws)
     local layout = mode == "scrolling" and "scrolling" or "dwindle"
     local rule = { workspace = workspaceSelector(ws), layout = layout }
@@ -625,7 +625,7 @@ end
 
 local function applyWindowMode(w, ws)
     local addr = w and w.address
-    if not addr or not ws or not ws.id then return end
+    if not addr or not ws or (not ws.id and not ws.special) then return end
 
     local mode = readWorkspaceMode(ws)
     if mode == "canvas" then
@@ -741,7 +741,7 @@ hl.on("workspace.active", function(ws)
 end)
 
 hl.on("workspace.special_active", function(ws, _monitor)
-    if ws and ws.id then restoreWorkspaceMode(ws) end
+    if ws then restoreWorkspaceMode(ws) end
 end)
 
 -- Restore all persisted rules on load/reload. Explicit dwindle rules also

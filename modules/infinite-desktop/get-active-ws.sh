@@ -12,7 +12,7 @@ m = next((x for x in ms if x.get("focused")), ms[0] if ms else None)
 if m is None:
     sys.exit(0)
 sw = m.get("specialWorkspace") or {}
-if sw.get("id"):
+if sw.get("name"):
     print(sw.get("name", ""))
 ' 2>/dev/null)
 if [ -n "$SPECIAL_NAME" ]; then

@@ -1,5 +1,7 @@
 import subprocess, json, os, sys, time
 
+from workspace_identity import workspace_identity
+
 STATE_DIR = os.path.expanduser("~/.local/state/infinite-desktop")
 POS_DIR = os.path.join(STATE_DIR, "canvas-positions")
 OFFSET_FILE = os.path.join(STATE_DIR, "canvas-offset")
@@ -17,9 +19,9 @@ def get_active_workspace():
         ms = json.loads(r.stdout)
         m = next((x for x in ms if x.get('focused')), ms[0])
         sw = m.get('specialWorkspace') or {}
-        if sw.get('id'):
-            # For special workspaces, return both numeric ID and stable name
-            return {'id': sw['id'], 'name': sw['name'], 'special': True}
+        if sw.get('name'):
+            # Keep the stable name for persistence and the runtime identity for selection.
+            return {'id': workspace_identity(sw), 'name': sw['name'], 'special': True}
     except Exception:
         pass
     r = subprocess.run(['hyprctl', 'activeworkspace', '-j'], capture_output=True, text=True, timeout=0.2)
@@ -122,7 +124,7 @@ def enter_canvas():
     # Count windows on workspace
     ws_windows = [
         c for c in clients
-        if c.get('workspace', {}).get('id') == ws_id
+        if workspace_identity(c.get('workspace', {})) == ws_id
         and c.get('fullscreen', 0) == 0
         and (not c.get('floating') or canvas_managed(c))
     ]
@@ -187,7 +189,7 @@ def enter_canvas():
     clients_after = get_clients()
     positions = {}
     for c in clients_after:
-        if canvas_managed(c) and c.get('workspace', {}).get('id') == ws_id:
+        if canvas_managed(c) and workspace_identity(c.get('workspace', {})) == ws_id:
             positions[c['address']] = {'at': c['at'], 'size': c['size']}
     save_saved_positions(ws_key, positions)
 
@@ -236,7 +238,7 @@ end
     # Save current floating positions for THIS workspace
     floating = [
         c for c in clients
-        if canvas_managed(c) and c.get('workspace', {}).get('id') == ws_id
+        if canvas_managed(c) and workspace_identity(c.get('workspace', {})) == ws_id
     ]
     positions = {c['address']: {'at': c['at'], 'size': c['size']} for c in floating}
     save_saved_positions(ws_key, positions)

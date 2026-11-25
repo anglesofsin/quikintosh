@@ -1,5 +1,7 @@
 import subprocess, json, sys, os
 
+from workspace_identity import workspace_identity
+
 direction = sys.argv[1] if len(sys.argv) > 1 else 'right'
 HYPRCTL = '/run/current-system/sw/bin/hyprctl'
 STATE_DIR = '/home/pg/.local/state/infinite-desktop'
@@ -41,8 +43,8 @@ def get_ws():
         ms = json.loads(r.stdout)
         m = next((x for x in ms if x.get('focused')), ms[0])
         sw = m.get('specialWorkspace') or {}
-        if sw.get('id'):
-            return sw.get('id'), sw.get('name') or str(sw.get('id'))
+        if sw.get('name'):
+            return workspace_identity(sw), sw['name']
     except Exception:
         pass
     r = subprocess.run([HYPRCTL, 'activeworkspace', '-j'], capture_output=True, text=True, timeout=0.2)
@@ -78,7 +80,7 @@ clients = json.loads(r2.stdout)
 floating = [
     w for w in clients
     if w.get('floating')
-    and w.get('workspace', {}).get('id') == ws_id
+    and workspace_identity(w.get('workspace', {})) == ws_id
     and has_canvas_tag(w)
     and w.get('fullscreen', 0) == 0
 ]

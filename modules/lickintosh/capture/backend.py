@@ -86,11 +86,20 @@ class Worker:
         self.session=uuid.uuid4().hex;path=self.root/(self.session+'.png');run(['grim','-o',monitor['name'],str(path)],stderr=subprocess.PIPE)
         with Image.open(path) as raw:self.frame=raw.convert('RGB')
         w,h=logical(monitor);ui_scale=interface_scale();w/=ui_scale;h/=ui_scale;factor=self.frame.width/w
-        clients=json.loads(output(['hyprctl','clients','-j']));active=monitor.get('activeWorkspace',{}).get('id');special=monitor.get('specialWorkspace',{}).get('id',0);visible_workspaces={m.get(key,{}).get('id') for m in monitors for key in ['activeWorkspace','specialWorkspace']}
-        clients=sorted(clients,key=lambda c:((4000 if c.get('pinned') else 0)+(2000 if c.get('workspace',{}).get('id')==special and special else 0)+(1000 if c.get('floating') else 0)-c.get('focusHistoryID',9999)),reverse=True)
+        def workspace_identity(workspace):
+            return workspace.get('id') or workspace.get('address') or workspace.get('name')
+
+        clients=json.loads(output(['hyprctl','clients','-j']))
+        special=workspace_identity(monitor.get('specialWorkspace') or {})
+        visible_workspaces={
+            workspace_identity(m.get(key) or {})
+            for m in monitors for key in ('activeWorkspace','specialWorkspace')
+        }
+        visible_workspaces.discard(None)
+        clients=sorted(clients,key=lambda c:((4000 if c.get('pinned') else 0)+(2000 if special and workspace_identity(c.get('workspace') or {})==special else 0)+(1000 if c.get('floating') else 0)-c.get('focusHistoryID',9999)),reverse=True)
         windows=[]
         for c in clients:
-            if c.get('hidden') or c.get('mapped') is False or (not c.get('pinned') and c.get('workspace',{}).get('id') not in visible_workspaces):continue
+            if c.get('hidden') or c.get('mapped') is False or (not c.get('pinned') and workspace_identity(c.get('workspace') or {}) not in visible_workspaces):continue
             x,y=c.get('at',[0,0]);cw,ch=c.get('size',[0,0]);x=(x-monitor['x'])/ui_scale;y=(y-monitor['y'])/ui_scale;cw/=ui_scale;ch/=ui_scale;x2=min(w,x+cw);y2=min(h,y+ch);x=max(0,x);y=max(0,y)
             if x2>x and y2>y:windows.append(dict(x=x,y=y,w=x2-x,h=y2-y))
         self.meta=dict(filename=filename(request.get('config',{}),self.frame.size,'region'),session=self.session,path=str(path),exportPath=str(self.root/(self.session+'-export.png')),monitor=monitor['name'],width=w,height=h,pixelWidth=self.frame.width,pixelHeight=self.frame.height,factor=factor,uiScale=ui_scale,windows=windows,cursorX=(cursor['x']-monitor['x'])/ui_scale,cursorY=(cursor['y']-monitor['y'])/ui_scale)

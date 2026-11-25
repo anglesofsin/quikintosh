@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import sys, struct, threading, time, subprocess, json, os
 
+from workspace_identity import workspace_identity
+
 EVENT_SIZE = struct.calcsize('llHHi')
 EV_KEY=1; EV_REL=2; REL_X=0; REL_Y=1
 BTN_LEFT=272
@@ -20,9 +22,9 @@ def get_ws_id():
         r = subprocess.run([HYPRCTL, 'monitors', '-j'], capture_output=True, text=True, timeout=0.2)
         ms = json.loads(r.stdout)
         m = next((x for x in ms if x.get('focused')), ms[0])
-        sw = (m.get('specialWorkspace') or {}).get('id')
-        if sw:
-            return sw
+        sw = m.get('specialWorkspace') or {}
+        if sw.get('name'):
+            return workspace_identity(sw)
     except Exception:
         pass
     r = subprocess.run([HYPRCTL, 'activeworkspace', '-j'], capture_output=True, text=True, timeout=0.2)
@@ -34,7 +36,7 @@ def get_ws_state_key():
         ms = json.loads(r.stdout)
         m = next((x for x in ms if x.get('focused')), ms[0])
         sw = m.get('specialWorkspace') or {}
-        if sw.get('id'):
+        if sw.get('name'):
             return sw.get('name')
     except Exception:
         pass
@@ -159,7 +161,7 @@ def center_on_clicked_window():
         ws_id = get_ws_id()
         target = None
         for w in clients:
-            if w.get('workspace', {}).get('id') != ws_id: continue
+            if workspace_identity(w.get('workspace', {})) != ws_id: continue
             wx, wy = w.get('at', [0, 0])
             ww, wh = w.get('size', [0, 0])
             if wx <= cxq < wx + ww and wy <= cyq < wy + wh:

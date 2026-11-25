@@ -63,12 +63,13 @@ a=s.index('    Timer {\n        interval: root.precisionUsers>0 ? 16');s=s[:a]+'
         interval:root.captureIdleInterval
         running:(root.captureUsers>0 || root.inventoryUsers>0) && !(root.captureUsers>0 && (root.precisionUsers>0 || root.fast))
         repeat:true
-        onTriggered:{const signature=root.signature();if(signature!==root.lastSignature){root.lastSignature=signature;root.markActive()}if(root.captureUsers>0)root.refreshWindows();else root.captureSnapshot()}
+        onTriggered:{const signature=root.signature();if(signature!==root.lastSignature){root.lastSignature=signature;root.markActive()}if(root.captureUsers>0){RenderingState.updateGeometry();root.refreshWindows()}else root.captureSnapshot()}
     }
 }
 ''';write(p,s)
 p='components/glass/GlassWindows.qml';s=(root/p).read_text()
 s=s.replace('    property bool capturing:true','''    property bool capturing:true
+    readonly property bool preciseGeometry:root.capturing && RenderingState.geometryAvailable
     readonly property var motionGeometry:root.capturing ? RenderingState.geometry:({})
     property double lastCaptureFrame:0
     FrameAnimation{
@@ -111,7 +112,7 @@ if 'readonly property var ipc: root.normalizedIpc(modelData.lastIpcObject)' in s
 else:
  assert 'readonly property var ipc: modelData.lastIpcObject' in s
  s=s.replace('readonly property var ipc: modelData.lastIpcObject','readonly property var ipc: '+merge,1)
-s=s.replace('&& root.workspaceVisible(ipc, modelData.workspace)','&& (viewport.rendered ? viewport.rendered.visible:root.workspaceVisible(ipc, modelData.workspace))',1)
+s=s.replace('&& root.workspaceVisible(ipc, modelData.workspace)','&& (root.preciseGeometry ? viewport.rendered!==null && viewport.rendered.visible:root.workspaceVisible(ipc, modelData.workspace))',1)
 s=s.replace('x: ipc && ipc.at ? ipc.at[0] - root.monitorX : 0','x: ipc && ipc.at ? ipc.at[0] - root.monitorX - viewport.x:0',1)
 s=s.replace('y: ipc && ipc.at ? ipc.at[1] - root.monitorY : 0','y: ipc && ipc.at ? ipc.at[1] - root.monitorY - viewport.y:0',1)
 last=s.rfind('    }\n}');assert last>0;s=s[:last]+'        }\n'+s[last:]

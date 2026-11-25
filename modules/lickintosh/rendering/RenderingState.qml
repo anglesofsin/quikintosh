@@ -25,9 +25,9 @@ Singleton {
  readonly property var geometry:Native.FramePacer.geometry
  readonly property bool geometryAvailable:Native.FramePacer.geometryAvailable
  function updateGeometry(){if(!GlassTracker.fast)Native.FramePacer.requestGeometry()}
- function synchronizeMotion(){Native.FramePacer.setGeometryMotion((GlassTracker.fast || GlassTracker.precisionUsers>0) && GlassTracker.captureUsers>0,root.geometryFps)}
+ function synchronizeMotion(){if(GlassTracker.captureUsers>0)Native.FramePacer.requestGeometry();Native.FramePacer.setGeometryMotion((GlassTracker.fast || GlassTracker.precisionUsers>0) && GlassTracker.captureUsers>0,root.geometryFps)}
  onGeometryFpsChanged:synchronizeMotion()
- Connections{target:GlassTracker;function onFastChanged(){root.synchronizeMotion()}function onCaptureUsersChanged(){root.synchronizeMotion()}function onPrecisionUsersChanged(){root.synchronizeMotion()}}
+ Connections{target:GlassTracker;function onFastChanged(){root.synchronizeMotion()}function onCaptureUsersChanged(){root.synchronizeMotion()}function onPrecisionUsersChanged(){root.synchronizeMotion()}function onTransitionEpochChanged(){if(GlassTracker.captureUsers>0)Native.FramePacer.requestGeometry()}}
  function register(window,role){if(window)Native.FramePacer.label(window,role || 'interface')}
  function statistics(){return Native.FramePacer.statistics()}
  function set(name,value){options[name]=value}

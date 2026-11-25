@@ -42,7 +42,7 @@ Scope{
    stubs={
     'Hyprland':'property var toplevels:[];property var monitors:({values:[]})',
     'GlassTracker':"property var monitorSnapshots:[{name:'TEST',id:0,x:0,y:0,width:1280,height:720,scale:1,activeWorkspace:{id:1},specialWorkspace:{id:0}}];property var clientsSnapshot:[];property int captureMargin:200;property int snapshotSerial:0;property int transitionEpoch:0;property bool captureBlocked:false;property int captureUsers:0;property bool closing:false;property string closingAddress:'';function captureSnapshot(){return 0}",
-    'RenderingState':'property var geometry:({});property int glassFps:0',
+    'RenderingState':'property var geometry:({});property int glassFps:0;property bool geometryAvailable:false',
     'ShellMotion':'property var effectsCurve:[.2,0,0,1,1,1];function duration(ms){return ms}',
    }
    for name,body in stubs.items():(services/(name+'.qml')).write_text('pragma Singleton\nimport QtQuick\nQtObject{'+body+'}')
@@ -68,7 +68,9 @@ Scope{
   if(step===2){if(view.live || view.captureSource!==source){console.error('PAUSED_CAPTURE_DISCARDED');Qt.exit(8);return}RenderingState.geometry={'1':{at:[50,0],size:[100,100],clip:[0,0,1280,720],visible:true,opacity:1}};step++;return}
   if(step===3){if(Object.keys(glass.motionGeometry).length || view.x!==0 || view.live){console.error('HIDDEN_CAPTURE_CONSUMED_MOTION');Qt.exit(11);return}glass.capturing=true;step++;return}
   if(step===4){if(!view.live || view.captureSource!==source){Qt.exit(9);return}RenderingState.geometry={'1':{at:[-50,10],size:[120,100],clip:[-100,0,1000,720],clipActive:true,visible:true,opacity:1}};step++;return}
-  if(step===5){if(view.x+view.parent.x!==-50*glass.coordinateScale || view.y+view.parent.y!==10*glass.coordinateScale || view.width!==120*glass.coordinateScale || view.parent.width!==1000*glass.coordinateScale || !view.parent.clip){console.error('RENDERED_VIEWPORT_GEOMETRY_FAILED',view.x,view.y,view.width,view.parent.x,view.parent.y,view.parent.width,JSON.stringify(view.parent.rendered));Qt.exit(10);return}source.closed();step++;return}
+  if(step===5){if(view.x+view.parent.x!==-50*glass.coordinateScale || view.y+view.parent.y!==10*glass.coordinateScale || view.width!==120*glass.coordinateScale || view.parent.width!==1000*glass.coordinateScale || !view.parent.clip){console.error('RENDERED_VIEWPORT_GEOMETRY_FAILED',view.x,view.y,view.width,view.parent.x,view.parent.y,view.parent.width,JSON.stringify(view.parent.rendered));Qt.exit(10);return}RenderingState.geometryAvailable=true;RenderingState.geometry={};step++;return}
+  if(step===6){if(view.onScreen || view.captureSource!==null){console.error('STALE_WORKSPACE_VISIBLE');Qt.exit(12);return}RenderingState.geometry={'1':{at:[0,0],size:[100,100],visible:true,opacity:1}};step++;return}
+  if(step===7){if(!view.onScreen || view.captureSource!==source){Qt.exit(13);return}source.closed();step++;return}
   for(let n=0;n<10;n++){view.stopped();view.restart()}
   if(view.captureSource!==null || view.live || view.restartFailures!==0){console.error('CLOSED_CAPTURE_RESTARTED');Qt.exit(7);return}
   console.log('CLOSED_CAPTURE_DETACHED_OK');Qt.quit()

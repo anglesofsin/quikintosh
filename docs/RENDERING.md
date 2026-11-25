@@ -51,3 +51,11 @@ Hyprland client model repeatedly on the QML animation clock.
 Startup packaging includes the profile script, its Quick Look MIME module and
 Finder stylesheet in the same source directory. This avoids a missing-module
 failure before shell startup on a fresh login.
+
+Geometry refresh also runs immediately when captures resume, on every workspace
+transition (including consecutive transitions while already moving), and with
+the existing stationary inventory pass. A successful native geometry snapshot
+is authoritative: a missing window is not drawn from a stale workspace cache.
+These rules apply to all surfaces using LiquidGlassBackdrop/GlassWindows,
+including Dock, panels, Settings, widgets and Quick Look. Refraction remains a
+Quickintosh GPU shader; this does not install Apple's proprietary renderer.

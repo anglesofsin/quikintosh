@@ -1,0 +1,35 @@
+diff --git a/src/managers/screenshare/ScreenshareFrame.cpp b/src/managers/screenshare/ScreenshareFrame.cpp
+index 67e3381cc..2913769a3 100644
+--- a/src/managers/screenshare/ScreenshareFrame.cpp
++++ b/src/managers/screenshare/ScreenshareFrame.cpp
+@@ -0,0 +1 @@
++#include <algorithm>
+@@ -226,0 +228,28 @@ void CScreenshareFrame::renderMonitor(Render::CRenderContext& ctx) {
++    // Capture the actual background behind a protected window. Redraw the
++    // active workspace using the native capture filter, never the mirror
++    // texture, which already contains the protected surfaces.
++    const bool hasProtectedWindow = std::ranges::any_of(Desktop::windowState()->windows(), [&](const auto& window) {
++        return window && window->m_ruleApplicator->noScreenShare().valueOrDefault() &&
++            g_pHyprRenderer->shouldRenderWindow(window, PMONITOR);
++    });
++    if (hasProtectedWindow && PMONITOR->m_activeWorkspace && !g_pSessionLockManager->isSessionLocked() &&
++        m_session->m_type == SHARE_MONITOR && PMONITOR->m_transform == WL_OUTPUT_TRANSFORM_NORMAL) {
++        const auto previousCapture = ctx.m_renderingCapture;
++        const auto previousFeedback = ctx.m_blockSurfaceFeedback;
++        const Render::CScopeGuard restoreFlags([&] {
++            ctx.m_renderingCapture = previousCapture;
++            ctx.m_blockSurfaceFeedback = previousFeedback;
++        });
++        ctx.m_renderingCapture = true;
++        ctx.m_blockSurfaceFeedback = true;
++        const auto now = Time::steadyNow();
++        g_pHyprRenderer->startRenderPass(ctx);
++        g_pHyprRenderer->renderWorkspace(ctx, PMONITOR->m_activeWorkspace, now, Render::eSceneMode::WORKSPACE_WITH_SHELL);
++        if (m_overlayCursor) {
++            CRegion cursorDamage{0, 0, m_bufferSize.x, m_bufferSize.y};
++            Pointer::mgr()->renderSoftwareCursorsFor(ctx, PMONITOR, now, cursorDamage,
++                Pointer::mgr()->untransformedPosition() - PMONITOR->m_position, true, true);
++        }
++        return;
++    }
++

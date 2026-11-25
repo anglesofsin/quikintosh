@@ -19,57 +19,7 @@ let
         name != "__pycache__" && !(lib.hasInfix ".bak" name) && !(lib.hasSuffix ".pyc" name);
     };
 
-  hypr-canvas = pkgs.stdenv.mkDerivation {
-    pname = "hypr-canvas";
-    version = "0.1-a5f9cda";
-
-    src = pkgs.fetchFromGitHub {
-      owner = "aaronsb";
-      repo = "hypr-canvas";
-      rev = "a5f9cdaccb864db094a6a978498bb77c7e90fc53";
-      hash = "sha256-75c/soq/YF2KQCTNR2GgnfgHCeCG0ZCNX1phissdDX8=";
-    };
-
-    patches = [ ./hypr-canvas-mode-gated-reset.patch ];
-
-    postPatch = ''
-      substituteInPlace src/canvas.cpp \
-        --replace-fail '    m_mouseButtonHook = hookByName("onMouseButton", (void*)&hkOnMouseButton);' '    m_mouseButtonHook = nullptr;' \
-        --replace-fail '    m_mouseMovedHook  = hookByName("onMouseMoved", (void*)&hkOnMouseMoved);' '    m_mouseMovedHook  = nullptr;'
-    '';
-
-    nativeBuildInputs = with pkgs; [ pkg-config ];
-    buildInputs = with pkgs; [
-      hyprland.dev
-      aquamarine
-      hyprcursor
-      hyprgraphics
-      hyprlang
-      hyprutils
-      glslang
-      pixman
-      libdrm
-      libglvnd
-      libinput
-      wayland
-      wayland-protocols
-      cairo
-      libxkbcommon
-      libxcb
-      libxcb-errors
-      xorg.xcbutilwm
-      xorg.xcbutilrenderutil
-    ];
-
-    makeFlags = [ "CXX=${pkgs.stdenv.cc.targetPrefix}c++" ];
-
-    installPhase = ''
-      runHook preInstall
-      mkdir -p $out/lib/hyprland
-      cp hypr-canvas.so $out/lib/hyprland/hypr-canvas.so
-      runHook postInstall
-    '';
-  };
+  hypr-canvas = pkgs.callPackage ./hypr-canvas.nix {};
 
   hyprland-config = pkgs.stdenv.mkDerivation {
     name = "hyprland-config";

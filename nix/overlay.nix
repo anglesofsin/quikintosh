@@ -22,8 +22,13 @@ let
     config.allowUnfree = true;
   };
 
-  patchedHyprland = hyprland-src.packages.${system}.hyprland.overrideAttrs (old: {
-    patches = (old.patches or [ ]) ++ [ hyprlandPatch ../modules/hyprland-workspace-viewport.patch ];
+  upstreamHyprland = hyprland-src.packages.${system}.hyprland;
+  modernHyprland = pkgs.lib.versions.majorMinor upstreamHyprland.version == "0.57";
+  patchedHyprland = upstreamHyprland.overrideAttrs (old: {
+    patches = (old.patches or [ ]) ++ (if modernHyprland then [
+      ../modules/hyprland-0.57-seethrough.patch
+      ../modules/hyprland-0.57-workspace-viewport.patch
+    ] else [ hyprlandPatch ../modules/hyprland-workspace-viewport.patch ]);
     # v0.56.2's lock already supplies Glaze 8, but its CMake range still
     # rejects version 8 and tries an impure network fetch. Upstream removed
     # that stale upper bound after the tag; keep this conditional for both the
@@ -38,7 +43,9 @@ let
   # The portal itself does not need recompilation for the compositor patch.
   # Reuse its cached binary and only rewrite wrapper references so commands
   # such as hyprctl resolve to the patched Hyprland selected by this system.
-  cachedHyprlandPortal = patchedPkgs.xdg-desktop-portal-hyprland;
+  cachedHyprlandPortal =
+    if modernHyprland then hyprland-src.packages.${system}.xdg-desktop-portal-hyprland
+    else patchedPkgs.xdg-desktop-portal-hyprland;
   matchedHyprlandPortalBase =
     patchedPkgs.runCommand "xdg-desktop-portal-hyprland-${cachedHyprlandPortal.version}-matched" { }
       ''
@@ -53,11 +60,11 @@ let
         done < <(grep -RIl '${cachedHyprlandPortal}' "$out")
 
         while IFS= read -r file; do
-          if grep -qF '${patchedPkgs.hyprland}' "$file"; then
+          if grep -qF '${if modernHyprland then upstreamHyprland else patchedPkgs.hyprland}' "$file"; then
             substituteInPlace "$file" \
-              --replace-fail '${patchedPkgs.hyprland}' '${patchedHyprland}'
+              --replace-fail '${if modernHyprland then upstreamHyprland else patchedPkgs.hyprland}' '${patchedHyprland}'
           fi
-        done < <(grep -RIl '${patchedPkgs.hyprland}' "$out")
+        done < <(grep -RIl '${if modernHyprland then upstreamHyprland else patchedPkgs.hyprland}' "$out")
       '';
   # The NixOS Hyprland module probes package.override before using the portal.
   # Expose a no-op override because the wrapper references are already fixed.

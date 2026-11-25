@@ -1,0 +1,116 @@
+--- a/src/GlassDecoration.cpp
++++ b/src/GlassDecoration.cpp
+@@ -20,6 +20,7 @@
+ #include <hyprland/src/managers/fullscreen/FullscreenController.hpp>
+ #include <hyprland/src/render/OpenGL.hpp>
+ #include <hyprland/src/render/Renderer.hpp>
++#include <hyprland/src/render/WindowRenderPresentation.hpp>
+
+ CGlassDecoration::CGlassDecoration(PHLWINDOW window)
+     : IHyprWindowDecoration(window), m_window(window) {
+@@ -261,6 +262,7 @@
+
+     CGlassPassElement::SGlassPassData data{m_self, alpha};
+     data.xray = xray;
++    data.workspaceViewport = ctx.m_windowWorkspaceClip;
+
+     // Only the real monitor pass is de-duplicated: snapshots, screencopy and
+     // overview framebuffers render the window once, out of frame order.
+@@ -478,7 +480,7 @@
+     return false;
+ }
+
+-void CGlassDecoration::renderPass(Render::CRenderContext& ctx, PHLMONITOR monitor, const float& alpha, bool xray) {
++void CGlassDecoration::renderPass(Render::CRenderContext& ctx, PHLMONITOR monitor, const float& alpha, bool xray, const std::optional<CBox>& workspaceViewport) {
+     // Belt and braces: draw() already refuses to queue a pass element for a foreign
+     // render, but a caller that reaches renderPass() during one anyway must not sample
+     // the foreign framebuffer into this decoration's persistent background cache.
+@@ -540,9 +542,7 @@
+     // not the active/inactive dimming or opacity rules: those make the surface
+     // more translucent — revealing more glass — and shouldn't wash out the
+     // glass pane itself. Rebuild the fade-only alpha from its components.
+-    float glassAlpha = window->presentation().alpha().getTotalWithout(Desktop::View::WINDOW_ALPHA_ACTIVE);
+-    if (const auto workspace = window->m_workspace; workspace && !(window->m_state & Desktop::View::WINDOW_STATE_PINNED))
+-        glassAlpha *= workspace->m_alpha->value();
++    const float glassAlpha = window->presentation().renderPresentation().fadeAlpha;
+
+     // A fullscreen window shows no edge, like Hyprland draws it no border.
+     m_lastFocusLightStrength = fsUnrounded ? 0.0f : focusLightFor(resolveContext);
+@@ -677,7 +677,7 @@
+                                      windowBox, glassAlpha,
+                                      std::array<float, 4>{cornerRadius, cornerRadius, cornerRadius, cornerRadius},
+                                      roundingPower, m_samplePaddingRatio, resolveContext, nullptr, focusLight,
+-                                     frostInput.copy ? &frostInput : nullptr);
++                                     frostInput.copy ? &frostInput : nullptr, workspaceViewport);
+ }
+
+ eDecorationType CGlassDecoration::getDecorationType() {
+--- a/src/GlassDecoration.hpp
++++ b/src/GlassDecoration.hpp
+@@ -27,7 +27,7 @@
+     [[nodiscard]] std::string                getDisplayName() override;
+
+     [[nodiscard]] PHLWINDOW getOwner();
+-    void                    renderPass(Render::CRenderContext& ctx, PHLMONITOR monitor, const float& alpha, bool xray);
++    void                    renderPass(Render::CRenderContext& ctx, PHLMONITOR monitor, const float& alpha, bool xray, const std::optional<CBox>& workspaceViewport);
+     void                    onFullscreenStateChanged();
+
+     // Content below committed damage in our sample region — resample next frame.
+--- a/src/GlassPassElement.hpp
++++ b/src/GlassPassElement.hpp
+@@ -18,6 +18,7 @@
+         uint32_t             queueIndex  = 0;
+         // Resolved once in draw(): needsLiveBlur() and renderPass() must agree on it.
+         bool                 xray        = false;
++        std::optional<CBox>  workspaceViewport;
+     };
+
+     explicit CGlassPassElement(const SGlassPassData& data);
+--- a/src/GlassPassElement.cpp
++++ b/src/GlassPassElement.cpp
+@@ -27,7 +27,7 @@
+     if (!m_data.decoration->isCurrentGlassPass(m_data.frameSerial, m_data.queueIndex))
+         return {};
+
+-    m_data.decoration->renderPass(ctx, ctx.m_data.pMonitor.lock(), m_data.alpha, m_data.xray);
++    m_data.decoration->renderPass(ctx, ctx.m_data.pMonitor.lock(), m_data.alpha, m_data.xray, m_data.workspaceViewport);
+
+     return {};
+ }
+--- a/src/GlassRenderer.hpp
++++ b/src/GlassRenderer.hpp
+@@ -208,6 +208,7 @@
+                        const CBox& box,
+                        float alpha, const std::array<float, 4>& radii, float roundingPower,
+                        const Vector2D& paddingRatio, const SResolveContext& resolveContext,
+-                       const SMaskInfo* mask = nullptr, float focusLight = 0.0f, const SFrostInput* frost = nullptr);
++                       const SMaskInfo* mask = nullptr, float focusLight = 0.0f, const SFrostInput* frost = nullptr,
++                       const std::optional<CBox>& workspaceViewport = std::nullopt);
+
+ } // namespace GlassRenderer
+--- a/src/GlassRenderer.cpp
++++ b/src/GlassRenderer.cpp
+@@ -462,7 +462,7 @@
+                        const CBox& box,
+                        float alpha, const std::array<float, 4>& radii, float roundingPower,
+                        const Vector2D& paddingRatio, const SResolveContext& resolveContext,
+-                       const SMaskInfo* mask, float focusLight, const SFrostInput* frost) {
++                       const SMaskInfo* mask, float focusLight, const SFrostInput* frost, const std::optional<CBox>& workspaceViewport) {
+     if (!sampleFramebuffer || !targetFramebuffer)
+         return;
+
+@@ -696,7 +696,13 @@
+     // Only finalDamage is copied to the screen, and elementDamage (which finalDamage is a
+     // subset of) already covers every pixel we're visible at, so scissoring to the damage
+     // clips no pixel that would otherwise reach the screen.
+-    CBox damageExtents = ctx.m_data.damage.copy().intersect(box).getExtents();
++    auto damage = ctx.m_data.damage.copy().intersect(box);
++    if (workspaceViewport) {
++        damage.intersect(*workspaceViewport);
++        if (damage.empty())
++            return;
++    }
++    const CBox damageExtents = damage.getExtents();
+     g_pHyprOpenGL->scissor(ctx, damageExtents.w > 0 && damageExtents.h > 0 ? damageExtents : box, ctx.m_data.transformDamage);
+     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+     g_pHyprOpenGL->scissor(ctx, nullptr);

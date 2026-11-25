@@ -1,0 +1,155 @@
+diff --git a/src/canvas.cpp b/src/canvas.cpp
+index 2d5aa01..3f5bd21 100644
+--- a/src/canvas.cpp
++++ b/src/canvas.cpp
+@@ -3,0 +4,3 @@
++#include <hyprland/src/workspace/HLWorkspace.hpp>
++#include <hyprland/src/output/Monitor.hpp>
++#include <hyprland/src/desktop/view/window/Window.hpp>
+@@ -9,0 +13 @@
++#include <hyprland/src/render/scene/SceneSelection.hpp>
+@@ -64,2 +68,2 @@ static bool isCanvasWorkspace(bool fresh = false) {
+-        const std::string key = ws->m_isSpecialWorkspace ? ws->m_name : std::to_string(ws->m_id);
+-        std::ifstream     state("/home/pg/.local/state/infinite-desktop/state-" + key);
++        const std::string key = ws->type() == Workspace::eWorkspaceType::SPECIAL ? ws->displayName() : ws->addressableName();
++        std::ifstream     state(std::string(std::getenv("HOME") ? std::getenv("HOME") : "") + "/.local/state/infinite-desktop/state-" + key);
+@@ -211,14 +214,0 @@ static Vector2D hkClosestValid(Pointer::CPointerManager* self, const Vector2D& p
+-// --- Monitor detection hook ---
+-// getMonitorFromCursor uses position() which now returns canvas coords.
+-// Canvas coords may be outside all monitors, so we bypass and use physical coords.
+-
+-static PHLMONITOR hkGetMonitorFromCursor(CCompositor* self) {
+-    if (canvasActive()) {
+-        // Just return the focused monitor — cursor is always physically on it
+-        return Desktop::focusState()->monitor();
+-    }
+-
+-    auto original = (getMonitorFromCursorFn)g_pCanvas->m_monitorFromCursorHook->m_original;
+-    return original(self);
+-}
+-
+@@ -249 +239 @@ static bool hkShouldRenderWindow(Render::IHyprRenderer* self, PHLWINDOW pWindow,
+-typedef CRegion (*renderPassRenderFn)(Render::CRenderPass*, const CRegion&);
++typedef CRegion (*renderPassRenderFn)(Render::CRenderPass*, Render::CRenderContext&, const CRegion&);
+@@ -251 +241 @@ typedef CRegion (*renderPassRenderFn)(Render::CRenderPass*, const CRegion&);
+-static CRegion hkRenderPassRender(Render::CRenderPass* self, const CRegion& damage) {
++static CRegion hkRenderPassRender(Render::CRenderPass* self, Render::CRenderContext& ctx, const CRegion& damage) {
+@@ -267 +257 @@ static CRegion hkRenderPassRender(Render::CRenderPass* self, const CRegion& dama
+-            return original(self, expanded);
++            return original(self, ctx, expanded);
+@@ -271 +261 @@ static CRegion hkRenderPassRender(Render::CRenderPass* self, const CRegion& dama
+-    return original(self, damage);
++    return original(self, ctx, damage);
+@@ -285 +275 @@ static CRegion hkRenderPassRender(Render::CRenderPass* self, const CRegion& dama
+-typedef void (*renderAllClientsFn)(Render::IHyprRenderer*, PHLMONITOR, PHLWORKSPACE, const steady_tp&, const Vector2D&, const float&);
++typedef void (*renderAllClientsFn)(Render::IHyprRenderer*, Render::CRenderContext&, PHLMONITOR, PHLWORKSPACE, const steady_tp&, Render::eSceneMode, const Vector2D&, const float&);
+@@ -290,2 +280,2 @@ static bool g_canvasRenderScope = false;
+-static void pushRenderModif(const Render::SRenderModifData& modif) {
+-    g_pHyprRenderer->m_renderPass.add(makeUnique<CRendererHintsPassElement>(CRendererHintsPassElement::SData{modif}));
++static void pushRenderModif(ctx, Render::CRenderContext& ctx, const Render::SRenderModifData& modif) {
++    g_pHyprRenderer->currentPass(ctx).add(makeUnique<CRendererHintsPassElement>(CRendererHintsPassElement::SData{modif}));
+@@ -305 +295 @@ static Render::SRenderModifData canvasModif() {
+-static void onRenderStage(eRenderStage stage) {
++static void onRenderStage(Render::CRenderContext& ctx, eRenderStage stage) {
+@@ -310 +300 @@ static void onRenderStage(eRenderStage stage) {
+-        pushRenderModif(canvasModif());
++        pushRenderModif(ctx, canvasModif());
+@@ -313 +303 @@ static void onRenderStage(eRenderStage stage) {
+-        pushRenderModif(Render::SRenderModifData{});
++        pushRenderModif(ctx, Render::SRenderModifData{});
+@@ -317 +307 @@ static void onRenderStage(eRenderStage stage) {
+-        const auto win = g_pHyprRenderer->m_renderData.currentWindow.lock();
++        const auto win = ctx.m_data.currentWindow.lock();
+@@ -320 +310 @@ static void onRenderStage(eRenderStage stage) {
+-            pushRenderModif(Render::SRenderModifData{});
++            pushRenderModif(ctx, Render::SRenderModifData{});
+@@ -323 +313 @@ static void onRenderStage(eRenderStage stage) {
+-            pushRenderModif(canvasModif());
++            pushRenderModif(ctx, canvasModif());
+@@ -329,2 +319,2 @@ static void onRenderStage(eRenderStage stage) {
+-static void hkRenderAllClientsForWorkspace(Render::IHyprRenderer* self, PHLMONITOR pMonitor, PHLWORKSPACE pWorkspace,
+-                                           const steady_tp& now, const Vector2D& translate, const float& scale) {
++static void hkRenderAllClientsForWorkspace(Render::IHyprRenderer* self, Render::CRenderContext& ctx, PHLMONITOR pMonitor, PHLWORKSPACE pWorkspace,
++                                           const steady_tp& now, Render::eSceneMode mode, const Vector2D& translate, const float& scale) {
+@@ -333 +323 @@ static void hkRenderAllClientsForWorkspace(Render::IHyprRenderer* self, PHLMONIT
+-    if (canvasActive()) {
++    if (canvasActive() && mode == Render::eSceneMode::MONITOR && pWorkspace == activeWorkspace()) {
+@@ -342,3 +332,3 @@ static void hkRenderAllClientsForWorkspace(Render::IHyprRenderer* self, PHLMONIT
+-        g_pHyprRenderer->m_renderData.damage.add(virtualViewport);
+-        g_pHyprRenderer->m_renderData.clipBox = {};  // no clip
+-        g_pHyprRenderer->m_renderData.noSimplify = true;
++        ctx.m_data.damage.add(virtualViewport);
++        ctx.m_data.clipBox = {};  // no clip
++        ctx.m_data.noSimplify = true;
+@@ -347 +337 @@ static void hkRenderAllClientsForWorkspace(Render::IHyprRenderer* self, PHLMONIT
+-        original(self, pMonitor, pWorkspace, now, translate, scale);  // identity: wallpaper/layers untouched
++        original(self, ctx, pMonitor, pWorkspace, now, mode, translate, scale);  // identity: wallpaper/layers untouched
+@@ -350 +340 @@ static void hkRenderAllClientsForWorkspace(Render::IHyprRenderer* self, PHLMONIT
+-        original(self, pMonitor, pWorkspace, now, translate, scale);
++        original(self, ctx, pMonitor, pWorkspace, now, mode, translate, scale);
+@@ -362 +352 @@ static void hkRenderAllClientsForWorkspace(Render::IHyprRenderer* self, PHLMONIT
+-typedef void (*texDrawFn)(Render::GL::CGLElementRenderer*, WP<CTexPassElement>, const CRegion&);
++typedef void (*texDrawFn)(Render::GL::CGLElementRenderer*, Render::CRenderContext&, WP<CTexPassElement>, const CRegion&);
+@@ -364 +354 @@ typedef void (*texDrawFn)(Render::GL::CGLElementRenderer*, WP<CTexPassElement>,
+-static void hkTexDraw(Render::GL::CGLElementRenderer* self, WP<CTexPassElement> element, const CRegion& damage) {
++static void hkTexDraw(Render::GL::CGLElementRenderer* self, Render::CRenderContext& ctx, WP<CTexPassElement> element, const CRegion& damage) {
+@@ -368 +358 @@ static void hkTexDraw(Render::GL::CGLElementRenderer* self, WP<CTexPassElement>
+-        auto& modif = g_pHyprRenderer->m_renderData.renderModif;
++        auto& modif = ctx.m_data.renderModif;
+@@ -372 +362 @@ static void hkTexDraw(Render::GL::CGLElementRenderer* self, WP<CTexPassElement>
+-            return original(self, element, converted);
++            return original(self, ctx, element, converted);
+@@ -376 +366 @@ static void hkTexDraw(Render::GL::CGLElementRenderer* self, WP<CTexPassElement>
+-    original(self, element, damage);
++    original(self, ctx, element, damage);
+@@ -412,19 +401,0 @@ static SP<CWLSurfaceResource> hkLayerPopupAtVec(Desktop::CViewHitTester* self, c
+-// --- Monitor-from-vector hook ---
+-// getMonitorFromVector is used by vectorToWindowUnified and many others.
+-// Canvas coords outside the physical monitor return null, blocking window lookup.
+-
+-typedef PHLMONITOR (*getMonitorFromVectorFn)(CCompositor*, const Vector2D&);
+-
+-static PHLMONITOR hkGetMonitorFromVector(CCompositor* self, const Vector2D& pos) {
+-    auto original = (getMonitorFromVectorFn)g_pCanvas->m_monitorFromVectorHook->m_original;
+-
+-    if (canvasActive()) {
+-        auto result = original(self, pos);
+-        if (!result)
+-            return Desktop::focusState()->monitor();
+-        return result;
+-    }
+-
+-    return original(self, pos);
+-}
+-
+@@ -471 +442,6 @@ static CFunctionHook* hookByName(const std::string& name, void* dest) {
+-    auto fns = HyprlandAPI::findFunctionsByName(PHANDLE, name);
++    const auto start = name.rfind("::");
++    const auto signature = name.find('(');
++    const auto leaf = start == std::string::npos ? name : name.substr(start + 2, signature - start - 2);
++    auto fns = HyprlandAPI::findFunctionsByName(PHANDLE, leaf);
++    if (start != std::string::npos)
++        std::erase_if(fns, [&](const auto& fn) { return !fn.demangled.starts_with(name); });
+@@ -498,3 +474 @@ CCanvas::CCanvas() {
+-    m_monitorFromCursorHook = hookByName("getMonitorFromCursor", (void*)&hkGetMonitorFromCursor);
+-    m_monitorFromVectorHook = hookByName("getMonitorFromVector", (void*)&hkGetMonitorFromVector);
+-    m_popupPositionHook     = hookByName("applyPositioning", (void*)&hkApplyPositioning);
++    m_popupPositionHook = hookByName("CXDGPopupResource::applyPositioning(", (void*)&hkApplyPositioning);
+@@ -518 +492 @@ CCanvas::CCanvas() {
+-            if (fn.demangled.find("CRenderPass") != std::string::npos) {
++            if (fn.demangled.starts_with("Render::CRenderPass::render(")) {
+@@ -526 +500,8 @@ CCanvas::CCanvas() {
+-    m_renderHook      = hookByName("renderAllClientsForWorkspace", (void*)&hkRenderAllClientsForWorkspace);
++    for (const auto& fn : HyprlandAPI::findFunctionsByName(PHANDLE, "renderAllClientsForWorkspace")) {
++        if (!fn.demangled.starts_with("Render::IHyprRenderer::renderAllClientsForWorkspace(") ||
++            fn.demangled.find("Render::eSceneMode") == std::string::npos)
++            continue;
++        m_renderHook = HyprlandAPI::createFunctionHook(PHANDLE, fn.address, reinterpret_cast<void*>(&hkRenderAllClientsForWorkspace));
++        if (m_renderHook && m_renderHook->hook())
++            break;
++    }
+@@ -566,2 +547,2 @@ CCanvas::CCanvas() {
+-    m_renderStageListener = Event::bus()->m_events.render.stage.listen([](eRenderStage stage) { onRenderStage(stage); });
+-    m_waylandToXWCoordHook = hookByName("waylandToXWaylandCoords", (void*)&hkWaylandToXWaylandCoords);
++    m_renderStageListener = Event::bus()->m_events.render.stage.listen([](const Event::SRenderStageEvent& event) { if (event.context) onRenderStage(event.context->get(), event.stage); });
++    m_waylandToXWCoordHook = hookByName("CHyprXWaylandManager::waylandToXWaylandCoords(Hyprutils::Math::Vector2D const&)", (void*)&hkWaylandToXWaylandCoords);

@@ -227,8 +227,8 @@ PanelWindow {
                                 color: "#f1f5ff"
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
-                                font.pixelSize: 13
-                                font.weight: parent.checked ? Font.DemiBold : Font.Medium
+                                font.pixelSize: 12
+                                font.weight: parent.checked ? Font.DemiBold : Font.Normal
                             }
                         }
                     }
@@ -407,6 +407,7 @@ PanelWindow {
             spacing: 24
             ColumnLayout {
                 Layout.preferredWidth: 240
+                Layout.maximumWidth: 240
                 spacing: 7
                 Text { font.family: sfText.name;
                     Layout.fillWidth: true

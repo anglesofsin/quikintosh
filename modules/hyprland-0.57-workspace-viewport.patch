@@ -1,0 +1,83 @@
+diff --git a/src/render/Context.hpp b/src/render/Context.hpp
+index 430f23813..b0f88556a 100644
+--- a/src/render/Context.hpp
++++ b/src/render/Context.hpp
+@@ -77,6 +77,7 @@ namespace Render {
+         std::vector<SCMSettingsCacheEntry> m_cmSettingsCache;
+ 
+         bool                               m_blockSurfaceFeedback = false;
++        std::optional<CBox>                m_windowWorkspaceClip;
+         bool                               m_renderingSnapshot    = false;
+         bool                               m_renderingCapture     = false;
+         bool                               m_swapchainAcquired    = false;
+diff --git a/src/render/Renderer.cpp b/src/render/Renderer.cpp
+index a748a5457..3a8281f7c 100644
+--- a/src/render/Renderer.cpp
++++ b/src/render/Renderer.cpp
+@@ -584,6 +584,8 @@ void IHyprRenderer::bindBackOnMain(CRenderContext& ctx) {
+ }
+ 
+ void IHyprRenderer::addPassElement(CRenderContext& ctx, UP<IPassElement>&& element) {
++    if (ctx.m_windowWorkspaceClip)
++        element->workspaceClip = ctx.m_windowWorkspaceClip;
+     currentPass(ctx).add(std::move(element));
+ }
+ 
+@@ -625,6 +627,14 @@ void IHyprRenderer::renderWindow(CRenderContext& ctx, PHLWINDOW pWindow, PHLMONI
+     if (!pWindow->mapped())
+         return;
+ 
++    // Clip tiled windows to the moving viewport, including decorations and popups.
++    const auto previousClip = ctx.m_windowWorkspaceClip;
++    const CScopeGuard restoreClip([&ctx, previousClip] { ctx.m_windowWorkspaceClip = previousClip; });
++    ctx.m_windowWorkspaceClip.reset();
++    if (!ignorePosition && !standalone && !ctx.m_renderingSnapshot && !presentation.workspaceScene &&
++        !(pWindow->m_state & WINDOW_STATE_PINNED) && !pWindow->isFloating() && presentation.workspaceOffsetAnimating)
++        ctx.m_windowWorkspaceClip = CBox{presentation.workspaceOffset, pMonitor->m_size}.scale(pMonitor->m_scale).round();
++
+     TRACY_GPU_ZONE("RenderWindow");
+ 
+     const auto                       WORKSPACEOFFSET = presentation.workspaceOffset;
+diff --git a/src/render/pass/Pass.cpp b/src/render/pass/Pass.cpp
+index 913be945d..376509180 100644
+--- a/src/render/pass/Pass.cpp
++++ b/src/render/pass/Pass.cpp
+@@ -82,6 +82,9 @@ void CRenderPass::simplify(CRenderContext& ctx, bool willBlur, const CRegion& li
+                 opaque = scaledRegion;
+             }
+ 
++            if (el.element->workspaceClip)
++                opaque.intersect(*el.element->workspaceClip);
++
+             // if this intersects the liveBlur region, allow live blur to operate correctly.
+             // do not occlude a border near it.
+             if (willBlur) {
+@@ -250,6 +253,14 @@ CRegion CRenderPass::render(CRenderContext& ctx, const CRegion& damage_) {
+             continue;
+         }
+ 
++        if (el.element->workspaceClip) {
++            el.elementDamage.intersect(*el.element->workspaceClip);
++            if (el.elementDamage.empty() && !el.element->undiscardable(ctx)) {
++                el.element->discard(ctx);
++                continue;
++            }
++        }
++
+         ctx.m_data.damage = el.elementDamage;
+         g_pHyprRenderer->draw(ctx, el.element, el.elementDamage);
+ 
+diff --git a/src/render/pass/PassElement.hpp b/src/render/pass/PassElement.hpp
+index 75738fb03..50cba6557 100644
+--- a/src/render/pass/PassElement.hpp
++++ b/src/render/pass/PassElement.hpp
+@@ -42,6 +42,9 @@ class IPassElement {
+     virtual bool                disableSimplification(Render::CRenderContext& ctx);
+     virtual bool                requiresFullDamage(Render::CRenderContext& ctx);
+ 
++    // Translated workspace viewport in monitor-local physical pixels.
++    std::optional<CBox> workspaceClip;
++
+     // cached results, computed once per frame in CRenderPass::render()
+     bool needsLiveBlurCached       = false;
+     bool needsPrecomputeBlurCached = false;

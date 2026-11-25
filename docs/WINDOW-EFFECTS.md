@@ -11,3 +11,5 @@ Clock widget → Typography/Colors & effects supports separate colors, wallpaper
 ## Hyprimate compatibility work
 
 The requested [Hyprimate](https://github.com/JustinBacher/hyprimate) revision targets Hyprland 0.57.x and a C++26 toolchain. The current Quickintosh compositor is 0.56.2 with custom capture and scrolling-workspace clipping patches. Those patches do not apply unchanged to 0.57.2. Hyprimate is **not installed or enabled** by this change: the compositor, existing plugins and both patches must be ported and tested together before activating that upgrade. The package definition is retained as preparation, not as a working installation claim. User Lua configuration must be retained, and activation of a new compositor requires a new session.
+
+The experimental 0.57.2 viewport port is in `modules/hyprland-0.57-workspace-viewport.patch`. It moves the clip onto the active render context and preserves the tiled-window clipping for both drawing and occlusion. The active 0.56.2 build still uses its existing patches. The 0.57.2 port needs a compositor build and a visual scrolling-workspace regression test before activation.

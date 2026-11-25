@@ -1,0 +1,7 @@
+--- a/src/window/hyprland/HyprWindowPort.cpp
++++ b/src/window/hyprland/HyprWindowPort.cpp
+@@ -98,2 +98,4 @@
+     }
++    if (WINDOW->m_ruleApplicator->noAnim().valueOrDefault())
++        return std::nullopt;
+     const auto MONITOR = WINDOW->m_monitor.lock();

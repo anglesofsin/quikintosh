@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
+import qs.components
 import qs.services
 import qs.settingsapp
 ScrollView{
@@ -15,6 +16,19 @@ ScrollView{
  function refresh(){SettingsState.query('compositor',true)}
  function value(key,fallback){const v=SettingsPreferences.inputOverrides[key];return v!==undefined ? v:data.values?.[key] ?? fallback}
  function set(key,value){const next=Object.assign({},SettingsPreferences.inputOverrides);next[key]=value;SettingsPreferences.inputOverrides=next}
+ function isPageOption(key) {
+  return key.startsWith('workspace-animation:') || key.startsWith('plugin:hyprimate:') ||
+         Object.prototype.hasOwnProperty.call(root.data.options || {},key)
+ }
+ readonly property bool canReset: Object.keys(SettingsPreferences.inputOverrides).some(root.isPageOption)
+ function restoreDefaults() {
+  const next=Object.assign({},SettingsPreferences.inputOverrides)
+  for (const key of Object.keys(next))
+   if (root.isPageOption(key)) delete next[key]
+  SettingsPreferences.inputOverrides=next
+  refreshTimer.restart()
+ }
+ Timer { id: refreshTimer; interval: 950; onTriggered: root.refresh() }
  function save(){SettingsState.change('compositor-rules',{rules:root.rules})}
  function patch(key,value){if(selected<0)return;const list=rules.slice(),entry=Object.assign({},list[selected]);entry[key]=value;list[selected]=entry;rules=list;save()}
  Component.onCompleted:refresh()
@@ -65,7 +79,8 @@ ScrollView{
      readonly property bool sideSet: field.type==='set'
      readonly property var sideChoices: ['all'].concat(field.choices || [])
      readonly property bool parameters: field.path.endsWith('.effect_parameters')
-     readonly property bool listed: curve || (field.type === 'string' && !!field.choices)
+     readonly property bool sprite: field.path.endsWith('.swarm.sprite')
+     readonly property bool listed: sprite || curve || (field.type === 'string' && !!field.choices)
      label: depthImage ? 'Depth image' : manifest ? 'Shader manifest' : parameters ? 'Shader parameters (JSON)' :
          field.path.endsWith('.effect_duration') ? 'Shader duration' : root.animationLabel(field.path)
      visible: !root.customEffectField(field) || manifest || root.hasManifest(field)
@@ -75,7 +90,7 @@ ScrollView{
      available: root.data.values?.[field.key] != null
      kind: fileOption ? 'button' : field.type === 'boolean' ? 'switch' : (listed || sideSet) ? 'choice' : numeric ? 'slider' : 'field'
      checked: currentValue === true
-     choices: sideSet ? (sideChoices.includes(currentValue) ? sideChoices : [String(currentValue)].concat(sideChoices)) : curve ? Array.from(new Set([String(currentValue || 'default')].concat(root.data.workspaceNative?.curves || []))) : listed ? field.choices : []
+     choices: sprite ? Array.from(new Set(['spider','cat','bird',String(currentValue)])) : sideSet ? (sideChoices.includes(currentValue) ? sideChoices : [String(currentValue)].concat(sideChoices)) : curve ? Array.from(new Set([String(currentValue || 'default')].concat(root.data.workspaceNative?.curves || []))) : listed ? field.choices : []
      selection: Math.max(0, choices.indexOf(currentValue))
      minimum: field.min ?? (numeric ? Math.min(0,Number(currentValue),Number(field.default)*2) : 0)
      maximum: field.path.endsWith('duration') ? Math.max(3000,Number(currentValue),Number(field.default)) : field.max ?? (numeric ? Math.max(10,Number(currentValue),Number(field.default)*4) : 1)
@@ -94,6 +109,13 @@ ScrollView{
      }
     }
  ColumnLayout{id:body;width:root.availableWidth;spacing:20
+  TahoeButton {
+   Layout.alignment: Qt.AlignRight
+   enabled: root.canReset
+   text: '↶  Restore defaults'
+   Accessible.name: 'Restore window and animation defaults'
+   onClicked: root.restoreDefaults()
+  }
   SettingsCard{title:'Window appearance'
    Slider{label:'Corner radius';option:'decoration:rounding';minimum:0;maximum:50;step:1}
    Slider{label:'Corner curve';option:'decoration:rounding_power';minimum:2;maximum:10;step:.1}

@@ -422,8 +422,8 @@ hl.window_rule({
 
 -- Preview pixels stay opaque; its own Liquid Glass paints translucent chrome.
 if shellActions["switcher-next"] then
-    hl.window_rule({name="lickintosh-settings",match={class="^org[.]lickintosh[.]Settings$"},float=true,opacity="1.0 1.0"})
-    hl.window_rule({name="lickintosh-quick-look",match={title="^(Lickintosh|Quickintosh) Quick Look.*"},float=true,center=true,stay_focused=true,focus_on_activate=true,animation="popin 80%",opacity="1.0 1.0"})
+    hl.window_rule({name="lickintosh-settings",match={class="^org[.]lickintosh[.]Settings$"},float=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
+    hl.window_rule({name="lickintosh-quick-look",match={title="^(Lickintosh|Quickintosh) Quick Look.*"},float=true,center=true,stay_focused=true,focus_on_activate=true,no_anim=true,opacity="1.0 1.0"})
 end
 
 hl.layer_rule({

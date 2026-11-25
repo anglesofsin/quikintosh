@@ -17,7 +17,19 @@ FloatingWindow{
  property var history:['general']
  property int historyIndex:0
  property bool initialized:false
- SettingsWindowGlass{id:windowGlass;host:window}
+ readonly property bool nativeGlass: nativeGlassAvailable && !Theme.plainSurfaces &&
+     !SettingsPreferences.accessibility.reduceTransparency
+ property bool nativeGlassAvailable: false
+ Process {
+  running: true
+  command: ['hyprctl','-j','hyprglass','status']
+  stdout: StdioCollector {
+   onStreamFinished: {
+    try { window.nativeGlassAvailable=JSON.parse(text).versionCheck==='match' }
+    catch (_) { window.nativeGlassAvailable=false }
+   }
+  }
+ }
  readonly property var page:SettingsCatalog.page(route)
  readonly property bool canBack:historyIndex>0
  readonly property bool canForward:historyIndex<history.length-1
@@ -37,7 +49,7 @@ FloatingWindow{
   target:'settingsWindow'
   function open(page:string):void{if(page)window.navigate(page);window.minimized=false;window.visible=false;Qt.callLater(()=>window.visible=true)}
   function navigate(page:string):void{window.navigate(page)}
-  function state():string{return JSON.stringify({page:window.route,title:window.page?.title,history:window.history,position:window.historyIndex,search:window.query,loaded:loader.status===Loader.Ready,error:SettingsState.error,loadError:loader.status===Loader.Error,glassReady:windowGlass.captureSettled,owner:SettingsState.ownerPid,ownAddress:windowGlass.own.address || '',pages:SettingsCatalog.pages.map(p=>p.id)})}
+  function state():string{return JSON.stringify({page:window.route,title:window.page?.title,history:window.history,position:window.historyIndex,search:window.query,loaded:loader.status===Loader.Ready,error:SettingsState.error,loadError:loader.status===Loader.Error,glassReady:window.nativeGlass,owner:SettingsState.ownerPid,pages:SettingsCatalog.pages.map(p=>p.id)})}
  }
  Shortcut{sequence:'Ctrl+F';onActivated:search.forceActiveFocus()}
  Shortcut{sequence:'Alt+Left';onActivated:window.back()}
@@ -53,14 +65,12 @@ FloatingWindow{
   }
  }
  Rectangle{
-  width:window.width/scale;height:window.height/scale;scale:SettingsPreferences.accessibility.textScale;transformOrigin:Item.TopLeft;radius:18;color:Theme.isLight ? '#fafafa':'#1c1c1e';clip:true
+  width:window.width/scale;height:window.height/scale;scale:SettingsPreferences.accessibility.textScale;transformOrigin:Item.TopLeft;radius:18;color:window.nativeGlass ? 'transparent' : Theme.isLight ? '#fafafa':'#1c1c1e';clip:true
   RowLayout{
    anchors.fill:parent;spacing:0
    Rectangle{
     Layout.preferredWidth:248;Layout.fillHeight:true;Layout.margins:9;Layout.rightMargin:0;radius:16
-    color:Theme.isLight ? '#e9e9ed':'#28282d';border.width:1;border.color:Theme.isLight ? '#12000000':'#14ffffff'
-    TahoeGlass{anchors.fill:parent;backdrop:windowGlass;cornerRadius:16;visible:windowGlass.captureSettled && windowGlass.ready}
-    Rectangle{anchors.fill:parent;radius:16;color:Theme.isLight ? '#b8e9e9ed':'#b828282d';visible:windowGlass.captureSettled && windowGlass.ready}
+    color:window.nativeGlass ? (Theme.isLight ? '#b8e9e9ed':'#b828282d') : (Theme.isLight ? '#e9e9ed':'#28282d');border.width:1;border.color:Theme.isLight ? '#12000000':'#14ffffff'
     ColumnLayout{
      anchors.fill:parent;anchors.margins:11;spacing:10
      Item{
@@ -98,8 +108,9 @@ FloatingWindow{
      }
     }
    }
-   Item{
+   Rectangle{
     Layout.fillWidth:true;Layout.fillHeight:true
+    color:Theme.isLight ? '#fafafa':'#1c1c1e';radius:18
     ColumnLayout{
      anchors.fill:parent;spacing:0
      Item{

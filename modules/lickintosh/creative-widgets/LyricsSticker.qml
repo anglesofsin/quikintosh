@@ -17,14 +17,14 @@ Item{
  property bool heldRemote:false
  property bool heldLocal:false
  property var localLines:[]
- readonly property var lines:widgetData?.lyricsFile ? (isSnapshot ? CreativeMedia.lyrics[widgetData.lyricsFile] || []:localLines):LyricsState.lines
+ readonly property var lines: !preview && !MprisState.isPlaying ? [] :widgetData?.lyricsFile ? (isSnapshot ? CreativeMedia.lyrics[widgetData.lyricsFile] || []:localLines):LyricsState.lines
  readonly property bool synced:widgetData?.lyricsFile ? lines.length>0:LyricsState.synced
  readonly property real position:MprisState.position+(widgetData?.lyricsOffset ?? 0)
  readonly property int lineIndex:{let found=-1;if(synced)for(let i=0;i<lines.length;i++){if(lines[i].t<=position+.12)found=i;else break}return found}
  readonly property string layout:widgetData?.variant || 'stacked'
  readonly property color ink:widgetData?.textColorMode==='custom' ? widgetData.textColor || '#fff':widgetData?.textColorMode==='accent' ? Theme.accent:look?.primary || Theme.textPrimary
- readonly property bool blank:!preview && (widgetData?.lyricsHideUnavailable ?? true) && (widgetData?.lyricsEnabled===false || !MprisState.hasPlayer || !lines.some(line=>String(line.text || '').trim().length>0))
- readonly property string current:preview ? 'Your favorite songs, right here.':widgetData?.lyricsEnabled===false ? 'Lyrics paused':!MprisState.hasPlayer ? 'Play a song to see its lyrics':!synced ? (lines.length ? lines[0].text:LyricsState.status==='loading' ? 'Finding lyrics…':'No synchronized lyrics found'):lineIndex>=0 ? lines[lineIndex].text:'♪'
+ readonly property bool blank:!preview && (widgetData?.lyricsHideUnavailable ?? true) && (widgetData?.lyricsEnabled===false || !MprisState.isPlaying || !synced || !lines.some(line=>String(line.text || '').trim().length>0))
+ readonly property string current:preview ? 'Your favorite songs, right here.':widgetData?.lyricsEnabled===false ? 'Lyrics paused':!MprisState.isPlaying ? 'Play a song to see its lyrics':!synced ? (LyricsState.status==='loading' ? 'Finding lyrics…':'No synchronized lyrics found'):lineIndex>=0 ? lines[lineIndex].text:'♪'
  function sync(){if(watching!==held){held=watching;MprisState.watchPosition(held)}const remote=watching && !widgetData?.lyricsFile;if(remote!==heldRemote){heldRemote=remote;LyricsState.watch(remote)}const local=watching && !!widgetData?.lyricsFile;if(local!==heldLocal){heldLocal=local;MprisState.fastWatchers=Math.max(0,MprisState.fastWatchers+(local ? 1:-1))}}
  onWidgetDataChanged:sync()
  onWatchingChanged:sync()
@@ -42,6 +42,5 @@ onLoadFailed:root.localLines=[]}
    Rectangle{height:parent.height;radius:2;color:root.ink;width:root.preview ? parent.width*.55:parent.width*Math.max(0,Math.min(1,(root.position-(root.lines[root.lineIndex]?.t || 0))/Math.max(.1,(root.lines[root.lineIndex+1]?.t || MprisState.length)-(root.lines[root.lineIndex]?.t || 0))))}
   }
   Text{visible:root.layout==='stacked' && (root.preview || root.synced && root.lineIndex+1<root.lines.length);Layout.fillWidth:true;text:root.preview ? 'Another verse ahead':root.lines[root.lineIndex+1]?.text || '';color:root.ink;opacity:.3;font.family:root.widgetData?.textFont || 'SF Pro Display';font.pixelSize:Math.max(11,(root.widgetData?.textSize || 28)*.65);horizontalAlignment:Text.AlignHCenter;wrapMode:Text.WordWrap;maximumLineCount:2;elide:Text.ElideRight;textFormat:Text.PlainText}
-  Text{visible:!root.synced && !!root.lines.length;Layout.fillWidth:true;text:'Lyrics without timestamps';color:root.ink;opacity:.45;font.pixelSize:10;horizontalAlignment:Text.AlignHCenter}
  }
 }

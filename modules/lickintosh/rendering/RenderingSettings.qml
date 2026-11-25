@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import qs.components
 import qs.services
 import qs.settingsapp
 import qs.ui.settings.widgets
@@ -17,6 +18,16 @@ ColumnLayout {
   Layout.fillWidth:true;spacing:0
   SettingsRow{label:row.label;kind:'choice';choices:['Automatic','15','30','60','90','120','144','165','240','360','Custom'];selection:row.custom || row.presets.indexOf(row.limit)<0 ? 10:row.presets.indexOf(row.limit);onPicked:index=>{row.custom=index===10;if(!row.custom)row.committed(row.presets[index])}}
   SettingsRow{visible:row.custom || row.presets.indexOf(row.limit)<0;label:'Custom FPS';kind:'field';value:String(row.limit);onEdited:text=>{const n=Number(text);if(Number.isFinite(n) && n>=0 && n<=1000)row.committed(Math.round(n))}}
+ }
+ TahoeButton {
+  Layout.alignment: Qt.AlignRight
+  text: '↶  Restore defaults'
+  Accessible.name: 'Restore rendering and motion defaults'
+  onClicked: {
+   RenderingState.applyPreset('native')
+   RenderingState.set('renderer','auto')
+   RenderingState.set('measureFrames',false)
+  }
  }
  SettingsCard{title:I18n.tr('Rendering & Performance')
   SettingsRow{label:'Profile';kind:'choice';choices:['Custom','Native refresh rate','Balanced','Power saving'];selection:['custom','native','balanced','saving'].indexOf(RenderingState.profile);onPicked:index=>{if(index>0)RenderingState.applyPreset(['custom','native','balanced','saving'][index])}}

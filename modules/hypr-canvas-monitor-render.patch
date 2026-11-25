@@ -1,0 +1,39 @@
+--- a/src/canvas.cpp
++++ b/src/canvas.cpp
+@@ -274,3 +274,3 @@
+ 
+-typedef void (*renderAllClientsFn)(Render::IHyprRenderer*, Render::CRenderContext&, PHLMONITOR, PHLWORKSPACE, const steady_tp&, Render::eSceneMode, const Vector2D&, const float&);
++typedef void (*renderAllClientsFn)(Render::IHyprRenderer*, Render::CRenderContext&, PHLMONITOR, PHLWORKSPACE, const steady_tp&, const CBox&);
+ 
+@@ -318,7 +318,7 @@
+ 
+-static void hkRenderAllClientsForWorkspace(Render::IHyprRenderer* self, Render::CRenderContext& ctx, PHLMONITOR pMonitor, PHLWORKSPACE pWorkspace,
+-                                           const steady_tp& now, Render::eSceneMode mode, const Vector2D& translate, const float& scale) {
++static void hkRenderWorkspace(Render::IHyprRenderer* self, Render::CRenderContext& ctx, PHLMONITOR pMonitor, PHLWORKSPACE pWorkspace,
++                                           const steady_tp& now, const CBox& geometry) {
+     auto original = (renderAllClientsFn)g_pCanvas->m_renderHook->m_original;
+ 
+-    if (canvasActive() && mode == Render::eSceneMode::MONITOR && pWorkspace == activeWorkspace()) {
++    if (canvasActive() && pWorkspace == activeWorkspace()) {
+         g_pHyprRenderer->damageMonitor(pMonitor);
+@@ -336,6 +336,6 @@
+         g_canvasRenderScope = true;
+-        original(self, ctx, pMonitor, pWorkspace, now, mode, translate, scale);  // identity: wallpaper/layers untouched
++        original(self, ctx, pMonitor, pWorkspace, now, geometry);  // identity: wallpaper/layers untouched
+         g_canvasRenderScope = false;
+     } else {
+-        original(self, ctx, pMonitor, pWorkspace, now, mode, translate, scale);
++        original(self, ctx, pMonitor, pWorkspace, now, geometry);
+     }
+@@ -499,7 +499,7 @@
+     }
+-    for (const auto& fn : HyprlandAPI::findFunctionsByName(PHANDLE, "renderAllClientsForWorkspace")) {
+-        if (!fn.demangled.starts_with("Render::IHyprRenderer::renderAllClientsForWorkspace(") ||
+-            fn.demangled.find("Render::eSceneMode") == std::string::npos)
++    for (const auto& fn : HyprlandAPI::findFunctionsByName(PHANDLE, "renderWorkspace")) {
++        if (!fn.demangled.starts_with("Render::IHyprRenderer::renderWorkspace(") ||
++            !fn.demangled.ends_with("Hyprutils::Math::CBox const&)"))
+             continue;
+-        m_renderHook = HyprlandAPI::createFunctionHook(PHANDLE, fn.address, reinterpret_cast<void*>(&hkRenderAllClientsForWorkspace));
++        m_renderHook = HyprlandAPI::createFunctionHook(PHANDLE, fn.address, reinterpret_cast<void*>(&hkRenderWorkspace));
+         if (m_renderHook && m_renderHook->hook())

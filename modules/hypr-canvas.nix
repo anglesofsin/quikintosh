@@ -14,7 +14,7 @@ compiler.mkDerivation {
       hash = "sha256-75c/soq/YF2KQCTNR2GgnfgHCeCG0ZCNX1phissdDX8=";
     };
 
-    patches = [ ./hypr-canvas-mode-gated-reset.patch ] ++ lib.optional modern ./hypr-canvas-057.patch;
+    patches = [ ./hypr-canvas-mode-gated-reset.patch ] ++ lib.optionals modern [ ./hypr-canvas-057.patch ./hypr-canvas-monitor-render.patch ];
 
     postPatch = ''
       ${lib.optionalString modern "sed -i 's/-std=c++2b/-std=c++26/' Makefile"}

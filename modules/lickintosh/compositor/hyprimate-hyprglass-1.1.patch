@@ -1,7 +1,6 @@
 --- a/src/window/hyprland/HyprglassCompat.cpp
 +++ b/src/window/hyprland/HyprglassCompat.cpp
-@@ -1,9 +1,5 @@
- #include <array>
+@@ -2,7 +2,3 @@
  #include <cmath>
 -#include <cstdint>
  #include <dlfcn.h>
@@ -9,16 +8,12 @@
 -#include <string>
 -#include <utility>
  #include <vector>
- 
-@@ -21,5 +17,5 @@
- #include "HyprglassCompat.hpp"
+@@ -22,3 +18,3 @@
  #include "StyleTypes.hpp"
 -#include "plugin/PluginImports.hpp"
 +#include "WindowGlassAnimation.hpp"
  #include "gl/NativeFramebuffer.hpp"
- #include "window/WindowAnimations.hpp"
-@@ -28,27 +24,5 @@
- #include "perf/GpuTimer.hpp"
+@@ -29,25 +25,3 @@
  
 -// Opaque Hyprglass arguments: never inspect another plugin's private layout.
 -class CGlassDecoration;
@@ -45,9 +40,7 @@
 -}
 +using namespace Quickintosh;
  
- class CHyprglassCompat::Impl {
-@@ -56,208 +30,71 @@
-     Impl(HANDLE owner, HyprWindowAnimations &animations, CHyprWindowPort &port)
+@@ -57,7 +31,10 @@
          : m_owner(owner), m_animations(animations), m_port(port) {}
 -    ~Impl() { reset(); }
 -    Impl(const Impl &) = delete;
@@ -63,7 +56,7 @@
 +            s_active = nullptr;
 +    }
      void refresh();
- 
+@@ -65,16 +42,13 @@
    private:
 -    void reset();
 -    bool deform(Render::CRenderContext &ctx, const Image &sample, const Image &target,
@@ -89,8 +82,7 @@
      inline static Impl *s_active = nullptr;
 -    inline static constexpr std::array IMPORTS{RENDER_SYMBOL, APPLY_SYMBOL};
      HANDLE m_owner;
-     HyprWindowAnimations &m_animations;
-     CHyprWindowPort &m_port;
+@@ -83,54 +57,14 @@
      std::vector<CPlugin *> m_plugins;
 -    HANDLE m_plugin = nullptr;
 -    std::array<void **, 2> m_slots{};
@@ -155,7 +147,7 @@
 +            return plugin;
 +    return nullptr;
  }
- 
+@@ -138,121 +72,24 @@
  void CHyprglassCompat::Impl::refresh() {
 -    if (!g_pPluginSystem) return;
 -    m_plugins.resize(g_pPluginSystem->pluginCount());
@@ -293,14 +285,20 @@
 -    if (!m_window || !monitor || !sample || !target || !CHyprWindowPort::session_unlocked() ||
 +    if (!window || !monitor || !sample || !target || !CHyprWindowPort::session_unlocked() ||
          ctx.readOnlyEffects() || ctx.m_renderingCapture || ctx.m_renderingSnapshot ||
-         WorkspaceCaptureScope::for_context(ctx) || WorkspaceCaptureScope::is_destination_live(ctx))
+@@ -260,5 +97,9 @@
          return false;
 -    auto *transformer = m_window->effects().transformers()->get<CAnimationTransformer>();
+-    if (!transformer || !transformer->active() || transformer->handle().style !=
+-            hyprimate::config::Style::Liquid) return false;
 +    auto *transformer = window->effects().transformers()->get<CAnimationTransformer>();
-     if (!transformer || !transformer->active() || transformer->handle().style !=
-             hyprimate::config::Style::Liquid) return false;
-@@ -266,10 +103,10 @@
- 
++    if (!transformer || !transformer->active())
++        return false;
++    // A separate glass rectangle must not reveal the window while the
++    // animation owns its presentation. Liquid can deform the glass itself.
++    if (transformer->handle().style != hyprimate::config::Style::Liquid)
++        return true;
+     const double scale = monitor->m_scale;
+@@ -267,8 +108,8 @@
      // Exactly the native transformer's source domain, including decorations.
 -    // Using raw (the main surface) would stretch the liquid field differently.
 -    auto source = m_window->getFullWindowBoundingBox();
@@ -314,9 +312,7 @@
 -    source.translate(offset + m_window->presentation().floatingOffset() - monitor->m_position);
 +    source.translate(offset + window->presentation().floatingOffset() - monitor->m_position);
      const auto output = transformer->transformedExtents(source).scale(scale);
-     const auto canvas_box = Render::pixelBoxForLogical(
-@@ -290,12 +127,12 @@
-         g_pHyprRenderer->setProjectionType(ctx, Render::RPT_EXPORT);
+@@ -291,10 +132,10 @@
          g_pHyprRenderer->draw(ctx, CClearPassElement::SClearData{CHyprColor(0, 0, 0, 0)});
 -        auto local = raw.copy().translate(-raster_box.pos());
 +        auto local = box.copy().translate(-raster_box.pos());
@@ -331,9 +327,7 @@
 -    CHyprAnimationCanvas canvas{ctx, m_port.canvas_resources()};
 +    CHyprAnimationCanvas canvas{ctx, s_active->m_port.canvas_resources()};
      const Draw<CHyprAnimationCanvas> draw{.canvas = &canvas, .image = &glass,
-         .source = to_box(source), .output = to_box(output), .canvas_box = to_box(canvas_box),
-@@ -303,9 +140,16 @@
-         .image_size = {.x = raster_box.w, .y = raster_box.h}, .scale = scale,
+@@ -304,7 +145,14 @@
          // Glass must never replace retained client pixels or advance publication.
 -        .real_pass = false, .monitor = m_port.monitor_identity(monitor)};
 -    if (!m_animations.draw(transformer->handle(), draw) || !canvas.layer()) return false;
@@ -351,4 +345,3 @@
 +    if (viewport)
 +        texture_data.clipRegion = damage;
      texture_data.allowCustomUV = true;
-     g_pHyprRenderer->bindFB(ctx, target);

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Dialogs
 import qs.services
 import qs.settingsapp
 ScrollView{
@@ -30,6 +31,26 @@ ScrollView{
   number:Number(root.value(option,minimum));value:number.toFixed(step<1 ? 2:0)
   onCommitted:value=>root.set(option,value)
  }
+ property string manifestKey: ''
+ property bool depthPicker: false
+ FileDialog {
+  id: manifestPicker
+  title: root.depthPicker ? 'Choose a depth image' : 'Choose a Hyprimate shader manifest'
+  nameFilters: root.depthPicker ? ['Depth images (*.png)'] : ['Shader manifests (*.json)']
+  onAccepted: {
+   const url=String(selectedFile)
+   if (url.startsWith('file://')) root.set(root.manifestKey,decodeURIComponent(url.slice(7)))
+  }
+ }
+ function animationLabel(path) {
+  return path.split('.').pop().replace(/_/g,' ').replace(/^./, letter=>letter.toUpperCase())
+ }
+ function customEffectField(field) {
+  return /\.effect(_parameters|_duration)?$/.test(field.path)
+ }
+ function hasManifest(field) {
+  return !!root.value(field.key.replace(/:effect_(parameters|duration)$/,':effect'),'')
+ }
  component AnimationOption: SettingsRow {
      id: animationRow
      property bool explain: false
@@ -37,23 +58,40 @@ ScrollView{
      readonly property var field: modelData
      readonly property var currentValue: root.value(field.key, field.default)
      readonly property bool numeric: field.type === 'float' || field.type === 'int'
-     readonly property bool listed: field.type === 'string' && !!field.choices
-     label: field.path.substring(field.path.indexOf('.') + 1).split('.').join(' / ').replace(/_/g, ' ')
-     description: explain ? field.description : ''
+     readonly property bool curve: field.path.endsWith('.curve')
+     readonly property bool depthImage: field.path.endsWith('.depth_source')
+     readonly property bool manifest: field.path.endsWith('.effect')
+     readonly property bool fileOption: manifest || depthImage
+     readonly property bool sideSet: field.type==='set'
+     readonly property var sideChoices: ['all'].concat(field.choices || [])
+     readonly property bool parameters: field.path.endsWith('.effect_parameters')
+     readonly property bool listed: curve || (field.type === 'string' && !!field.choices)
+     label: depthImage ? 'Depth image' : manifest ? 'Shader manifest' : parameters ? 'Shader parameters (JSON)' :
+         field.path.endsWith('.effect_duration') ? 'Shader duration' : root.animationLabel(field.path)
+     visible: !root.customEffectField(field) || manifest || root.hasManifest(field)
+     buttonText: fileOption ? 'Choose file…' : ''
+     onActivated: if (fileOption) { root.manifestKey=field.key; root.depthPicker=depthImage; manifestPicker.open() }
+     description: fileOption && currentValue ? String(currentValue).split('/').pop() : explain ? field.description : ''
      available: root.data.values?.[field.key] != null
-     kind: field.type === 'boolean' ? 'switch' : listed ? 'choice' : numeric ? 'slider' : 'field'
+     kind: fileOption ? 'button' : field.type === 'boolean' ? 'switch' : (listed || sideSet) ? 'choice' : numeric ? 'slider' : 'field'
      checked: currentValue === true
-     choices: listed ? field.choices : []
+     choices: sideSet ? (sideChoices.includes(currentValue) ? sideChoices : [String(currentValue)].concat(sideChoices)) : curve ? Array.from(new Set([String(currentValue || 'default')].concat(root.data.workspaceNative?.curves || []))) : listed ? field.choices : []
      selection: Math.max(0, choices.indexOf(currentValue))
-     minimum: field.min ?? (numeric ? -10000 : 0)
-     maximum: field.max ?? (numeric ? Math.max(10000, Number(field.default) * 2) : 1)
+     minimum: field.min ?? (numeric ? Math.min(0,Number(currentValue),Number(field.default)*2) : 0)
+     maximum: field.path.endsWith('duration') ? Math.max(3000,Number(currentValue),Number(field.default)) : field.max ?? (numeric ? Math.max(10,Number(currentValue),Number(field.default)*4) : 1)
      step: field.type === 'int' || maximum > 100 ? 1 : 0.01
      number: numeric ? Number(currentValue) : 0
-     value: numeric && isFinite(number) ? number.toFixed(step < 1 ? 2 : 0) : field.type === 'color' && typeof currentValue === 'number' ? '0x' + currentValue.toString(16).padStart(8, '0') : String(currentValue ?? '')
+     value: numeric && isFinite(number) ? number.toFixed(step < 1 ? 2 : 0) + (field.path.endsWith('duration') ? ' ms' : '') : field.type === 'color' && typeof currentValue === 'number' ? '0x' + currentValue.toString(16).padStart(8, '0') : String(currentValue ?? '')
      onToggled: enabled => root.set(field.key, enabled)
      onPicked: index => root.set(field.key, choices[index])
      onCommitted: amount => root.set(field.key, amount)
-     onEdited: text => root.set(field.key, text)
+     onEdited: text => {
+      if (!parameters) { root.set(field.key,text); return }
+      try {
+       const object=JSON.parse(text)
+       if (object && typeof object==='object' && !Array.isArray(object)) root.set(field.key,JSON.stringify(object))
+      } catch (_) {}
+     }
     }
  ColumnLayout{id:body;width:root.availableWidth;spacing:20
   SettingsCard{title:'Window appearance'
@@ -200,10 +238,16 @@ ScrollView{
   }
   SettingsCard {
    id: animations
-   title: 'Hyprimate'
+   title: 'Hyprimate · Window and wallpaper effects'
    visible: root.data.hyprimate === true
    property string section: 'window'
    property string filter: ''
+   property string phase: 'general'
+   property bool customShaders: false
+   readonly property var phases: ['general','open','close','movement','resize']
+   readonly property string style: root.value('plugin:hyprimate:window:style','liquid')
+   onPhaseChanged: page=0
+   onCustomShadersChanged: page=0
    property int page: 0
    property bool explain: false
    readonly property int pageSize: 18
@@ -213,7 +257,17 @@ ScrollView{
    readonly property var sections: ['window', 'wallpaper']
    readonly property var fields: (root.data.animationFields || []).filter(field => {
     const path = field.path.toLowerCase()
-    return path.startsWith(section + '.') && path.includes(filter.trim().toLowerCase())
+    if (!path.startsWith(section+'.') || !path.includes(filter.trim().toLowerCase())) return false
+    const parts=path.split('.')
+    if (root.customEffectField(field)) {
+     if (!customShaders) return false
+     return section==='wallpaper' || parts[1]===(phase==='movement' ? 'move' : phase)
+    }
+    if (section==='wallpaper') return true
+    const phaseKey=['open','close','movement','resize'].includes(parts[1]) ? parts[1] : 'general'
+    if (phaseKey!==phase) return false
+    const options=parts.indexOf('options')
+    return options<0 || parts[options+1]===style
    })
 
    SettingsRow {
@@ -221,6 +275,25 @@ ScrollView{
     choices: ['Windows', 'Wallpaper']
     selection: animations.sections.indexOf(animations.section)
     onPicked: index => animations.section = animations.sections[index]
+   }
+   SettingsRow {
+    visible: animations.section==='window'
+    label: 'Window event';kind:'choice'
+    choices: ['General','Opening','Closing','Moving','Resizing']
+    selection: animations.phases.indexOf(animations.phase)
+    onPicked:index=>animations.phase=animations.phases[index]
+   }
+   SettingsRow {
+    label: 'Custom shaders';kind:'switch';checked:animations.customShaders
+    onToggled:enabled=>animations.customShaders=enabled
+   }
+   Repeater {
+    model: animations.customShaders ? animations.fields.filter(field=>field.path.endsWith('.effect') && root.value(field.key,'')) : []
+    delegate: SettingsRow {
+     required property var modelData
+     label:'Custom shader';kind:'button';buttonText:'Remove'
+     onActivated:root.set(modelData.key,'')
+    }
    }
    SettingsRow {
     label: 'Filter animation settings'; kind: 'field'; value: animations.filter

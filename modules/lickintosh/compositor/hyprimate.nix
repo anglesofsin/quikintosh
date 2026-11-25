@@ -8,6 +8,10 @@ hyprland.stdenv.mkDerivation {
   rev = "49504fabb83411d3862dd76dde9383618ab66a55";
   hash = "sha256-Tn3AC6n8NQNV1Y3GghJBUd0qhMNtZ5Fx6bZJ3pPUS9w=";
  };
+ postPatch = ''
+  substituteInPlace src/window/paper/PaperMaterial.cpp \
+    --replace-fail '#include "gl/Storage.hpp"' $'#include "gl/RawGlState.hpp"\n#include "gl/Storage.hpp"'
+ '';
  nativeBuildInputs = [ cmake ninja pkg-config binutils (lib.getBin glibc) ];
  buildInputs = [ hyprland hyprland.dev libpng nlohmann_json libGL lua5_5 ] ++ hyprland.buildInputs;
  cmakeBuildType = "Release";

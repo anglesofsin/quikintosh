@@ -57,7 +57,7 @@ static std::string snapshot(){
    continue;
   const auto drawn = w->presentation().renderPresentation();
   const auto offset = drawn.workspaceOffset;
-  const bool pinned = (w->m_state & Desktop::View::WINDOW_STATE_PINNED) != 0;
+  const bool pinned = static_cast<bool>(w->m_state & Desktop::View::WINDOW_STATE_PINNED);
   const bool visible = drawn.alphaVisible;
   const double alpha = drawn.fadeAlpha;
   const bool clipped = !pinned && !w->isFloating() && drawn.workspaceOffsetAnimating;

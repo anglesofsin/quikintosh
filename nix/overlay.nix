@@ -59,12 +59,15 @@ let
           fi
         done < <(grep -RIl '${cachedHyprlandPortal}' "$out")
 
-        while IFS= read -r file; do
-          if grep -qF '${if modernHyprland then upstreamHyprland else patchedPkgs.hyprland}' "$file"; then
-            substituteInPlace "$file" \
-              --replace-fail '${if modernHyprland then upstreamHyprland else patchedPkgs.hyprland}' '${patchedHyprland}'
-          fi
-        done < <(grep -RIl '${if modernHyprland then upstreamHyprland else patchedPkgs.hyprland}' "$out")
+        # Only the legacy portal wrapper embeds a compositor path.
+        ${pkgs.lib.optionalString (!modernHyprland) ''
+          while IFS= read -r file; do
+            if grep -qF '${patchedPkgs.hyprland}' "$file"; then
+              substituteInPlace "$file" \
+                --replace-fail '${patchedPkgs.hyprland}' '${patchedHyprland}'
+            fi
+          done < <(grep -RIl '${patchedPkgs.hyprland}' "$out")
+        ''}
       '';
   # The NixOS Hyprland module probes package.override before using the portal.
   # Expose a no-op override because the wrapper references are already fixed.

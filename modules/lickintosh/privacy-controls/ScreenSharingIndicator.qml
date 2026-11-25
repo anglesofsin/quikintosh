@@ -50,7 +50,7 @@ Item {
         onClicked: root.opened = !root.opened
 
         background: Rectangle {
-            radius: 6
+            radius: height / 2
             color: indicator.hovered || indicator.checked ? "#685acf" : "#5849ba"
             border.color: "#40c8bbff"
         }
@@ -100,7 +100,7 @@ Item {
                 Behavior on scale { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
                 radius: 19
                 color: Theme.plainSurfaces ? (Theme.isLight ? "#f4f4f6" : "#242426")
-                                          : (Theme.isLight ? "#80ffffff" : "#81202022")
+                                          : (Theme.isLight ? "#70ffffff" : "#50202022")
                 border.width: 1
                 border.color: Theme.isLight ? "#25000000" : "#37ffffff"
 

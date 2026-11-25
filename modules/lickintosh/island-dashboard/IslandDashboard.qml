@@ -8,6 +8,7 @@ import Quickshell.Hyprland
 import Quickshell.Io
 import Quickshell.Widgets
 import qs.services
+import qs.components
 import qs.rosa.services
 import qs.ui.topbar.notch.dashboard
 import qs.ui.topbar.statusarea.notifcenter
@@ -26,6 +27,57 @@ PanelWindow {
     WlrLayershell.namespace: 'quickintosh-island-dashboard'
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+
+    component IslandButton: Button {
+        id: control
+        implicitHeight: 30
+        implicitWidth: Math.max(30, label.implicitWidth + 24)
+        padding: 8
+        background: Rectangle {
+            radius: height / 2
+            color: control.down ? "#40ffffff" : control.hovered ? "#2bffffff" : "#19ffffff"
+            border.color: "#28ffffff"
+        }
+        contentItem: Text {
+            id: label
+            text: control.text
+            color: control.enabled ? "#f5f5f7" : "#77777c"
+            font.family: "SF Pro Text"
+            font.pixelSize: 12
+            font.weight: Font.Medium
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+        }
+    }
+
+    component IslandSwitch: Switch {
+        id: control
+        implicitHeight: 36
+        implicitWidth: caption.implicitWidth + 68
+        spacing: 16
+        padding: 0
+        indicator: Rectangle {
+            x: control.width - width
+            y: (control.height - height) / 2
+            width: 38; height: 23; radius: 12
+            color: control.checked ? "#4bce77" : "#4a4a50"
+            Rectangle {
+                x: control.checked ? 17 : 2
+                y: 2; width: 19; height: 19; radius: 10
+                color: "white"
+                Behavior on x { NumberAnimation { duration: 140; easing.type: Easing.OutCubic } }
+            }
+        }
+        contentItem: Text {
+            id: caption
+            text: control.text
+            color: "#eeeeef"
+            font.family: "SF Pro Text"
+            font.pixelSize: 13
+            verticalAlignment: Text.AlignVCenter
+            rightPadding: 60
+        }
+    }
 
     property real capsuleTop: 3
     property real capsuleWidth: 92
@@ -130,7 +182,7 @@ PanelWindow {
                     id: tabs
                     Repeater {
                         model: [qsTr('Dashboard'), qsTr('Weather'), qsTr('Performance'), qsTr('Media'), qsTr('Notifications'), qsTr('Settings')]
-                        delegate: Button {
+                        delegate: IslandButton {
                             required property string modelData
                             required property int index
                             text: modelData
@@ -194,12 +246,14 @@ PanelWindow {
             MediaModule { Layout.fillWidth: true }
             ColumnLayout {
                 Layout.fillWidth: true
+                spacing: 12
                 Label { text: MprisState.trackTitle || qsTr("Nothing playing"); color: "white"; font.pixelSize: 17 }
-                Slider {
+                TahoeSlider {
                     Layout.fillWidth: true
                     enabled: MprisState.canSeek
                     from: 0; to: Math.max(1, MprisState.length)
                     value: MprisState.position
+                    fillColor: "#ebebef"
                     onMoved: MprisState.seek(value)
                     Accessible.name: qsTr("Playback position")
                 }
@@ -214,7 +268,7 @@ PanelWindow {
         ColumnLayout {
             RowLayout {
                 Label { text: qsTr("Recent notifications"); color: "white"; Layout.fillWidth: true }
-                Switch {
+                IslandSwitch {
                     text: qsTr("Do Not Disturb"); checked: NotifService.dndEnabled
                     onToggled: NotifService.dndEnabled = checked
                 }
@@ -236,7 +290,7 @@ PanelWindow {
                             textFormat: Text.PlainText
                             elide: Text.ElideRight; color: "white"
                         }
-                        Button {
+                        IslandButton {
                             text: qsTr("Dismiss")
                             onClicked: NotifService.removeFromCenter(modelData)
                         }
@@ -250,13 +304,15 @@ PanelWindow {
     Component {
         id: preferences
         ColumnLayout {
+            spacing: 4
+            Label { text: qsTr("Dashboard preferences"); color: "white"; font.pixelSize: 16; font.weight: Font.DemiBold }
             Repeater {
                 model: [
                     ["dashboardCamera", qsTr("Camera in profile tile")],
                     ["dashboardWeatherArt", qsTr("Weather effects")],
                     ["dashboardWeatherLocation", qsTr("Show weather location")]
                 ]
-                delegate: Switch {
+                delegate: IslandSwitch {
                     required property var modelData
                     text: modelData[1]
                     checked: IslandConfig.s(modelData[0])
@@ -357,7 +413,7 @@ PanelWindow {
         Item {
             id: cameraTile
             property bool requested: false
-            Button {
+            IslandButton {
                 anchors.centerIn: parent
                 visible: !cameraTile.requested
                 text: qsTr('Camera')
@@ -388,7 +444,7 @@ PanelWindow {
                         wrapMode: Text.WordWrap
                         color: Theme.textPrimary
                     }
-                    Button {
+                    IslandButton {
                         Layout.fillWidth: true
                         text: qsTr('Turn off')
                         onClicked: cameraTile.requested = false

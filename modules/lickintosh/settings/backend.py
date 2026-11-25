@@ -187,21 +187,33 @@ def network_info():
 
 
 def input_values(keys):
+    # One IPC round trip per chunk. Unknown options emit plain text; successful
+    # results are compact JSON objects with their own option names.
     values = {}
-    for key in keys:
+    keys = sorted(set(keys) & INPUTS.keys())
+    for start in range(0, len(keys), 48):
+        commands = ' ; '.join('getoption ' + key for key in keys[start:start + 48])
         try:
-            data = json.loads(run(['hyprctl', 'getoption', key, '-j']))
-            value = next((data[k] for k in ['bool', 'int', 'float', 'str'] if k in data), None)
-            if INPUTS[key][0] == 'bool' and value is not None:
-                value = bool(value)
-            values[key] = value
-        except (ValueError, RuntimeError):
+            response = run(['hyprctl', '-j', '--batch', commands])
+        except RuntimeError:
             continue
+        for line in response.splitlines():
+            if not line.lstrip().startswith('{'):
+                continue
+            try:
+                data = json.loads(line)
+                key = data.get('option')
+                if key not in INPUTS:
+                    continue
+                value = next((data[n] for n in ('bool', 'int', 'float', 'str', 'css') if n in data), None)
+                values[key] = bool(value) if INPUTS[key][0] == 'bool' and value is not None else value
+            except ValueError:
+                continue
     return values
 
 
 def input_info():
-    return dict(values=input_values(INPUTS), devices=json.loads(run(['hyprctl', 'devices', '-j'])))
+    return dict(values=input_values(key for key in INPUTS if key.startswith(('input:', 'cursor:'))), devices=json.loads(run(['hyprctl', 'devices', '-j'])))
 
 
 def applications():

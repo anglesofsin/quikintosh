@@ -69,6 +69,85 @@ ScrollView{
    Slider{label:'Sample window content';option:'plugin:hyprglass:self_sample';minimum:0;maximum:1;step:.01}
    Toggle{label:'Wallpaper only';option:'plugin:hyprglass:xray'}
   }
+  SettingsCard {
+   title: 'Glass rendering'
+   visible: root.data.values?.['plugin:hyprglass:windows:background_cache'] != null
+
+   Toggle { label: 'Reuse unchanged window backgrounds'; option: 'plugin:hyprglass:windows:background_cache' }
+   Toggle { label: 'Update when the background moves'; option: 'plugin:hyprglass:windows:live_resample' }
+   Slider {
+    label: 'Maximum background updates per second'
+    option: 'plugin:hyprglass:windows:live_resample_fps'
+    minimum: 0; maximum: 360; step: 1
+    value: number === 0 ? 'Unlimited' : number.toFixed(0)
+   }
+  }
+  SettingsCard {
+   id: animations
+   title: 'Hyprimate'
+   visible: root.data.hyprimate === true
+   property string section: 'window'
+   property string filter: ''
+   property int page: 0
+   property bool explain: false
+   readonly property int pageSize: 18
+   readonly property int lastPage: Math.max(0, Math.ceil(fields.length / pageSize) - 1)
+   onSectionChanged: page = 0
+   onFilterChanged: page = 0
+   readonly property var sections: ['window', 'workspace', 'wallpaper']
+   readonly property var fields: (root.data.animationFields || []).filter(field => {
+    const path = field.path.toLowerCase()
+    return path.startsWith(section + '.') && path.includes(filter.trim().toLowerCase())
+   })
+
+   SettingsRow {
+    label: 'Animation group'; kind: 'choice'
+    choices: ['Windows', 'Workspaces', 'Wallpaper']
+    selection: animations.sections.indexOf(animations.section)
+    onPicked: index => animations.section = animations.sections[index]
+   }
+   SettingsRow {
+    label: 'Filter animation settings'; kind: 'field'; value: animations.filter
+    onEdited: text => animations.filter = text
+   }
+   SettingsRow {
+    label: 'Show option descriptions'; kind: 'switch'; checked: animations.explain
+    onToggled: enabled => animations.explain = enabled
+   }
+   SettingsRow {
+    visible: animations.lastPage > 0
+    label: 'Settings page'; kind: 'choice'; selection: animations.page
+    choices: Array.from({length: animations.lastPage + 1}, (_, index) => String(index + 1))
+    onPicked: index => animations.page = index
+   }
+   Repeater {
+    model: animations.visible ? animations.fields.slice(animations.page * animations.pageSize, (animations.page + 1) * animations.pageSize) : []
+    delegate: SettingsRow {
+     id: animationRow
+     required property var modelData
+     readonly property var field: modelData
+     readonly property var currentValue: root.value(field.key, field.default)
+     readonly property bool numeric: field.type === 'float' || field.type === 'int'
+     readonly property bool listed: field.type === 'string' && !!field.choices
+     label: field.path.substring(animations.section.length + 1).split('.').join(' / ').replace(/_/g, ' ')
+     description: animations.explain ? field.description : ''
+     available: root.data.values?.[field.key] != null
+     kind: field.type === 'boolean' ? 'switch' : listed ? 'choice' : numeric ? 'slider' : 'field'
+     checked: currentValue === true
+     choices: listed ? field.choices : []
+     selection: Math.max(0, choices.indexOf(currentValue))
+     minimum: field.min ?? (numeric ? -10000 : 0)
+     maximum: field.max ?? (numeric ? Math.max(10000, Number(field.default) * 2) : 1)
+     step: field.type === 'int' || maximum > 100 ? 1 : 0.01
+     number: numeric ? Number(currentValue) : 0
+     value: numeric && isFinite(number) ? number.toFixed(step < 1 ? 2 : 0) : field.type === 'color' && typeof currentValue === 'number' ? '0x' + currentValue.toString(16).padStart(8, '0') : String(currentValue ?? '')
+     onToggled: enabled => root.set(field.key, enabled)
+     onPicked: index => root.set(field.key, choices[index])
+     onCommitted: amount => root.set(field.key, amount)
+     onEdited: text => root.set(field.key, text)
+    }
+   }
+  }
   SettingsCard{title:'Shadows'
    Toggle{label:'Window shadows';option:'decoration:shadow:enabled'}
    Slider{label:'Shadow range';option:'decoration:shadow:range';minimum:0;maximum:100;step:1}

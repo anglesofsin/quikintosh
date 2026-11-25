@@ -1,5 +1,6 @@
 """Strict compositor policy: typed options, named window rules, reversible runtime."""
 import json,math,re
+from pathlib import Path
 OPTIONS={
  'decoration:rounding':('int',0,50), 'decoration:rounding_power':('number',2,10),
  'general:border_size':('int',0,12),'general:gaps_in':('int',0,80),'general:gaps_out':('int',0,120),
@@ -24,6 +25,50 @@ OPTIONS.update({
  'plugin:hyprglass:self_sample':('number',0,1),'plugin:hyprglass:xray':('bool',),
  'plugin:hyprglass:edge_thickness_px':('number',0,80),
 })
+
+HYPRIMATE_FIELDS = json.loads(Path(__file__).with_name('hyprimate-settings.json').read_text())
+HYPRIMATE_OPTIONS = {}
+for field in HYPRIMATE_FIELDS:
+ key = 'plugin:hyprimate:' + field['path'].replace('.', ':')
+ field['key'] = key
+ kind = field['type']
+ if kind == 'boolean':
+  spec = ('bool',)
+ elif kind in ('float', 'int'):
+  spec = ('number' if kind == 'float' else 'int', field.get('min', -10000), field.get('max', 10000))
+ elif kind == 'color':
+  spec = ('plugin-color',)
+ elif kind == 'set':
+  spec = ('plugin-set', field['choices'])
+ elif kind == 'string' and field.get('choices'):
+  spec = ('choice', field['choices'])
+ else:
+  spec = ('plugin-text',)
+ HYPRIMATE_OPTIONS[key] = spec
+
+OPTIONS.update({
+ 'plugin:hyprglass:windows:background_cache': ('bool',),
+ 'plugin:hyprglass:windows:live_resample': ('bool',),
+ 'plugin:hyprglass:windows:live_resample_fps': ('int', 0, 360),
+})
+
+def equivalent(key, first, second):
+ if HYPRIMATE_OPTIONS.get(key, (None,))[0] == 'plugin-color':
+  return option_value(key, first) == option_value(key, second)
+ if key in {'general:gaps_in', 'general:gaps_out'}:
+  if isinstance(first, (int, float)):
+   first = {side: first for side in ('top', 'right', 'bottom', 'left')}
+  else:
+   first = option_value(key, first)
+  if isinstance(second, (int, float)):
+   second = {side: second for side in ('top', 'right', 'bottom', 'left')}
+  else:
+   second = option_value(key, second)
+ if isinstance(first, float) or isinstance(second, float):
+  if isinstance(first, (int, float)) and isinstance(second, (int, float)):
+   return math.isclose(first, second, rel_tol=1e-6, abs_tol=1e-6)
+ return first == second
+
 
 RULE_FIELDS={'glass':('choice',['inherit','off','clear','subtle','glass','pomme','high_contrast']),'activeOpacity':('number',.1,1),'inactiveOpacity':('number',.1,1),'rounding':('int',0,50),'borderSize':('int',0,12),'noBlur':('bool',),'noShadow':('bool',),'noAnimations':('bool',)}
 def typed(value,spec):
@@ -74,6 +119,8 @@ def rule_commands(rules,previous=0):
  return ';'.join(commands)
 
 def option_value(key,value):
+ if HYPRIMATE_OPTIONS.get(key, (None,))[0] == 'plugin-color' and isinstance(value, str):
+  return int(value.removeprefix('#').removeprefix('0x'), 16)
  if key in {'general:gaps_in','general:gaps_out'} and isinstance(value,str):
   parts=[int(n) for n in value.split()]
   if len(parts)==1:parts*=4
@@ -89,14 +136,16 @@ def read_config(path):
  return value if isinstance(value,dict) else {}
 
 def query(api):
- values=api.input_values(OPTIONS)
+ plugins=json.loads(api.run(['hyprctl','plugins','list','-j']))
+ hyprimate=any(p.get('name')=='hyprimate' for p in plugins)
+ values=api.input_values(OPTIONS.keys() | (HYPRIMATE_OPTIONS.keys() if hyprimate else set()))
  for key in ['general:gaps_in','general:gaps_out']:
   if isinstance(values.get(key),str):
    parts=values[key].split();values[key]=int(parts[0]) if parts and len(set(parts))==1 else None
  clients=json.loads(api.run(['hyprctl','clients','-j']))
  return {'values':values,'options':OPTIONS,'rules':read_config(api.HOME/'.config/lickintosh/core/compositor.json').get('rules',[]),
          'applications':sorted({c.get('class','') for c in clients if c.get('class')}),
-         'hyprimate':any(p.get('name') in ['hyprimate','liquid-glass'] for p in json.loads(api.run(['hyprctl','plugins','list','-j'])))}
+         'hyprimate':hyprimate,'animationFields':HYPRIMATE_FIELDS if hyprimate else []}
 
 def apply_rules(api,rules=None,restore=False):
  path=api.STATE/'compositor-rules-runtime.json';record=api.read_json(path)

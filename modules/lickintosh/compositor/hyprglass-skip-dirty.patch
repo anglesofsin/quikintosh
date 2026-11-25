@@ -1,0 +1,21 @@
+--- a/src/GlassDecoration.hpp
++++ b/src/GlassDecoration.hpp
+@@ -35,6 +35,7 @@
+     // decoration whose padded box overlaps a commit from outside the
+     // window's own surface tree.
+     void markBackgroundDirty();
++    [[nodiscard]] bool backgroundDirty() const { return m_backgroundDirty; }
+ 
+     // Applies a mark markBackgroundDirty() owed under the rate limit once its
+     // deadline passed, or re-arms the shared timer for it.
+--- a/src/BackgroundDamageObserver.cpp
++++ b/src/BackgroundDamageObserver.cpp
+@@ -275,7 +275,7 @@
+         if (windowsWantLive) {
+             for (const auto& decorationRef : g_pGlobalState->decorations) {
+                 auto* decoration = decorationRef.get();
+-                if (!decoration)
++                if (!decoration || decoration->backgroundDirty())
+                     continue;
+ 
+                 const auto window = decoration->getOwner();

@@ -20,7 +20,7 @@ qml = qml.replace('    property bool forced:', '''    Timer {
         id: pointerLeave
         interval: 180
         onTriggered: {
-            if (win.pointerIn) return;
+            if (win.pointerIn || win.dashboardPointerInside) return;
             win.dashboardRequested = false;
             win.forced = false;
             win.hub.voicePeek = false;
@@ -67,7 +67,8 @@ qml = qml[:start] + '''                onTapped: {
 
 ''' + qml[end:]
 # Keep the dashboard tied to the output where the gesture occurred.
-qml = qml.replace('    mask: Region { item: stage }', '''    property bool dashboardRequested: false
+qml = qml.replace('    mask: Region { item: stage }', '''    property bool dashboardPointerInside: false
+    property bool dashboardRequested: false
     onDashboardRequestedChanged: if (dashboardRequested) dashboardClose.stop(); else dashboardClose.restart()
     Timer { id: dashboardClose; interval: 250 }
     Connections {
@@ -82,7 +83,11 @@ qml = qml.replace('    mask: Region { item: stage }', '''    property bool dashb
             capsuleWidth: surface.width
             capsuleHeight: surface.height
             expanded: win.dashboardRequested
-            onPointerChanged: inside => { if (inside) pointerLeave.stop(); else pointerLeave.restart() }
+            onPointerChanged: inside => {
+                win.dashboardPointerInside = inside;
+                if (inside) pointerLeave.stop(); else pointerLeave.restart();
+            }
+            Component.onDestruction: win.dashboardPointerInside = false
             onDismissed: win.dashboardRequested = false
         }
     }

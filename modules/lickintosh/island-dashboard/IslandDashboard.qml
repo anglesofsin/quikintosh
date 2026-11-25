@@ -32,11 +32,17 @@ PanelWindow {
     property bool expanded: false
     property bool entered: false
     Component.onCompleted: Qt.callLater(() => entered = true)
+    readonly property bool pointerInside: dashboardHover.hovered
     signal pointerChanged(bool inside)
     property int page: 0
     readonly property int bodyHeight: page === 1 ? 306 : 244
-    readonly property var notices: NotifService.appGroupsList.concat(NotifService.systemGroupsList)
-        .flatMap(group => group.items)
+    readonly property var notices: {
+        const entries = []
+        for (const list of [NotifService.appGroupsList, NotifService.systemGroupsList])
+            for (const group of list)
+                for (const item of group.items) entries.push(item)
+        return entries
+    }
     function selectPage(index) {
         if (page === index) return
         page = index
@@ -73,7 +79,7 @@ PanelWindow {
         border.color: "#32ffffff"
         Behavior on width { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
         Behavior on height { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
-        HoverHandler { onHoveredChanged: panel.pointerChanged(hovered) }
+        HoverHandler { id: dashboardHover; onHoveredChanged: panel.pointerChanged(hovered) }
 
         WeatherAtmosphere {
             anchors.fill: parent

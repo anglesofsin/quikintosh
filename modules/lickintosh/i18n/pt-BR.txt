@@ -1045,3 +1045,89 @@ Tinted light|Tonalizado claro
 Tinted dark|Tonalizado escuro
 Inherit|Herdar
 Custom image path|Caminho da imagem personalizada
+
+Edit Media|Editar mídia
+Choose Media|Escolher mídia
+Media library|Biblioteca de mídia
+Add files…|Adicionar arquivos…
+Choose folder…|Escolher pasta…
+No media selected|Nenhuma mídia selecionada
+Folder path|Caminho da pasta
+Include subfolders|Incluir subpastas
+Sort files|Ordenar arquivos
+Newest first|Mais recentes primeiro
+Change media every|Trocar mídia a cada
+15 seconds|15 segundos
+1 minute|1 minuto
+15 minutes|15 minutos
+Interval (seconds)|Intervalo (segundos)
+Dissolve|Dissolver
+Slide|Deslizar
+Transition duration (ms)|Duração da transição (ms)
+Finish video before advancing|Terminar vídeo antes de avançar
+Video sound|Som do vídeo
+Video volume (%)|Volume do vídeo (%)
+Media fit|Ajuste da mídia
+Clear media|Limpar mídia
+Your soundtrack|Sua trilha sonora
+Choose music…|Escolher música…
+Choose cover…|Escolher capa…
+No audio selected|Nenhum áudio selecionado
+Music card|Cartão musical
+Spinning record|Disco giratório
+Song title|Título da música
+Artist / author|Artista / autor
+Description|Descrição
+Play when desktop is focused|Reproduzir com a mesa em foco
+Repeat music|Repetir música
+Music volume (%)|Volume da música (%)
+Show playback controls|Mostrar controles de reprodução
+Wallpaper accent|Destaque do papel de parede
+Follow appearance|Seguir aparência
+Music color|Cor da música
+Title font family|Fonte do título
+Title size|Tamanho do título
+Your words|Suas palavras
+Write something…|Escreva algo…
+Live lyrics|Letras ao vivo
+Enable live lyrics|Habilitar letras ao vivo
+Current line|Linha atual
+Surrounding lines|Linhas próximas
+Line progress|Progresso da linha
+Show song title|Mostrar título da música
+Synchronization offset (seconds)|Ajuste de sincronização (segundos)
+Choose LRC…|Escolher LRC…
+Use online lyrics|Usar letras online
+Typography|Tipografia
+Text style|Estilo do texto
+Modern|Moderno
+Classic|Clássico
+Typewriter|Máquina de escrever
+Serif|Serifada
+Handwriting|Manuscrita
+Custom font family|Fonte personalizada
+Fit text to widget|Ajustar texto ao widget
+Weight|Espessura
+Italic|Itálico
+Letter spacing|Espaçamento entre letras
+Line spacing|Espaçamento entre linhas
+Vertical alignment|Alinhamento vertical
+Text padding|Margem do texto
+Letter case|Caixa do texto
+UPPERCASE|MAIÚSCULAS
+lowercase|minúsculas
+Text effect|Efeito do texto
+Outline|Contorno
+Text color|Cor do texto
+Outline color|Cor do contorno
+Gradient color|Cor do gradiente
+Highlight behind text|Destaque atrás do texto
+Highlight color|Cor do destaque
+Highlight opacity|Opacidade do destaque
+Text entrance|Entrada do texto
+Animation duration (ms)|Duração da animação (ms)
+Fade|Dissipar
+Styled Text|Texto estilizado
+Live Lyrics|Letras ao vivo
+Your media, your space|Sua mídia, seu espaço
+Add photos, GIFs, videos or a folder|Adicione fotos, GIFs, vídeos ou uma pasta

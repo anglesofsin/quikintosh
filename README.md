@@ -14,7 +14,7 @@ Este repositório contém as fontes da shell, os assets do upstream, as modifica
 - **Finder:** Nautilus com tema Tahoe, sidebar e controles translúcidos, previews e integração ao Quick Look.
 - **Quick Look / Quickview:** imagens, GIFs, vídeos, áudio, texto e outros formatos suportados; navegação, zoom, controles de mídia e Liquid Glass. Espaço/Esc/clique fora fecham a prévia.
 - **Quickshot:** seleção de região, captura de monitor, edição, OCR para o clipboard, color picker, paleta, QR, régua, lupa e gravação. Capturas são salvas na Mesa por padrão.
-- **Mesa e widgets:** fotos/GIFs, relógios personalizáveis, clima, estilos de fundo e edição por arrastar; tamanho dos itens configurável.
+- **Mesa e widgets:** mídia (fotos/GIFs/vídeos/pastas), música local, texto estilizado, letras sincronizadas, relógios personalizáveis, clima, estilos de fundo e edição por arrastar; tamanho dos itens configurável.
 - **Settings:** aparência, ícones claros/escuros/tintados, cores do wallpaper, Liquid Glass, som, rede, privacidade, clima compartilhado, widgets, Dock, hot corners e outras opções.
 - **Idioma e escala:** português brasileiro com busca localizada e escala própria da shell de 75% a 200%; [como configurar](docs/LANGUAGE-AND-SCALE.md).
 - **Temas dos aplicativos:** templates/Matugen ao trocar wallpaper, com restauração de preferências ao sair desta rice.
@@ -136,7 +136,7 @@ Veja [arquitetura e fontes](docs/ARCHITECTURE.md), [temas](docs/THEMING.md) e [v
 
 Código derivado da shell sob GPL-3.0-or-later; componentes de terceiros mantêm suas licenças. Consulte [LICENSE](LICENSE), [THIRD_PARTY.md](THIRD_PARTY.md), `upstream/lickintosh/THIRD_PARTY_LICENSES/` e os avisos nos assets. Marcas Apple/macOS pertencem aos seus titulares; este projeto não é afiliado à Apple.
 
-Desktop widgets support Liquid Glass, solid and transparent surfaces, plus per-widget overrides. Photo widgets preserve full color and accept images/GIFs, additional portrait/wide formats, fit modes and shapes. Hold Control while dragging a desktop widget for free placement and intentional overlap; configure this in Desktop & Dock. Desktop context menus use an overlay above the Dock, including secondary displays and Game Mode.
+Desktop widgets support Liquid Glass, solid and transparent surfaces, plus per-widget overrides. Media widgets preserve full color and accept images/GIFs/videos, folder slideshows, additional portrait/wide formats, fit modes and shapes. Music, styled text and synchronized MPRIS lyrics have dedicated editors; see [creative widgets](docs/CREATIVE-WIDGETS.md). Hold Control while dragging a desktop widget for free placement and intentional overlap; configure this in Desktop & Dock. Desktop context menus use an overlay above the Dock, including secondary displays and Game Mode.
 
 The desktop presents Finder menus (File, Edit, View, Go, Window and Help). Desktop actions use the shell file services; Finder window actions use the file manager shortcuts, with direct navigation to common folders. Voice call buttons preserve the original glyph artwork and center its visible bounds.
 

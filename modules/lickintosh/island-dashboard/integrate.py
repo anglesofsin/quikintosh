@@ -145,3 +145,66 @@ for path in directory.glob('*.qml'):
     text = path.read_text()
     text = text.replace('font.family: "Sans Serif"', 'font.family: "SF Pro Text"')
     path.write_text(text)
+
+# Fullscreen presentation is a single reactive decision shared by island and dot.
+path = root / 'services/PrivacyPresentation.qml'
+path.write_text("""pragma Singleton
+import QtQuick
+import Quickshell
+import Quickshell.Hyprland
+import Quickshell.Wayland
+Singleton {
+    function fullscreen(screenName) {
+        const active = Hyprland.activeToplevel
+        const foreign = ToplevelManager.activeToplevel
+        if (!active || !foreign || !foreign.fullscreen) return false
+        const monitor = active.monitor
+        return !!monitor && monitor.name === screenName
+    }
+    // Older integration stages call this; ownership is now derived from focus.
+    function setCorner(screenName, show) {}
+}
+""")
+path = root / 'rosa/overlays/IslandWindow.qml'
+text = path.read_text()
+a = text.index('    property var fallbackMonitors:')
+b = text.index('    readonly property bool idleEligible:', a)
+text = text[:a] + "    readonly property bool blocked: NativeSettings.PrivacyPresentation.fullscreen(win.modelData.name)\n\n" + text[b:]
+text = text.replace('visible: !IslandBus.locked && IslandConfig.s("enabled") && !idleVisibility.fullyHidden',
+                    'visible: !win.blocked && !IslandBus.locked && IslandConfig.s("enabled") && !idleVisibility.fullyHidden')
+path.write_text(text)
+paths = list(root.rglob('FullscreenPrivacy.qml'))
+assert len(paths) == 1
+paths[0].write_text("""import QtQuick
+import Quickshell
+import Quickshell.Wayland
+import qs.services
+import qs.rosa.services
+Scope {
+    Variants {
+        model: Quickshell.screens
+        delegate: PanelWindow {
+            required property var modelData
+            screen: modelData
+            visible: !IslandBus.locked && MediaCaptureState.islandActive && PrivacyPresentation.fullscreen(modelData.name)
+            anchors { top: true; right: true }
+            implicitWidth: 18; implicitHeight: 18; color: "transparent"
+            exclusionMode: ExclusionMode.Ignore
+            WlrLayershell.layer: WlrLayer.Overlay
+            WlrLayershell.namespace: "lickintosh-fullscreen-privacy"
+            mask: Region {}
+            Rectangle {
+                anchors.centerIn: parent
+                width: 5; height: 5; radius: 2.5
+                color: MediaCaptureState.indicatorColor
+            }
+        }
+    }
+}
+""")
+
+# The procedural backdrop was removed; do not expose its dead switch.
+path = root / 'ui/settings/pages/RosaPage.qml'
+text = path.read_text()
+text = text.replace('                {key:"dashboardWeatherArt", label:"Show weather backgrounds"},\n', '')
+path.write_text(text)

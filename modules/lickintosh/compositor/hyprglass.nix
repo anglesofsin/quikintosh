@@ -6,7 +6,7 @@ in
 compiler.mkDerivation {
  pname = "hyprglass";version = if modern then "1.1.0" else "0.11.0";
  src = if modern then fetchFromGitHub { owner="hyprnux";repo="hyprglass";rev="85b8a8ed8431d7b6f1ef8dad8ae0470d8ea7f291";hash="sha256-Jq47p3kJ3N/qw8E83lIewjg9hp7oJw9iIYzMT+YPXic="; } else fetchFromGitHub { owner="hyprnux";repo="hyprglass";rev="7fc328064c63d9fbaaac8d8204eadf85dcdeae19";hash="sha256-SOdn2s/oxf5v2VYHVmQvfvRIyyV9kFNvEBpQXkLCb+s="; };
- patches = if modern then [ ./hyprglass-057-workspace.patch ./hyprglass-window-animation.patch ] else [ ./hyprglass-skip-dirty.patch ./hyprglass-workspace-viewport.patch ./hyprglass-workspace-move-alpha.patch ];
+ patches = if modern then [ ./hyprglass-057-workspace.patch ./hyprglass-window-animation.patch ./hyprglass-close-snapshot.patch ] else [ ./hyprglass-skip-dirty.patch ./hyprglass-workspace-viewport.patch ./hyprglass-workspace-move-alpha.patch ];
  postPatch = ''
   ${lib.optionalString modern "cp ${./window-glass-animation.hpp} src/WindowGlassAnimation.hpp"}
   ${lib.optionalString modern "sed -i 's/-std=c++23/-std=c++26/' Makefile"}

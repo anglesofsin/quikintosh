@@ -46,4 +46,24 @@ class CompositorPolicy(unittest.TestCase):
    policy.apply_native_workspace(api,{},restore=True)
    self.assertIn('["style"]="slide"',commands[-1])
    self.assertNotIn("specialWorkspace",commands[-1])
+ def test_native_open_and_close_are_independent_and_reversible(self):
+  from tempfile import TemporaryDirectory
+  from types import SimpleNamespace
+  import json,os
+  with TemporaryDirectory() as state:
+   commands=[]
+   opening=dict(name='windowsIn',overridden=True,bezier='default',enabled=True,speed=5,style='popin 80%')
+   closing=dict(opening,name='windowsOut',style='slide')
+   def run(args):
+    if args[1]=='animations':return json.dumps([[opening,closing],[{'name':'default'}]])
+    commands.append(args[-1]);return 'ok'
+   def read_json(path):return json.loads(path.read_text()) if path.exists() else {}
+   api=SimpleNamespace(STATE=Path(state),os=os,run=run,read_json=read_json,
+    write_json=lambda path,data:path.write_text(json.dumps(data)))
+   policy.apply_native_windows(api,{'window-animation:windowsOut:style':'popin','window-animation:windowsOut:amount':70})
+   self.assertIn('windowsOut',commands[-1]);self.assertIn('popin 70%',commands[-1])
+   self.assertNotIn('windowsIn',commands[-1]);self.assertNotIn('specialWorkspace',commands[-1])
+   policy.apply_native_windows(api,{},restore=True)
+   self.assertIn('["style"]="slide"',commands[-1])
+   self.assertFalse((api.STATE/'window-animation-runtime.json').exists())
 if __name__=='__main__':unittest.main()

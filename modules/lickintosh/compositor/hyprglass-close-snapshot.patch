@@ -1,0 +1,41 @@
+--- a/src/GlassDecoration.cpp
++++ b/src/GlassDecoration.cpp
+@@ -353,6 +353,14 @@
+ 
+     // A foreign render must not queue a pass element at all: it would sample its own
+     // framebuffer into this window's real, persistent background cache.
++    if (ctx.m_renderingSnapshot && !ctx.m_renderingCapture) {
++        // A close snapshot has no scene behind it. Bake the last valid live
++        // glass sample into this window's alpha image, without re-sampling or
++        // modifying any persistent cache from the isolated render target.
++        if (m_hasCachedSample)
++            queueGlassPass(ctx, alpha, false);
++        return;
++    }
+     if (RenderGuards::isForeignRender(ctx))
+         return;
+ 
+@@ -482,6 +490,23 @@
+     // Belt and braces: draw() already refuses to queue a pass element for a foreign
+     // render, but a caller that reaches renderPass() during one anyway must not sample
+     // the foreign framebuffer into this decoration's persistent background cache.
++    if (ctx.m_renderingSnapshot && !ctx.m_renderingCapture) {
++        const auto window = m_window.lock();
++        const auto target = ctx.m_data.currentFB;
++        if (!window || !monitor || !target || !m_hasCachedSample || !m_sampleFramebuffer)
++            return;
++        const auto box = WindowGeometry::computeWindowBox(window, monitor);
++        if (!box)
++            return;
++        const SResolveContext resolve{resolvePresetName(), resolveThemeIsDark(),
++            g_pGlobalState->config, g_pGlobalState->customPresets};
++        const float radius = window->presentation().rounding() * monitor->m_scale;
++        GlassRenderer::applyGlassEffect(ctx, m_sampleFramebuffer, target, *box, 1.0f,
++            std::array<float, 4>{radius, radius, radius, radius},
++            window->presentation().roundingPower(), m_samplePaddingRatio, resolve,
++            nullptr, 0.0f, nullptr, workspaceViewport);
++        return;
++    }
+     if (RenderGuards::isForeignRender(ctx))
+         return;
+ 

@@ -185,13 +185,6 @@ PanelWindow {
         Behavior on height { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
         HoverHandler { id: dashboardHover; onHoveredChanged: panel.pointerChanged(hovered) }
 
-        WeatherAtmosphere {
-            anchors.fill: parent
-            kind: panel.page === 1 && WeatherState.available && IslandConfig.s('dashboardWeatherArt')
-                ? WeatherState._kindFor(panel.displayedCode, panel.displayedDay) : ""
-            active: panel.expandedBody
-        }
-
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 18

@@ -58,14 +58,4 @@ s=s.replace(needle,needle+'''
 ''',1)
 if 'property bool isSnapshot:' not in s:s=s.replace('    id: w','    id: w\n    property bool isSnapshot:false',1)
 write(p,s)
-p='ui/widgets/WidgetDetailsEditor.qml';s=(r/p).read_text();end=s.rfind('\n}')
-s=s[:end]+'''
- EditorGroup{visible:root.entry.type==='weather';title:'Weather atmosphere'
-  ConfigSwitch{text:'Animated weather';checked:root.entry.weatherAnimated!==false;onToggled:v=>root.set('weatherAnimated',v)}
-  ConfigSwitch{text:'Lightning flashes';checked:root.entry.weatherLightning!==false;onToggled:v=>root.set('weatherLightning',v)}
-  ConfigSlider{text:'Precipitation density';from:.2;to:2;decimals:1;value:root.entry.weatherIntensity ?? 1;onMoved:v=>root.set('weatherIntensity',v)}
-  ConfigSlider{text:'Weather motion';from:.25;to:2;decimals:2;value:root.entry.weatherSpeed ?? 1;onMoved:v=>root.set('weatherSpeed',v)}
-  ColorSetting{label:'Precipitation color';value:root.entry.weatherDropColor || '#9cd9ff';onPicked:v=>root.set('weatherDropColor',String(v))}
- }
-'''+s[end:];write(p,s)
 write('assets/shaders/liquidglass/ClockColors.frag',(here/'ClockColors.frag').read_text())

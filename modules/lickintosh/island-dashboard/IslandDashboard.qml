@@ -209,16 +209,23 @@ PanelWindow {
                 }
             }
 
-            Loader {
+            Item {
+                id: pageFrame
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                id: pageContent
-                sourceComponent: [overview, forecast, performance, media, notifications, cameraFull, preferences][panel.page]
-                NumberAnimation on opacity {
-                    id: pageArrival
-                    from: .35; to: 1
-                    duration: ShellMotion.fade()
-                    easing.type: Easing.OutCubic
+                Loader {
+                    id: pageContent
+                    width: Math.max(1050,pageFrame.width)
+                    scale: Math.min(1,pageFrame.width / width)
+                    height: pageFrame.height / scale
+                    transformOrigin: Item.TopLeft
+                    sourceComponent: [overview, forecast, performance, media, notifications, cameraFull, preferences][panel.page]
+                    NumberAnimation on opacity {
+                        id: pageArrival
+                        from: .35; to: 1
+                        duration: ShellMotion.fade()
+                        easing.type: Easing.OutCubic
+                    }
                 }
             }
         }

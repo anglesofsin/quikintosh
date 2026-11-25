@@ -4,6 +4,8 @@ import QtQuick.Layouts
 import QtMultimedia
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Hyprland
+import Quickshell.Io
 import Quickshell.Widgets
 import qs.services
 import qs.rosa.services
@@ -32,7 +34,6 @@ PanelWindow {
     property bool expanded: false
     property bool entered: false
     Component.onCompleted: Qt.callLater(() => entered = true)
-    readonly property bool pointerInside: dashboardHover.hovered
     signal pointerChanged(bool inside)
     property int page: 0
     readonly property int bodyHeight: page === 1 ? 306 : 244
@@ -52,6 +53,30 @@ PanelWindow {
     readonly property int displayedCode: selectedHour?.code ?? WeatherState.weatherCode
     readonly property bool displayedDay: selectedHour?.isDay ?? WeatherState.isDay
     signal dismissed()
+    // Some controls retain hover state until Wayland sends a new enter event.
+    // Check the actual pointer only while the panel is open.
+    Timer {
+        interval: 280
+        running: panel.expanded && panel.entered
+        repeat: true
+        onTriggered: cursorCheck.running = true
+    }
+    Process {
+        id: cursorCheck
+        command: ["hyprctl", "cursorpos", "-j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const monitor = Hyprland.monitorFor(panel.output)?.lastIpcObject
+                if (!monitor || !panel.expanded) return
+                let point
+                try { point = JSON.parse(text) } catch (_) { return }
+                const x = point.x - monitor.x - (panel.output.width - body.width) / 2
+                const y = point.y - monitor.y - panel.capsuleTop
+                if (x < 0 || x > body.width || y < -8 || y > body.height)
+                    panel.dismissed()
+            }
+        }
+    }
     Shortcut { sequence: 'Escape'; onActivated: panel.dismissed() }
 
     function condition(code) {

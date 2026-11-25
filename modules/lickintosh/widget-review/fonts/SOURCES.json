@@ -1,0 +1,65 @@
+{
+  "commit": "83c62e30d87daa70216dab6b984d00d20d96d585",
+  "fonts": [
+    {
+      "family": "dmsans",
+      "file": "DMSans[opsz,wght].ttf",
+      "sha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+      "source": "https://raw.githubusercontent.com/google/fonts/83c62e30d87daa70216dab6b984d00d20d96d585/ofl/dmsans/DMSans%5Bopsz%2Cwght%5D.ttf"
+    },
+    {
+      "family": "dmserifdisplay",
+      "file": "DMSerifDisplay-Regular.ttf",
+      "sha256": "8cc3643535edf039aa5d95440a8542735e9197e4f4b8d9303e980fefbf5ab616",
+      "source": "https://raw.githubusercontent.com/google/fonts/83c62e30d87daa70216dab6b984d00d20d96d585/ofl/dmserifdisplay/DMSerifDisplay-Regular.ttf"
+    },
+    {
+      "family": "marckscript",
+      "file": "MarckScript-Regular.ttf",
+      "sha256": "504de8cc6f919163bc9afb67b9bc208d258230c5e8d00cb82ec52474f9fafc3b",
+      "source": "https://raw.githubusercontent.com/google/fonts/83c62e30d87daa70216dab6b984d00d20d96d585/ofl/marckscript/MarckScript-Regular.ttf"
+    },
+    {
+      "family": "spacemono",
+      "file": "SpaceMono-Regular.ttf",
+      "sha256": "95837e182baeeada83368f7748db28357f0a1b75c6b84ff7065b5edf933c8e18",
+      "source": "https://raw.githubusercontent.com/google/fonts/83c62e30d87daa70216dab6b984d00d20d96d585/ofl/spacemono/SpaceMono-Regular.ttf"
+    },
+    {
+      "family": "anton",
+      "file": "Anton-Regular.ttf",
+      "sha256": "a4ba3a92350ebb031da0cb47630ac49eb265082ca1bc0450442f4a83ab947cab",
+      "source": "https://raw.githubusercontent.com/google/fonts/83c62e30d87daa70216dab6b984d00d20d96d585/ofl/anton/Anton-Regular.ttf"
+    },
+    {
+      "family": "bungee",
+      "file": "Bungee-Regular.ttf",
+      "sha256": "c4f5361ce120af3e6b9156d0bf379fa19cda2ea0cd18ac01fd99596c6bf66e3f",
+      "source": "https://raw.githubusercontent.com/google/fonts/83c62e30d87daa70216dab6b984d00d20d96d585/ofl/bungee/Bungee-Regular.ttf"
+    },
+    {
+      "family": "baloo2",
+      "file": "Baloo2[wght].ttf",
+      "sha256": "d47a6852548059b1db49a1319d06d499d546c3fa2237cf9eee9c43c8abb025c2",
+      "source": "https://raw.githubusercontent.com/google/fonts/83c62e30d87daa70216dab6b984d00d20d96d585/ofl/baloo2/Baloo2%5Bwght%5D.ttf"
+    },
+    {
+      "family": "poiretone",
+      "file": "PoiretOne-Regular.ttf",
+      "sha256": "457f2d03263f58e5a6dbcc1b607b10dff6581e7cf9c4ebdf330ec3e6772a3558",
+      "source": "https://raw.githubusercontent.com/google/fonts/83c62e30d87daa70216dab6b984d00d20d96d585/ofl/poiretone/PoiretOne-Regular.ttf"
+    },
+    {
+      "family": "oswald",
+      "file": "Oswald[wght].ttf",
+      "sha256": "5b38c246e255a12f5712d640d56bcced0472466fc68983d2d0410ec0457c2817",
+      "source": "https://raw.githubusercontent.com/google/fonts/83c62e30d87daa70216dab6b984d00d20d96d585/ofl/oswald/Oswald%5Bwght%5D.ttf"
+    },
+    {
+      "family": "sora",
+      "file": "Sora[wght].ttf",
+      "sha256": "84ff7096ae3ec6c8be47d906d1a0ba4de7f2ce78c615275c77301964a316e16c",
+      "source": "https://raw.githubusercontent.com/google/fonts/83c62e30d87daa70216dab6b984d00d20d96d585/ofl/sora/Sora%5Bwght%5D.ttf"
+    }
+  ]
+}

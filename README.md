@@ -145,3 +145,5 @@ To resize a compatible desktop widget, choose **Resize Widget** from its context
 Resize handles dismiss after releasing the mouse, clicking the desktop, pressing Escape or leaving the desktop. Widget gallery previews wrap into rows instead of cropping wide presets. Discord Stable, Canary, PTB and Equibop have separate Dock identities even when they advertise the same window class; identification reads executable metadata and never restarts a client.
 
 The Personal Clock gallery offers Classic, Stacked and Minimal compositions. Select a design in the widget editor, then choose its size or resize it freely; gallery entries are no longer duplicated for every preset dimension. Existing clocks keep their explicit font, size and date settings.
+
+The [widget review](docs/WIDGET-REVIEW.md) documents the unified Clock gallery, ten additional bundled font families, optional music artwork, external-audio arbitration and per-widget calendar/world-clock/timer/task/quote options.

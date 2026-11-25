@@ -275,6 +275,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/tray-colors}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/creative-widgets}/integrate.py $out ${pkgs.python3}/bin/python3 ${pkgs.ffmpeg}/bin/ffmpeg ${pkgs.ffmpeg}/bin/ffprobe
       ${pkgs.python3}/bin/python3 ${./lickintosh/editor-layout}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/widget-review}/integrate.py $out ${pkgs.python3}/bin/python3 ${pkgs.tzdata}/share/zoneinfo
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock}/identity-integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out
@@ -320,7 +321,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/bootstrap.py} ${lickintoshRoot}/assets/wallpapers/daniel-leone.jpg
       export QML_IMPORT_PATH="${lib.makeSearchPath "lib/qt-6/qml" (with pkgs.qt6; [ qtgraphs qtquick3d qtquicktimeline qtmultimedia qt5compat qtsvg ])}:''${QML_IMPORT_PATH:-}"
       export QT_PLUGIN_PATH="${lib.makeSearchPath "lib/qt-6/plugins" (with pkgs.qt6; [ qtmultimedia qtimageformats ])}:''${QT_PLUGIN_PATH:-}"
-      export FONTCONFIG_FILE=${pkgs.makeFontsConf { fontDirectories = [ (lickintosh-src + "/assets/fonts") (pkgs.nerd-fonts.symbols-only + "/share/fonts") ]; }}
+      export FONTCONFIG_FILE=${pkgs.makeFontsConf { fontDirectories = [ (lickintosh-src + "/assets/fonts") ./lickintosh/widget-review/fonts (pkgs.nerd-fonts.symbols-only + "/share/fonts") ]; }}
       export GI_TYPELIB_PATH="${pkgs.glib.out}/lib/girepository-1.0:''${GI_TYPELIB_PATH:-}"
       export GIO_EXTRA_MODULES="${pkgs.gvfs}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"
       export XDG_DATA_DIRS="${lickintoshRoot}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"

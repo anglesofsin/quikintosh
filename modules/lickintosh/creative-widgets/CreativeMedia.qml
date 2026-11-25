@@ -6,6 +6,7 @@ import qs.rosa.services as Rosa
 Singleton{
  readonly property bool locked:Rosa.IslandBus.locked
  readonly property bool desktopActive:DesktopFiles.desktopFocused && !locked && WidgetState.galleryZone==='' && WidgetState.editingId===''
+ readonly property bool canPlayAudio:AudioActivity.mayPlay
  property var lyrics:({})
  function lrc(path,lines){const next=Object.assign({},lyrics);next[path]=lines;const keys=Object.keys(next);if(keys.length>16)delete next[keys[0]];lyrics=next}
  property var frames:({})

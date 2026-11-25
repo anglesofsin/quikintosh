@@ -19,3 +19,7 @@ Quickintosh é um fork/integrador; não reivindica autoria dos projetos abaixo.
 A aparência do Quickshot foi inspirada em https://github.com/simmzl/quickshot. Quick Look segue o fluxo visual do macOS; não contém binários do QuickLook da Apple. Os assets/fonts herdados do upstream conservam os direitos e condições dos respectivos titulares; a licença deste código não concede direitos adicionais sobre marcas, fontes ou artes de terceiros.
 
 As revisões exatas dos inputs estão em flake.lock; a shell vendorizada está identificada em upstream/SOURCES.json.
+
+## Additional widget fonts
+
+Ten Google Fonts families under the SIL Open Font License are included in `modules/lickintosh/widget-review/fonts/`. Each family retains its `OFL.txt`; `SOURCES.json` pins the upstream commit and SHA-256 for each unmodified font. These are open alternatives for expressive typography, not the proprietary Instagram font files.

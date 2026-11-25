@@ -1145,3 +1145,19 @@ Framing|Enquadramento
 Typography & color|Tipografia e cor
 Font & layout|Fonte e layout
 Motion|Movimento
+Show cover|Mostrar capa
+Pause while other audio plays|Pausar enquanto outro áudio toca
+Mute while other audio plays|Silenciar enquanto outro áudio toca
+Cities|Cidades
+First day of week|Primeiro dia da semana
+Follow language|Seguir idioma
+Show events|Mostrar eventos
+Show completed tasks|Mostrar tarefas concluídas
+Timer presets|Durações do temporizador
+Minutes, separated by commas|Minutos separados por vírgulas
+Custom quote (optional)|Frase personalizada (opcional)
+Show location name|Mostrar nome da localização
+Location privacy|Privacidade da localização
+Follow widget|Seguir widget
+Title font|Fonte do título
+City name and IANA time zone, separated by a vertical bar|Nome da cidade e fuso IANA, separados por uma barra vertical

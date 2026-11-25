@@ -12,7 +12,7 @@ class CreativeWidgets(unittest.TestCase):
    (services/'CreativeMedia.qml').write_text((source/'CreativeMedia.qml').read_text())
    (types/'MediaPlaylist.qml').write_text((source/'MediaPlaylist.qml').read_text().replace('@MEDIA_PYTHON@',os.sys.executable))
    (types/'qmldir').write_text('module qs.types\nMediaPlaylist MediaPlaylist.qml\n')
-   stubs={'DesktopFiles':'property bool desktopFocused:true','WidgetState':"property string galleryZone:'';property string editingId:''"}
+   stubs={'AudioActivity':'property bool mayPlay:true','DesktopFiles':'property bool desktopFocused:true','WidgetState':"property string galleryZone:'';property string editingId:''"}
    for name,body in stubs.items():(services/(name+'.qml')).write_text('pragma Singleton\nimport QtQuick\nimport Quickshell\nSingleton{'+body+'}')
    (services/'qmldir').write_text('module qs.services\n'+''.join('singleton '+n+' '+n+'.qml\n' for n in ['CreativeMedia',*stubs]))
    rosa=root/'rosa/services';rosa.mkdir(parents=True)

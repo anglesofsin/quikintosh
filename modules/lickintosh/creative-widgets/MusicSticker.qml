@@ -12,11 +12,12 @@ Item{
  property bool isSnapshot:false
  property bool desktopWidget:false
  readonly property bool fullBleed:true
+ readonly property bool showCover:widgetData?.musicShowCover!==false
  readonly property bool disc:widgetData?.variant==='disc'
  readonly property bool preview:widgetData?.id==='preview'
  property bool userPaused:false
  property bool userStarted:false
- readonly property bool allowed:desktopWidget && !isSnapshot && !preview && CreativeMedia.desktopActive && visible && !userPaused && ((widgetData?.musicAutoPlay ?? true) || userStarted)
+ readonly property bool allowed:desktopWidget && !isSnapshot && !preview && CreativeMedia.desktopActive && (widgetData?.musicRespectAudio===false || CreativeMedia.canPlayAudio) && visible && !userPaused && ((widgetData?.musicAutoPlay ?? true) || userStarted)
  readonly property color ink:widgetData?.musicColorMode==='custom' ? widgetData.musicColor || '#fff':widgetData?.musicColorMode==='accent' ? Theme.accent:look?.primary || Theme.textPrimary
  readonly property string playbackError:engine.item?.error || ''
  readonly property bool actuallyPlaying:engine.item?.playbackState===MediaPlayer.PlayingState
@@ -45,7 +46,7 @@ Item{
  ColumnLayout{
   anchors.fill:parent;anchors.margins:root.disc ? 12:16;spacing:8
   Item{
-   id:art;Layout.fillWidth:true;Layout.fillHeight:true;Layout.minimumHeight:40
+   id:art;visible:root.showCover;Layout.fillWidth:true;Layout.fillHeight:true;Layout.minimumHeight:40
    readonly property real diameter:Math.min(width,height)
    CFClippingRect{
     id:cover;anchors.centerIn:parent;width:art.diameter;height:width;radius:root.disc ? width/2:Math.min(16,width*.12);color:Qt.tint(Theme.accent,'#99404050')
@@ -56,10 +57,12 @@ Item{
     Rectangle{anchors.centerIn:parent;visible:root.disc;width:parent.width*.035;height:width;radius:width/2;color:'#16161a'}
    }
   }
+  Item{visible:!root.showCover;Layout.fillHeight:true}
   Text{Layout.fillWidth:true;text:root.title;color:root.ink;font.family:root.widgetData?.musicFont || 'SF Pro Display';font.pixelSize:root.widgetData?.musicFontSize || Math.max(14,Math.min(24,root.width*.07));font.weight:Font.Bold;horizontalAlignment:Text.AlignHCenter;elide:Text.ElideRight;textFormat:Text.PlainText}
   Text{Layout.fillWidth:true;text:root.artist;color:root.ink;opacity:.7;font.pixelSize:12;horizontalAlignment:Text.AlignHCenter;elide:Text.ElideRight;textFormat:Text.PlainText}
   Text{visible:root.height>=230 && !!root.widgetData?.musicDescription;Layout.fillWidth:true;text:root.widgetData?.musicDescription || '';color:root.ink;opacity:.6;font.pixelSize:11;horizontalAlignment:Text.AlignHCenter;wrapMode:Text.WordWrap;maximumLineCount:2;elide:Text.ElideRight;textFormat:Text.PlainText}
   Text{visible:!!root.playbackError;Layout.fillWidth:true;text:'Unable to play this audio file';color:root.ink;font.pixelSize:11;wrapMode:Text.WordWrap;horizontalAlignment:Text.AlignHCenter}
+  Item{visible:!root.showCover;Layout.fillHeight:true}
   RowLayout{
    visible:root.widgetData?.musicControls!==false;Layout.fillWidth:true;spacing:10
    Rectangle{Layout.fillWidth:true;height:3;radius:2;color:Qt.rgba(root.ink.r,root.ink.g,root.ink.b,.16)

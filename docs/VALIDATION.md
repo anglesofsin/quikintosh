@@ -58,3 +58,7 @@ Six backend tests cover local folders, recursive scanning, hidden files, Unicode
 Follow-up: offscreen tests verify the lyrics empty-state option with no player, pending lookup, missing lyrics, available lyrics and disabled lyrics. The compiled icon bank maps Canary and PTB to the same Stable artwork in both light and dark appearances, preserving separate application identities.
 
 Widget editor organization: isolated Wayland checks exercised clock appearance/typography/date navigation, bounded editor geometry, media content pages, completion, multiple-file/folder chooser priority and audio metadata. Screenshots were inspected in the private compositor. Existing widget properties and native-dialog ownership are preserved.
+
+Widget review: three automated checks validate sound arbitration (own/idle/muted/notification streams versus external playback, MPRIS and quiet resumption), ten pinned OFL font hashes/licenses, and valid/invalid IANA zones. Existing creative-widget tests still pass. Isolated Wayland playback exercised hiding the cover, focus/lock behavior and external-player suppression. Every registered widget type and the merged Clock gallery loaded; eight editor content/typography pages loaded without type errors. A detected recursive font-picker layout was corrected before the final build.
+
+The final shell Fontconfig was checked with `fc-match` for all ten new families; each resolves to its actual bundled family rather than DejaVu/SF fallback. This check caught and corrected an upstream-only font-directory path before activation.

@@ -38,7 +38,7 @@ Item{
     width:parent.width;height:parent.height
     path:root.paths[index];desktopWidget:root.desktopWidget;isSnapshot:root.isSnapshot
     playing:root.allowed && index===(root.switching ? root.target:root.front)
-    sound:!!root.widgetData?.mediaSound;volume:root.widgetData?.mediaVolume ?? .35
+    sound:!!root.widgetData?.mediaSound && (root.widgetData?.mediaRespectAudio===false || CreativeMedia.canPlayAudio);volume:root.widgetData?.mediaVolume ?? .35
     loop:!root.widgetData?.mediaFinishVideo || playlist.files.length<2
     fit:root.widgetData?.imageFit || 'crop'
     z:index===root.target && root.switching ? 2:1

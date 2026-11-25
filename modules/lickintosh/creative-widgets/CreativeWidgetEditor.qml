@@ -53,6 +53,7 @@ onEditingFinished:if(acceptableInput)root.set('mediaInterval',Number(text))}
   ConfigSlider{visible:root.entry.mediaTransition!=='cut';text:'Transition duration (ms)';from:100;to:2000;decimals:0;value:root.entry.mediaTransitionMs ?? 550;onMoved:v=>root.set('mediaTransitionMs',Math.round(v))}
   ConfigSwitch{text:'Finish video before advancing';checked:!!root.entry.mediaFinishVideo;onToggled:v=>root.set('mediaFinishVideo',v)}
   ConfigSwitch{text:'Video sound';checked:!!root.entry.mediaSound;onToggled:v=>root.set('mediaSound',v)}
+  ConfigSwitch{visible:!!root.entry.mediaSound;text:'Mute while other audio plays';checked:root.entry.mediaRespectAudio!==false;onToggled:v=>root.set('mediaRespectAudio',v)}
   ConfigSlider{visible:!!root.entry.mediaSound;text:'Video volume (%)';from:0;to:100;decimals:0;value:(root.entry.mediaVolume ?? .35)*100;onMoved:v=>root.set('mediaVolume',v/100)}
   RowLayout{Layout.fillWidth:true
    Text{text:'Media fit';color:Theme.textPrimary;Layout.fillWidth:true}
@@ -79,7 +80,9 @@ onEditingFinished:if(acceptableInput)root.set('mediaInterval',Number(text))}
   TahoeField{Layout.fillWidth:true;placeholderText:'Song title';text:root.entry.musicTitle || '';onEditingFinished:root.set('musicTitle',text)}
   TahoeField{Layout.fillWidth:true;placeholderText:'Artist / author';text:root.entry.musicArtist || '';onEditingFinished:root.set('musicArtist',text)}
   TahoeField{Layout.fillWidth:true;placeholderText:'Description';text:root.entry.musicDescription || '';onEditingFinished:root.set('musicDescription',text)}
+  ConfigSwitch{text:'Show cover';checked:root.entry.musicShowCover!==false;onToggled:v=>root.set('musicShowCover',v)}
   ConfigSwitch{text:'Play when desktop is focused';checked:root.entry.musicAutoPlay!==false;onToggled:v=>root.set('musicAutoPlay',v)}
+  ConfigSwitch{text:'Pause while other audio plays';checked:root.entry.musicRespectAudio!==false;onToggled:v=>root.set('musicRespectAudio',v)}
   ConfigSwitch{text:'Repeat music';checked:root.entry.musicLoop!==false;onToggled:v=>root.set('musicLoop',v)}
   ConfigSwitch{text:'Mute';checked:!!root.entry.musicMuted;onToggled:v=>root.set('musicMuted',v)}
   ConfigSlider{text:'Music volume (%)';from:0;to:100;decimals:0;value:(root.entry.musicVolume ?? .35)*100;onMoved:v=>root.set('musicVolume',v/100)}

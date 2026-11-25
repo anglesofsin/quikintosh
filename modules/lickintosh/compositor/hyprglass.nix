@@ -2,7 +2,7 @@
 stdenv.mkDerivation {
  pname = "hyprglass";version = "0.11.0";
  src = fetchFromGitHub { owner="hyprnux";repo="hyprglass";rev="7fc328064c63d9fbaaac8d8204eadf85dcdeae19";hash="sha256-SOdn2s/oxf5v2VYHVmQvfvRIyyV9kFNvEBpQXkLCb+s="; };
- patches = [ ./hyprglass-skip-dirty.patch ];
+ patches = [ ./hyprglass-skip-dirty.patch ./hyprglass-workspace-viewport.patch ];
  postPatch = ''
   substituteInPlace src/PluginConfig.cpp --replace-fail 'ConfigKeys::ENABLED, Config::INTEGER{1}' 'ConfigKeys::ENABLED, Config::INTEGER{0}'
  '';

@@ -20,7 +20,7 @@ module = root/(status+'qmldir')
 if module.is_file(): save(status+'qmldir', module.read_text() + '\nScreenSharingIndicator ScreenSharingIndicator.qml\n')
 p = root/(status+'StatusArea.qml')
 source = p.read_text()
-anchor = '        Item {\n            id: aiBtn'
+anchor = '        Volume {\n            id: volumeIcon'
 assert source.count(anchor) == 1
 save(status+'StatusArea.qml', source.replace(anchor, '''        ScreenSharingIndicator {
             Layout.alignment: Qt.AlignVCenter

@@ -18,7 +18,7 @@ Item {
     }
     property bool opened: false
 
-    implicitWidth: 26
+    implicitWidth: 36
     implicitHeight: 24
     visible: sessions.length > 0
 
@@ -43,22 +43,22 @@ Item {
         id: indicator
         anchors.centerIn: parent
         width: parent.width
-        height: 17
+        height: 21
         Accessible.name: qsTr("Screen sharing")
         checkable: true
         checked: root.opened
         onClicked: root.opened = !root.opened
 
         background: Rectangle {
-            radius: 8
+            radius: 6
             color: indicator.hovered || indicator.checked ? "#685acf" : "#5849ba"
             border.color: "#40c8bbff"
         }
         contentItem: Item {
             ShareIcon {
                 anchors.centerIn: parent
-                width: 15
-                height: 13
+                width: 20
+                height: 16
             }
         }
         ToolTip.visible: hovered && !root.opened
@@ -101,8 +101,8 @@ Item {
                 Behavior on opacity { NumberAnimation { duration: ShellMotion.fade() } }
                 Behavior on scale { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
                 radius: 19
-                color: Theme.plainSurfaces ? (Theme.isLight ? "#f4f6fc" : "#1c2333")
-                                          : (Theme.isLight ? "#e8edf1fc" : "#dc171f32")
+                color: Theme.plainSurfaces ? (Theme.isLight ? "#f4f4f6" : "#242426")
+                                          : (Theme.isLight ? "#80ffffff" : "#81202022")
                 border.width: 1
                 border.color: Theme.isLight ? "#25000000" : "#37ffffff"
 
@@ -154,7 +154,7 @@ Item {
                                     Layout.fillWidth: true
                                     implicitHeight: sessionRow.implicitHeight + 16
                                     radius: 11
-                                    color: Theme.isLight ? "#100e286e" : "#20aec5ff"
+                                    color: Theme.isLight ? "#10000000" : "#1cffffff"
 
                                     RowLayout {
                                         id: sessionRow
@@ -179,7 +179,24 @@ Item {
                                         Button {
                                             readonly property string address: session.appWindow?.address || ""
                                             visible: modelData !== "Quickshot" && /^(?:0x)?[0-9a-f]+$/i.test(address)
-                                            text: qsTr("Open app")
+                                            Accessible.name: qsTr("Open app")
+                                            implicitWidth: 28
+                                            implicitHeight: 26
+                                            ToolTip.text: Accessible.name
+                                            ToolTip.visible: hovered && !down
+                                            background: Rectangle {
+                                                radius: height / 2
+                                                color: parent.hovered || parent.activeFocus
+                                                    ? (Theme.isLight ? "#23000000" : "#32ffffff")
+                                                    : (Theme.isLight ? "#0e000000" : "#16ffffff")
+                                            }
+                                            contentItem: Text {
+                                                text: "›"
+                                                color: Theme.textPrimary
+                                                font.pixelSize: 20
+                                                horizontalAlignment: Text.AlignHCenter
+                                                verticalAlignment: Text.AlignVCenter
+                                            }
                                             onClicked: {
                                                 const target = address.startsWith("0x") ? address : "0x" + address
                                                 Hyprland.dispatch('hl.dsp.focus({window="address:' + target + '"})')

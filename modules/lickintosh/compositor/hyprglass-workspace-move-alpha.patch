@@ -1,0 +1,23 @@
+--- a/src/GlassDecoration.cpp
++++ b/src/GlassDecoration.cpp
+@@ -529,8 +529,18 @@
+     // not the active/inactive dimming or opacity rules: those make the surface
+     // more translucent — revealing more glass — and shouldn't wash out the
+     // glass pane itself. Rebuild the fade-only alpha from its components.
+-    float glassAlpha = window->alphaTotalWithout(Desktop::View::WINDOW_ALPHA_ACTIVE);
+-    if (const auto workspace = window->m_workspace; workspace && !window->m_pinned)
++    // Match IHyprRenderer::renderWindow's fadeAlpha. MOVE_TO_WORKSPACE
++    // belongs to the departing copy, and must not dim the visible destination.
++    // Do not multiply by the hidden destination's alpha on the departing copy.
++    const auto workspace = window->m_workspace;
++    const bool departing = window->m_monitorMovedFrom != -1 && (!workspace || !workspace->isVisible());
++    using namespace Desktop::View;
++    float glassAlpha = window->alphaValue(WINDOW_ALPHA_FADE) *
++        window->alphaValue(WINDOW_ALPHA_FULLSCREEN) * window->alphaValue(WINDOW_ALPHA_LAYOUT) *
++        window->alphaValue(WINDOW_ALPHA_MOVE_FROM_WORKSPACE);
++    if (departing)
++        glassAlpha *= window->alphaValue(WINDOW_ALPHA_MOVE_TO_WORKSPACE);
++    else if (workspace && !window->m_pinned)
+         glassAlpha *= workspace->m_alpha->value();
+
+     // A fullscreen window shows no edge, like Hyprland draws it no border.

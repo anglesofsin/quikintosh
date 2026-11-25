@@ -18,7 +18,7 @@ Item {
     }
     property bool opened: false
 
-    implicitWidth: 32
+    implicitWidth: 28
     implicitHeight: 24
     visible: sessions.length > 0
 
@@ -43,16 +43,16 @@ Item {
         id: indicator
         anchors.centerIn: parent
         width: parent.width
-        height: 22
+        height: 19
         Accessible.name: qsTr("Screen sharing")
         checkable: true
         checked: root.opened
         onClicked: root.opened = !root.opened
 
         background: Rectangle {
-            radius: 7
-            color: indicator.hovered || indicator.checked ? "#4355af" : "#34428e"
-            border.color: "#607d9cff"
+            radius: 5
+            color: indicator.hovered || indicator.checked ? "#685acf" : "#5849ba"
+            border.color: "#40c8bbff"
         }
         contentItem: Item {
             ShareIcon {
@@ -78,6 +78,8 @@ Item {
             WlrLayershell.namespace: "quickintosh-sharing-panel"
             WlrLayershell.layer: WlrLayer.Overlay
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
+            property bool entered: false
+            Component.onCompleted: Qt.callLater(() => entered = true)
 
             Shortcut { sequence: "Escape"; onActivated: root.opened = false }
 
@@ -93,6 +95,11 @@ Item {
                 y: Math.max(32, root.hostWindow.height) + 5
                 width: Math.min(320, popup.width - 16)
                 height: panel.implicitHeight + 28
+                opacity: popup.entered ? 1 : 0
+                scale: popup.entered ? 1 : .96
+                transformOrigin: Item.TopRight
+                Behavior on opacity { NumberAnimation { duration: ShellMotion.fade() } }
+                Behavior on scale { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
                 radius: 19
                 color: Theme.plainSurfaces ? (Theme.isLight ? "#f4f6fc" : "#1c2333")
                                           : (Theme.isLight ? "#e8edf1fc" : "#dc171f32")
@@ -115,11 +122,15 @@ Item {
                             font.weight: Font.DemiBold
                             color: Theme.textPrimary
                         }
-                        Button {
-                            text: "×"
-                            Accessible.name: qsTr("Close screen sharing panel")
-                            onClicked: root.opened = false
-                        }
+
+                    }
+
+                    Text {
+                        text: qsTr("Currently sharing")
+                        font.pixelSize: 11
+                        font.weight: Font.DemiBold
+                        color: Theme.textPrimary
+                        opacity: .7
                     }
 
                     ScrollView {
@@ -148,11 +159,9 @@ Item {
                                     RowLayout {
                                         id: sessionRow
                                         anchors { left: parent.left; right: parent.right; verticalCenter: parent.verticalCenter; margins: 8 }
-                                        Rectangle {
-                                            Layout.preferredWidth: 7
-                                            Layout.preferredHeight: 7
-                                            radius: 4
-                                            color: Theme.isLight ? "#344fa6" : "#a1b4ff"
+                                        ShareIcon {
+                                            Layout.preferredWidth: 18
+                                            Layout.preferredHeight: 18
                                         }
                                         Text {
                                             Layout.fillWidth: true

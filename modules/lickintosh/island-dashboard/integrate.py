@@ -16,11 +16,23 @@ qml = window.read_text()
 start = qml.index('    onPointerInChanged: {')
 end = qml.index('    property bool forced:', start)
 qml = qml[:start] + qml[end:]
-qml = qml.replace('''            HoverHandler {
-                onHoveredChanged: win.pointerIn = hovered
-            }
+qml = qml.replace('    property bool forced:', '''    Timer {
+        id: pointerLeave
+        interval: 180
+        onTriggered: {
+            if (win.pointerIn) return;
+            win.dashboardRequested = false;
+            win.forced = false;
+            win.hub.voicePeek = false;
+        }
+    }
 
-''', '', 1)
+    property bool forced:''', 1)
+qml = qml.replace('onHoveredChanged: win.pointerIn = hovered', '''onHoveredChanged: {
+                    win.pointerIn = hovered;
+                    if (hovered) pointerLeave.stop();
+                    else pointerLeave.restart();
+                }''', 1)
 qml = qml.replace('''            HoverHandler {
                 enabled:win.hub.leftKind === "voice"
                 cursorShape:Qt.PointingHandCursor
@@ -56,13 +68,20 @@ qml = qml[:start] + '''                onTapped: {
 ''' + qml[end:]
 # Keep the dashboard tied to the output where the gesture occurred.
 qml = qml.replace('    mask: Region { item: stage }', '''    property bool dashboardRequested: false
+    onDashboardRequestedChanged: if (dashboardRequested) dashboardClose.stop(); else dashboardClose.restart()
+    Timer { id: dashboardClose; interval: 250 }
     Connections {
         target: win
         function onVisibleChanged() { if (!win.visible) win.dashboardRequested = false }
     }
     LazyLoader {
-        active: win.visible && win.dashboardRequested && IslandConfig.s("dashboardEnabled")
-        IslandDashboard { output: win.modelData; onDismissed: win.dashboardRequested = false }
+        active: win.visible && IslandConfig.s("dashboardEnabled") && (win.dashboardRequested || dashboardClose.running)
+        IslandDashboard {
+            output: win.modelData
+            expanded: win.dashboardRequested
+            onPointerChanged: inside => { if (inside) pointerLeave.stop(); else pointerLeave.restart() }
+            onDismissed: win.dashboardRequested = false
+        }
     }
 
     mask: Region { item: stage }''', 1)

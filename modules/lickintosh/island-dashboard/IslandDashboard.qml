@@ -4,24 +4,29 @@ import QtQuick.Layouts
 import QtMultimedia
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Widgets
 import qs.services
 import qs.rosa.services
-import qs.ui.topbar.notch
+import qs.ui.topbar.notch.dashboard
 
 PanelWindow {
     id: panel
     required property var output
     screen: output
     anchors.top: true
-    margins.top: 38
-    implicitWidth: Math.min(output.width - 24, 1120)
-    implicitHeight: page === 1 ? 360 : 280
+    margins.top: 29
+    implicitWidth: Math.min(output.width - 32, 1010)
+    implicitHeight: 360
     exclusiveZone: -1
     color: 'transparent'
     WlrLayershell.namespace: 'quickintosh-island-dashboard'
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
+    property bool expanded: false
+    property bool entered: false
+    Component.onCompleted: Qt.callLater(() => entered = true)
+    signal pointerChanged(bool inside)
     property int page: 0
     property var selectedHour: null
     readonly property int displayedCode: selectedHour?.code ?? WeatherState.weatherCode
@@ -50,12 +55,22 @@ PanelWindow {
         return 'clouds'
     }
 
-    Rectangle {
-        anchors.fill: parent
-        radius: 26
-        color: Theme.isLight ? '#c9f1f4f8' : '#d0141822'
-        border.color: '#35ffffff'
-        clip: true
+    mask: Region { item: body; radius: 30 }
+    ClippingRectangle {
+        id: body
+        width: parent.width
+        height: panel.page === 1 ? 360 : 276
+        radius: 30
+        color: "#ee101319"
+        border.width: 1
+        border.color: "#36c2d2f4"
+        opacity: panel.expanded && panel.entered ? 1 : 0
+        scale: panel.expanded && panel.entered ? 1 : .88
+        transformOrigin: Item.Top
+        Behavior on opacity { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
+        Behavior on scale { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
+        Behavior on height { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
+        HoverHandler { onHoveredChanged: panel.pointerChanged(hovered) }
 
         Image {
             anchors.fill: parent
@@ -102,7 +117,7 @@ PanelWindow {
 
             RowLayout {
                 Repeater {
-                    model: [qsTr('Dashboard'), qsTr('Weather')]
+                    model: [qsTr('Dashboard'), qsTr('Weather'), qsTr('Performance')]
                     delegate: Button {
                         required property string modelData
                         required property int index
@@ -110,26 +125,41 @@ PanelWindow {
                         checkable: true
                         checked: panel.page === index
                         onClicked: panel.page = index
+                        padding: 10
+                        background: Rectangle {
+                            radius: height / 2
+                            color: parent.checked ? "#365b7097" : parent.hovered ? "#26ffffff" : "transparent"
+                            border.color: parent.checked ? "#557f9cc4" : "transparent"
+                        }
+                        contentItem: Text {
+                            text: modelData
+                            color: "#f1f5ff"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                            font.pixelSize: 13
+                            font.weight: parent.checked ? Font.DemiBold : Font.Medium
+                        }
                     }
                 }
                 Item { Layout.fillWidth: true }
-                Button { text: '×'; Accessible.name: qsTr('Close dashboard'); onClicked: panel.dismissed() }
             }
 
             Loader {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                sourceComponent: panel.page === 1 ? forecast : overview
+                sourceComponent: panel.page === 1 ? forecast : panel.page === 2 ? performance : overview
             }
         }
     }
 
     Component {
         id: overview
-        NotchDashboard {
+        DashboardPage {
             profileModule: IslandConfig.s('dashboardCamera') ? cameraPage : null
         }
     }
+
+    Component { id: performance; PerformancePage {} }
 
     Component {
         id: forecast

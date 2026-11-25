@@ -151,3 +151,5 @@ The [widget review](docs/WIDGET-REVIEW.md) documents the unified Clock gallery, 
 [Notification delivery and panel behavior](docs/NOTIFICATIONS.md): select island or upper-right banners in Settings, retain a single notification history, and drag widget editors by their title area.
 
 [Displays and wallpapers](docs/DISPLAYS-WALLPAPERS.md): monitor arrangement, preview with automatic rollback, display profiles, individual wallpaper selections and library controls.
+
+[Runtime performance audit](docs/PERFORMANCE.md): measured optimizations, first-frame glass preparation, cache/queue limits and diagnostics.

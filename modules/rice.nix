@@ -279,6 +279,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/notification-polish}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/display-wallpaper}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock}/identity-integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/runtime-efficiency}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/lock-state-sync.py} $out

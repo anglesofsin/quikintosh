@@ -21,15 +21,15 @@ class AppCatalog:
         defaults += [home/'.nix-profile/share', Path('/run/current-system/sw/share'),
                      home/'.local/share/flatpak/exports/share', Path('/var/lib/flatpak/exports/share')]
         self.roots=list(dict.fromkeys(Path(p)/'applications' for p in (roots if roots is not None else defaults)))
-        self.aliases={};self.signature=None;self.updated=-100
+        self.aliases={};self.signature=None;self.updated=-100;self.entry_cache={}
 
     def refresh(self):
         signature=[]
         for root in self.roots:
-            try:signature.append((str(root),root.stat().st_mtime_ns))
+            try:signature.append((str(root),str(root.resolve()),root.stat().st_mtime_ns,root.stat().st_ino))
             except OSError:signature.append((str(root),None))
         if signature==self.signature and time.monotonic()-self.updated<60:return
-        self.signature=signature;self.updated=time.monotonic();aliases={};seen=set()
+        self.signature=signature;self.updated=time.monotonic();aliases={};seen=set();entry_cache={}
         for root in self.roots:
             if not root.is_dir():continue
             for path in sorted(root.rglob('*.desktop')):
@@ -37,8 +37,13 @@ class AppCatalog:
                 if desktop_id in seen:continue
                 seen.add(desktop_id)
                 try:
-                    parser=configparser.ConfigParser(interpolation=None,strict=False)
-                    parser.read(path,encoding='utf-8');entry=parser['Desktop Entry']
+                    info=path.stat();fingerprint=(str(path.resolve()),info.st_mtime_ns,info.st_size,info.st_ino)
+                    cached=self.entry_cache.get(str(path))
+                    if cached and cached[0]==fingerprint:entry=cached[1]
+                    else:
+                        parser=configparser.ConfigParser(interpolation=None,strict=False)
+                        parser.read(path,encoding='utf-8');entry=parser['Desktop Entry']
+                    entry_cache[str(path)]=(fingerprint,entry)
                     if entry.get('Type')!='Application' or entry.getboolean('Hidden',False) or entry.getboolean('NoDisplay',False):continue
                     command=shlex.split(entry.get('Exec',''))
                     if not command:continue
@@ -61,7 +66,7 @@ class AppCatalog:
                         if channel and channel!='discord' and identity(name)=='discord':continue
                         if name:aliases.setdefault(identity(name),app)
                 except (OSError,ValueError,configparser.Error):continue
-        self.aliases=aliases
+        self.aliases=aliases;self.entry_cache=entry_cache
 
     def sanitize(self, rows):
         self.refresh();result=[];seen=set()

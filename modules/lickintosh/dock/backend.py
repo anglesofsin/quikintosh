@@ -1,6 +1,6 @@
 """Local Dock file services: recent documents, folder stacks and reversible trash."""
 import os,sys,json,time,signal,ctypes,subprocess,urllib.parse,xml.etree.ElementTree as ET
-import threading,hashlib,struct,shutil,concurrent.futures,configparser
+import threading,hashlib,struct,shutil,concurrent.futures,configparser,stat as statmod
 from datetime import datetime
 from PIL import Image,ImageOps
 from pathlib import Path
@@ -12,6 +12,10 @@ _output_lock=threading.Lock()
 _recent_lock=threading.RLock()
 _pool=concurrent.futures.ThreadPoolExecutor(max_workers=2)
 _pending=set()
+_pending_lock=threading.Lock()
+_failed={}
+_deferred=False
+MAX_PENDING=128
 _recent_file=STATE/'recent-files.json'
 
 def emit(kind,**data):
@@ -44,14 +48,16 @@ def record_recent(path):
  with _recent_lock:
   data=journal();data[str(path)]=time.time();data=dict(sorted(data.items(),key=lambda x:x[1],reverse=True)[:400])
   tmp=_recent_file.with_suffix('.tmp');tmp.write_text(json.dumps(data));tmp.replace(_recent_file)
-def thumbnail_path(path):
- stat=path.stat();key=hashlib.sha256((str(path)+str(stat.st_mtime_ns)+str(stat.st_size)).encode()).hexdigest()
+def thumbnail_path(path,info=None):
+ stat=info if info is not None else path.stat();key=hashlib.sha256((str(path)+str(stat.st_mtime_ns)+str(stat.st_size)).encode()).hexdigest()
  out=HOME/'.cache/lickintosh/dock-thumbnails';out.mkdir(parents=True,exist_ok=True)
  return out/(key+'.png')
 def make_thumbnail(path):
+ global _deferred
+ success=False
  try:
   target=thumbnail_path(path)
-  if target.exists():return
+  if target.exists():success=True;return
   if path.stat().st_size>80_000_000:return
   ext=path.suffix.lower()
   if ext in ['.png','.jpg','.jpeg','.webp','.avif','.gif','.bmp','.tiff']:
@@ -61,14 +67,31 @@ def make_thumbnail(path):
    subprocess.run(['ffmpeg','-nostdin','-loglevel','error','-y','-ss','0','-i',str(path),'-frames:v','1','-vf',r'scale=256:256:force_original_aspect_ratio=decrease',str(target)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,check=True,timeout=10)
   elif ext=='.pdf' and shutil.which('pdftoppm'):
    prefix=str(target.with_suffix(''));subprocess.run(['pdftoppm','-f','1','-singlefile','-scale-to','256','-png',str(path),prefix],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,check=True,timeout=10)
-  if target.is_file():emit('thumbnail',path=str(path),thumbnail=target.as_uri())
+  if target.is_file():success=True;emit('thumbnail',path=str(path),thumbnail=target.as_uri())
  except (OSError,ValueError,subprocess.SubprocessError,Image.DecompressionBombError):pass
- finally:_pending.discard(str(path))
-def fileitem(path):
- stat=path.stat();target=thumbnail_path(path) if not path.is_dir() else None
- if target is not None and not target.exists() and str(path) not in _pending and path.suffix.lower() in ['.png','.jpg','.jpeg','.webp','.avif','.gif','.bmp','.tiff','.pdf','.mp4','.webm','.mkv','.mov','.avi']:
-  _pending.add(str(path));_pool.submit(make_thumbnail,path)
- return dict(path=str(path),name=path.name,directory=path.is_dir(),modified=stat.st_mtime,added=stat.st_ctime,created=getattr(stat,'st_birthtime',stat.st_ctime),size=stat.st_size,thumbnail=target.as_uri() if target is not None and target.exists() else '',image=path.suffix.lower() in ['.png','.jpg','.jpeg','.webp','.avif'])
+ finally:
+  with _pending_lock:
+   _pending.discard(str(path))
+   if not success:
+    try:
+     _failed[str(path)]=(str(thumbnail_path(path)),time.monotonic())
+     while len(_failed)>512:_failed.pop(next(iter(_failed)))
+    except OSError:pass
+   retry=_deferred and len(_pending)<MAX_PENDING//2
+   if retry:_deferred=False
+  if retry:emit('thumbnailRetry')
+def fileitem(path,info=None,generate=True):
+ global _deferred
+ info=info if info is not None else path.stat();directory=statmod.S_ISDIR(info.st_mode)
+ target=thumbnail_path(path,info) if not directory else None;exists=target is not None and target.is_file()
+ if generate and target is not None and not exists and info.st_size<=80_000_000 and path.suffix.lower() in ['.png','.jpg','.jpeg','.webp','.avif','.gif','.bmp','.tiff','.pdf','.mp4','.webm','.mkv','.mov','.avi']:
+  key=str(path);failed=_failed.get(key)
+  with _pending_lock:
+   if key not in _pending and not (failed and failed[0]==str(target) and time.monotonic()-failed[1]<300):
+    if len(_pending)<MAX_PENDING:_pending.add(key);_pool.submit(make_thumbnail,path)
+    else:_deferred=True
+ return dict(path=str(path),name=path.name,directory=directory,modified=info.st_mtime,added=info.st_ctime,created=getattr(info,'st_birthtime',info.st_ctime),size=info.st_size,thumbnail=target.as_uri() if exists else '',image=path.suffix.lower() in ['.png','.jpg','.jpeg','.webp','.avif'])
+
 def capture_directory():
  try:return Path(json.loads((HOME/'.config/lickintosh/shell-config.json').read_text()).get('capture',{}).get('directory','~/Desktop')).expanduser()
  except (OSError,ValueError):return HOME/'Desktop'
@@ -99,10 +122,11 @@ def recent(limit=100):
 
 class Watcher:
  def __init__(self):
-  self.libc=ctypes.CDLL(None,use_errno=True);self.fd=self.libc.inotify_init1(os.O_CLOEXEC);self.paths={};self.stop=False
+  self.libc=ctypes.CDLL(None,use_errno=True);self.fd=self.libc.inotify_init1(os.O_CLOEXEC);self.paths={};self.explicit=set();self.stop=False
   if self.fd>=0:threading.Thread(target=self.watch,daemon=True).start()
- def add(self,folder):
+ def add(self,folder,recent_only=False):
   path=Path(folder).expanduser()
+  if not recent_only:self.explicit.add(str(path))
   if path.is_dir() and str(path) not in self.paths.values():
    wd=self.libc.inotify_add_watch(self.fd,os.fsencode(path),0x8|0x80|0x100|0x200|0x40)
    if wd>=0:self.paths[wd]=str(path)
@@ -115,6 +139,7 @@ class Watcher:
     wd,mask,cookie,length=struct.unpack_from('iIII',data,offset);name=os.fsdecode(data[offset+16:offset+16+length].split(bytes([0]),1)[0]);offset+=16+length
     folder=self.paths.get(wd)
     if not folder or name.startswith('.'):continue
+    if Path(folder)==HOME/'.local/share' and folder not in self.explicit and name not in ('recently-used.xbel','Trash'):continue
     path=Path(folder)/name
     if mask & (0x8|0x80) and Path(folder)!=HOME/'.local/share' and trash_root() not in Path(folder).parents and path.is_file() and not name.endswith('.xbel'):record_recent(path)
     changed.add(folder)
@@ -132,7 +157,7 @@ def listfiles(folder,sort,limit=100):
    stat=f.stat();items.append((f,stat))
   except OSError:pass
  key={'name':lambda x:x[0].name.casefold(),'kind':lambda x:(not x[0].is_dir(),x[0].suffix,x[0].name.casefold()),'modified':lambda x:x[1].st_mtime,'size':lambda x:x[1].st_size,'added':lambda x:x[1].st_ctime,'created':lambda x:getattr(x[1],'st_birthtime',x[1].st_ctime)}.get(sort,lambda x:x[1].st_mtime)
- return [fileitem(f) for f,_ in sorted(items,key=key,reverse=sort in ['modified','size','added','created'])[:limit]]
+ return [fileitem(f,info) for f,info in sorted(items,key=key,reverse=sort in ['modified','size','added','created'])[:limit]]
 def trash_root():
  return Path(os.environ.get('XDG_DATA_HOME',str(HOME/'.local/share')))/'Trash'
 def trashfiles(sort='modified',limit=100):
@@ -140,7 +165,7 @@ def trashfiles(sort='modified',limit=100):
  if not (root/'files').is_dir():return []
  for path in (root/'files').iterdir():
   try:
-   item=fileitem(path);meta=configparser.ConfigParser(interpolation=None);meta.read(root/'info'/(path.name+'.trashinfo'))
+   item=fileitem(path,generate=False);meta=configparser.ConfigParser(interpolation=None);meta.read(root/'info'/(path.name+'.trashinfo'))
    original=urllib.parse.unquote(meta.get('Trash Info','Path',fallback=str(path)))
    item['name']=Path(original).name;item['original']=original;item['trash']=True;item['trashUri']='trash:///'+urllib.parse.quote(path.name,safe='')
    try:item['added']=datetime.fromisoformat(meta.get('Trash Info','DeletionDate',fallback='')).timestamp()
@@ -148,7 +173,11 @@ def trashfiles(sort='modified',limit=100):
    items.append(item)
   except (OSError,configparser.Error):continue
  key={'name':lambda i:i['name'].casefold(),'kind':lambda i:(not i['directory'],Path(i['name']).suffix,i['name'].casefold()),'size':lambda i:i['size'],'added':lambda i:i['added']}.get(sort,lambda i:i['modified'])
- return sorted(items,key=key,reverse=sort in ['modified','size','added','created'])[:limit]
+ selected=sorted(items,key=key,reverse=sort in ['modified','size','added','created'])[:limit]
+ for item in selected:
+  try:item['thumbnail']=fileitem(Path(item['path']))['thumbnail']
+  except OSError:pass
+ return selected
 def trashcount():
  try:return sum(1 for _ in (trash_root()/'files').iterdir())
  except OSError:return 0
@@ -173,7 +202,7 @@ def main():
  signal.signal(signal.SIGTERM,lambda *_:sys.exit(0));ctypes.CDLL(None).prctl(1,signal.SIGTERM,0,0,0)
  if os.getppid()==1:return
  watcher=Watcher()
- for folder in [HOME/'Downloads',HOME/'Desktop',capture_directory(),HOME/'.local/share',trash_root()/'files',trash_root()/'info']:watcher.add(folder)
+ for folder in [HOME/'Downloads',HOME/'Desktop',capture_directory(),HOME/'.local/share',trash_root()/'files',trash_root()/'info']:watcher.add(folder,recent_only=folder==HOME/'.local/share')
  history=STATE/'recent-apps.json'
  try:apps=json.loads(history.read_text())
  except (OSError,ValueError):apps=[]
@@ -244,6 +273,7 @@ def main():
     subprocess.run(['gio','trash','--restore','--',*uris],check=True,timeout=30);emit('trash',count=trashcount())
    elif action=='empty':
     subprocess.run(['gio','trash','--empty'],check=True,timeout=30);emit('trash',count=trashcount())
-   elif action=='refresh':emit('trash',count=trashcount())
+   elif action=='refresh':
+    watcher.add(trash_root()/'files');watcher.add(trash_root()/'info');emit('trash',count=trashcount())
   except (OSError,ValueError,KeyError,subprocess.SubprocessError) as e:emit('error',message=str(e)[:200])
 if __name__=='__main__':main()

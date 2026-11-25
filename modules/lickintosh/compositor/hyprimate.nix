@@ -8,7 +8,7 @@ hyprland.stdenv.mkDerivation {
   rev = "49504fabb83411d3862dd76dde9383618ab66a55";
   hash = "sha256-Tn3AC6n8NQNV1Y3GghJBUd0qhMNtZ5Fx6bZJ3pPUS9w=";
  };
- patches = [ ./hyprimate-hyprglass-1.1.patch ./hyprimate-native-special.patch ./hyprimate-respect-no-animation.patch ];
+ patches = [ ./hyprimate-hyprglass-1.1.patch ./hyprimate-native-special.patch ./hyprimate-respect-no-animation.patch ./hyprimate-translucent-close.patch ];
  postPatch = ''
   sed -i -E '/window(:|\.)(open(:|\.)|close(:|\.))?options(:|\.)liquid(:|\.)color/s/0xff000000/0x00000000/g' config/settings.json config/generated/config_generated.hpp
   cp ${./window-glass-animation.hpp} src/window/hyprland/WindowGlassAnimation.hpp

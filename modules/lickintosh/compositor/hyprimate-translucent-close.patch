@@ -1,0 +1,13 @@
+--- a/src/plugin/PluginRuntime.cpp
++++ b/src/plugin/PluginRuntime.cpp
+@@ -22,2 +22,3 @@
+ #include <hyprland/src/desktop/view/window/Window.hpp>
++#include <hyprland/src/desktop/view/window/WindowPresentation.hpp>
+ #include <hyprland/src/event/EventBus.hpp>
+@@ -142,3 +143,5 @@
+     m_close_event = Event::bus()->m_events.window.close.listen([this](const PHLWINDOW &window) {
+-        if (window) {
++        // A translucent window's isolated snapshot lacks the compositor glass.
++        // Keep the native fadeout, which composites the surface over the live scene.
++        if (window && window->presentation().opaque()) {
+             m_animations.close(

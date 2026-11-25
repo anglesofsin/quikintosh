@@ -176,7 +176,7 @@ ScrollView{
    readonly property var pluginLabels: root.data.hyprimate ? ['Rotation','Planet Hop','Cube','Lava','Custom Shader'] : []
    readonly property var nativeStyles: ['slide','slidevert','fade','slidefade','slidefadevert','off']
    readonly property var nativeLabels: ['Slide','Vertical Slide','Fade','Slide and Fade','Vertical Slide and Fade','Off']
-   readonly property bool pluginActive: root.data.hyprimate && !!root.value(pluginPrefix+'enabled',false)
+   readonly property bool pluginActive: root.data.hyprimate === true && !!root.value(pluginPrefix+'enabled',false)
    readonly property string pluginStyle: root.value(pluginPrefix+'effect','') ? 'shader' : root.value(pluginPrefix+'style','rotation')
    readonly property string nativeStyle: nativeValue('enabled',true) ? nativeValue('style','slide') : 'off'
    readonly property var pluginFields: (root.data.animationFields || []).filter(field => {

@@ -1161,3 +1161,5 @@ Location privacy|Privacidade da localização
 Follow widget|Seguir widget
 Title font|Fonte do título
 City name and IANA time zone, separated by a vertical bar|Nome da cidade e fuso IANA, separados por uma barra vertical
+Banner Location|Local dos banners
+Upper Right|Canto superior direito

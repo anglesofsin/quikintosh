@@ -147,3 +147,5 @@ Resize handles dismiss after releasing the mouse, clicking the desktop, pressing
 The Personal Clock gallery offers Classic, Stacked and Minimal compositions. Select a design in the widget editor, then choose its size or resize it freely; gallery entries are no longer duplicated for every preset dimension. Existing clocks keep their explicit font, size and date settings.
 
 The [widget review](docs/WIDGET-REVIEW.md) documents the unified Clock gallery, ten additional bundled font families, optional music artwork, external-audio arbitration and per-widget calendar/world-clock/timer/task/quote options.
+
+[Notification delivery and panel behavior](docs/NOTIFICATIONS.md): select island or upper-right banners in Settings, retain a single notification history, and drag widget editors by their title area.

@@ -52,7 +52,7 @@ Scope{
    source=ROOT/'modules/lickintosh/creative-widgets'
    (root/'LyricsSticker.qml').write_text((source/'LyricsSticker.qml').read_text())
    (root/'CreativeText.qml').write_text("import QtQuick\nItem{property string value:'';property var options;property color ink;property bool isSnapshot;property bool animationEnabled}")
-   stubs={'MprisState':"property bool hasPlayer:false;property real position:0;property real length:10;property string trackTitle:'Track';property int fastWatchers:0;function watchPosition(on){}",'LyricsState':"property var lines:[];property bool synced:false;property string status:'idle';function watch(on){}",'CreativeMedia':'property bool locked:false','Theme':"property color accent:'blue';property color textPrimary:'white'"}
+   stubs={'MprisState':"property bool hasPlayer:false;property bool isPlaying:false;property real position:0;property real length:10;property string trackTitle:'Track';property int fastWatchers:0;function watchPosition(on){}",'LyricsState':"property var lines:[];property bool synced:false;property string status:'idle';function watch(on){}",'CreativeMedia':'property bool locked:false','Theme':"property color accent:'blue';property color textPrimary:'white'"}
    for name,body in stubs.items():(services/(name+'.qml')).write_text('pragma Singleton\nimport QtQuick\nimport Quickshell\nSingleton{'+body+'}')
    (services/'qmldir').write_text('module qs.services\n'+''.join('singleton '+n+' '+n+'.qml\n' for n in stubs))
    output=qml.Interface.run_qml(self,directory,'''import QtQuick
@@ -65,6 +65,10 @@ Scope{
   MprisState.hasPlayer=true;LyricsState.status='loading'
   if(!lyrics.blank){Qt.exit(41);return}
   LyricsState.lines=[{t:0,text:'A real lyric'}];LyricsState.synced=true
+  if(!lyrics.blank){Qt.exit(46);return}
+  MprisState.isPlaying=true;LyricsState.synced=false
+  if(!lyrics.blank){Qt.exit(47);return}
+  LyricsState.synced=true
   if(lyrics.blank){Qt.exit(42);return}
   LyricsState.lines=[]
   if(!lyrics.blank){Qt.exit(43);return}

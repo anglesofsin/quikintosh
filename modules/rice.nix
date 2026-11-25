@@ -155,6 +155,7 @@ let
       exec ${pkgs.kdePackages.dolphin}/bin/dolphin "$@"
     '';
   };
+  quickintoshWindowGlass = pkgs.callPackage ./lickintosh/compositor/hyprglass.nix {};
   quickintoshGeometry = pkgs.callPackage ./lickintosh/rendering/geometry {};
   quickintoshRendering = pkgs.callPackage ./lickintosh/rendering/native {};
   lickintoshRoot = pkgs.stdenvNoCC.mkDerivation {
@@ -289,6 +290,9 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock}/identity-integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/runtime-efficiency}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/rendering}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/personalization}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/compositor}/integrate.py $out
+      qsb --glsl "100 es,120,150" --hlsl 50 --msl 12 -o $out/assets/shaders/liquidglass/ClockColors.frag.qsb $out/assets/shaders/liquidglass/ClockColors.frag
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/lock-state-sync.py} $out
@@ -338,6 +342,7 @@ let
       export GIO_EXTRA_MODULES="${pkgs.gvfs}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"
       export XDG_DATA_DIRS="${lickintoshRoot}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
       ${pkgs.python3}/bin/python3 ${./lickintosh/rendering/ensure-geometry.py} ${quickintoshGeometry}/lib/quickintosh-geometry.so
+      ${pkgs.python3}/bin/python3 ${./lickintosh/compositor/load-glass.py} ${quickintoshWindowGlass}/lib/hyprglass.so
       QUICKINTOSH_RENDERER="$(${pkgs.python3}/bin/python3 ${./lickintosh/rendering/launcher-env.py})"
       export QUICKINTOSH_RENDERER
       case "$QUICKINTOSH_RENDERER" in threaded|basic) export QSG_RENDER_LOOP="$QUICKINTOSH_RENDERER" ;; esac

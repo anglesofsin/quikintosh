@@ -28,7 +28,7 @@ class ClockGeometry(unittest.TestCase):
    import shutil
    shutil.copyfile(source/'services/LockClockStyle.qml',services/'LockClockStyle.qml')
    shutil.copyfile(source/'services/WidgetFonts.qml',services/'WidgetFonts.qml')
-   stubs={'Theme':"property color textPrimary:'#fff';property color accent:'#08f';property bool plainSurfaces:false",'I18n':"function tr(text){return text}",'SettingsPreferences':"property var accessibility:({reduceMotion:false})",'WidgetState':"property var desktopBackdrop:null",'RenderingState':"property bool shadows:true;property bool ambientAnimations:true",'ShellMotion':"function duration(ms){return ms}"}
+   stubs={'Theme':"property color textPrimary:'#fff';property color accent:'#08f';property bool plainSurfaces:false",'I18n':"function tr(text){return text}",'SettingsPreferences':"property var accessibility:({reduceMotion:false})",'WidgetState':"property var desktopBackdrop:null",'AppearanceState':"property var palette:({})",'RenderingState':"property bool shadows:true;property bool ambientAnimations:true",'ShellMotion':"function duration(ms){return ms}"}
    for name,body in stubs.items():
     (services/(name+'.qml')).write_text('pragma Singleton\nimport QtQuick\nimport Quickshell\nSingleton{'+body+'}')
    (services/'qmldir').write_text('module qs.services\n'+''.join('singleton '+name+' '+name+'.qml\n' for name in ['LockClockStyle','WidgetFonts',*stubs]))
@@ -49,7 +49,7 @@ Scope{
  property var envelope:null
  property int step:0
  property real expected:0
- property var configs:[{clockSize:280,clockAnimate:true},{clockSize:280,clock12Hour:true},{clockSize:280,clockSeconds:true},{clockSize:280,variant:'stacked',clockSeconds:true},{clockSize:280,clockFont:'Georgia'},{clockAutoSize:true}]
+ property var configs:[{clockSize:280,clockColorLayout:'horizontal',clockPartPalette:false,clockPartFirst:'#ff0000',clockPartSecond:'#0000ff'},{clockSize:280,clockAnimate:true},{clockSize:280,clock12Hour:true},{clockSize:280,clockSeconds:true},{clockSize:280,variant:'stacked',clockSeconds:true},{clockSize:280,clockFont:'Georgia'},{clockAutoSize:true}]
  property var times:[[0,0,0],[1,11,11],[8,8,8],[9,9,9],[11,11,11],[12,0,0],[22,22,22],[23,59,59]]
  Timer{interval:30;running:true;repeat:true;onTriggered:{
   const config=Math.floor(step/times.length),index=step%times.length

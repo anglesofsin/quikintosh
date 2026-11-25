@@ -1,0 +1,13 @@
+# Window effects and widget personalization
+
+Settings → Windows & Effects controls native window opacity, blur, shadows, corners, layout and focus behavior. Changes belong to the Quickintosh profile. Leaving the profile restores the compositor values captured before these overrides, including four-sided window spacing.
+
+Under Application rules, choose an open application's class or enter its exact class, add a rule and optionally restrict it to an exact title. Rules support active/inactive opacity, blur, shadows, animations, corners, borders and window glass. Removing a rule disables its named compositor rules.
+
+Window Liquid Glass uses [HyprGlass](https://github.com/hyprnux/hyprglass), pinned to a release for the bundled Hyprland. It starts disabled globally; a per-application material can enable it individually. The application's background must be transparent to reveal the glass. Kitty supports this with `background_opacity` below 1. Window opacity also affects foreground text; use Kitty's background opacity when only its background should be translucent.
+
+Clock widget → Typography/Colors & effects supports separate colors, wallpaper palette colors, horizontal/vertical divisions, diagonal blends, stripes and three-color composition. Single color remains available. Weather widget settings include precipitation, intensity, speed, lightning and drop color. Weather animation pauses with reduced animation settings and while locked.
+
+## Hyprimate compatibility work
+
+The requested [Hyprimate](https://github.com/JustinBacher/hyprimate) revision targets Hyprland 0.57.x and a C++26 toolchain. The current Quickintosh compositor is 0.56.2 with custom capture and scrolling-workspace clipping patches. Those patches do not apply unchanged to 0.57.2. Hyprimate is **not installed or enabled** by this change: the compositor, existing plugins and both patches must be ported and tested together before activating that upgrade. The package definition is retained as preparation, not as a working installation claim. User Lua configuration must be retained, and activation of a new compositor requires a new session.

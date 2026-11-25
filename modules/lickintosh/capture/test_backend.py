@@ -20,6 +20,23 @@ class CaptureTests(unittest.TestCase):
    self.assertEqual(worker.meta['factor'],1.5)
    self.assertEqual((worker.meta['cursorX'],worker.meta['cursorY']),(200,200))
    self.assertEqual(worker.meta['windows'],[dict(x=100,y=100,w=400,h=300)])
+ def test_window_targets_use_named_special_workspace_addresses(self):
+  import json
+  with tempfile.TemporaryDirectory() as private:
+   worker=Worker(private)
+   special={'address':'special:public','name':'special:public','type':'special'}
+   monitor=dict(name='test',width=800,height=600,x=0,y=0,focused=True,activeWorkspace={'id':1},specialWorkspace=special)
+   clients=[
+    dict(at=[20,20],size=[100,100],workspace={'id':1}),
+    dict(at=[50,50],size=[200,200],workspace=special),
+    dict(at=[60,60],size=[300,300],workspace={'address':'special:right','type':'special'}),
+   ]
+   replies={'monitors':[monitor],'cursorpos':{'x':100,'y':100},'clients':clients}
+   def read(command):return json.dumps(replies[command[1]])
+   def capture(command,**kwargs):Image.new('RGB',(800,600),'blue').save(command[-1])
+   with patch.dict('os.environ',{'QT_SCALE_FACTOR':'1'}),patch('backend.output',side_effect=read),patch('backend.run',side_effect=capture),patch('backend.emit'):
+    worker.capture(dict(mode='region',config={}))
+   self.assertEqual(worker.meta['windows'],[dict(x=50,y=50,w=200,h=200),dict(x=20,y=20,w=100,h=100)])
  def test_save_does_not_overwrite_and_templates_are_safe(self):
   with tempfile.TemporaryDirectory() as directory:
    src=Path(directory)/'source.png';Image.new('RGB',(31,19),'red').save(src)

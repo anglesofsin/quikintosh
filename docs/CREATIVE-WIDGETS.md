@@ -2,6 +2,8 @@
 
 Open **Edit Widgets** from the desktop context menu. Add a widget, then right-click it to edit its content, resize it, or change its appearance. Existing Image widgets become **Media** without losing their files, positions or styles.
 
+The editor separates **Appearance**, **Content**, **Typography** and **Time & Date** when relevant. A fixed header and footer keep navigation, Done and removal available while controls scroll. Settings are grouped into cards; the editor uses its own readable neutral material rather than inheriting a transparent widget surface. File/folder choosers still receive priority over the editor.
+
 ## Media
 
 Add multiple photos, GIFs and videos, or choose an entire local folder. Folder libraries support optional subfolders, alphabetical/newest ordering and shuffle. Choose 15 seconds, one minute, 15 minutes or a custom interval. Transitions include dissolve, slide, zoom and cut, with adjustable duration. Videos can finish before advancing; sound starts disabled and has an independent volume control. Fill, fit, stretch and shape controls remain available.

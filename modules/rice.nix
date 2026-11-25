@@ -274,6 +274,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/island-media}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/tray-colors}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/creative-widgets}/integrate.py $out ${pkgs.python3}/bin/python3 ${pkgs.ffmpeg}/bin/ffmpeg ${pkgs.ffmpeg}/bin/ffprobe
+      ${pkgs.python3}/bin/python3 ${./lickintosh/editor-layout}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock}/identity-integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out

@@ -1132,3 +1132,16 @@ Live Lyrics|Letras ao vivo
 Your media, your space|Sua mídia, seu espaço
 Add photos, GIFs, videos or a folder|Adicione fotos, GIFs, vídeos ou uma pasta
 Hide text when lyrics are unavailable|Ocultar texto quando não houver letra disponível
+Customize Widget|Personalizar widget
+Clock layout|Layout do relógio
+Colors & effects|Cores e efeitos
+Clock typography|Tipografia do relógio
+Time & date|Hora e data
+Widget appearance|Aparência do widget
+Library|Biblioteca
+Slideshow|Apresentação de mídia
+Video playback|Reprodução de vídeo
+Framing|Enquadramento
+Typography & color|Tipografia e cor
+Font & layout|Fonte e layout
+Motion|Movimento

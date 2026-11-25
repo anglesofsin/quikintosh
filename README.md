@@ -149,3 +149,5 @@ The Personal Clock gallery offers Classic, Stacked and Minimal compositions. Sel
 The [widget review](docs/WIDGET-REVIEW.md) documents the unified Clock gallery, ten additional bundled font families, optional music artwork, external-audio arbitration and per-widget calendar/world-clock/timer/task/quote options.
 
 [Notification delivery and panel behavior](docs/NOTIFICATIONS.md): select island or upper-right banners in Settings, retain a single notification history, and drag widget editors by their title area.
+
+[Displays and wallpapers](docs/DISPLAYS-WALLPAPERS.md): monitor arrangement, preview with automatic rollback, display profiles, individual wallpaper selections and library controls.

@@ -43,15 +43,23 @@ for key in ['system','app']:
  old='appName: modelData.appName\n                                        items:   modelData.items'
  new="required property string groupName\n                                        required property int index\n                                        appName:groupName\n                                        items:(NotifService."+key+"GroupsList.find(group=>group.appName===groupName)?.items || [])"
  assert old in s;s=s.replace(old,new,1)
+s=s.replace('onNotificationChanged:receivedTime=Qt.formatTime(new Date(),"HH:mm")','''onNotificationChanged:{
+        receivedTime=Qt.formatTime(new Date(),"HH:mm")
+        if(dismissing){
+            const previous=dismissTarget
+            exitAnimation.stop();dismissing=false;exitProgress=1;opacity=1;scale=1;dismissTarget=null
+            if(previous && previous!==notification && previous.tracked)Qt.callLater(()=>previous.dismiss())
+        }
+    }''')
 write(p,s)
 p=base+'NotifStack.qml';s=(r/p).read_text().replace('readonly property int animDur:       260','readonly property int animDur:       ShellMotion.spatial(.52)').replace('duration: root.animDur + 60','duration: root.animDur').replace('Easing.OutBack','Easing.OutCubic');write(p,s)
 p=base+'NotifItem.qml';s=(r/p).read_text().replace('readonly property int animDur: 240','readonly property int animDur: ShellMotion.spatial(.48)').replace('radius: 16','radius: 21').replace('readonly property string receivedTime:', 'property string receivedTime:');s=s.replace('    function defaultAction()', '    onNotificationChanged:receivedTime=Qt.formatTime(new Date(),"HH:mm")\n    function defaultAction()');write(p,s)
 p='ui/topbar/statusarea/controlcenter/ControlCenter.qml';s=(r/p).read_text().replace('readonly property int animationDur: Math.min(140, ShellMotion.fade())','readonly property int animationDur:root.opened ? ShellMotion.enter(.56):ShellMotion.exit(.55)')
-s=s.replace('GlassBackdrop { id: ccBackdrop; element: "cc" }','GlassBackdrop { id: ccBackdrop; element: "cc"; gateEnabled:false }').replace('anchors.topMargin: MediaCaptureState.controlCenterActive ? 58:30','anchors.topMargin: MediaCaptureState.controlCenterActive ? 94:30\n                    Behavior on anchors.topMargin{NumberAnimation{duration:root.animationDur;easing.type:Easing.OutCubic}}').replace('scale: 0.95 + 0.05 * showProgress','scale: 0.975 + 0.025 * showProgress\n                    transform:Translate{y:-8*(1-ccContent.showProgress)}')
+s=s.replace('GlassBackdrop { id: ccBackdrop; element: "cc" }','GlassBackdrop { id: ccBackdrop; element: "cc"; gateEnabled:false }').replace('anchors.topMargin: MediaCaptureState.controlCenterActive ? 58:30','anchors.topMargin: MediaCaptureState.controlCenterActive ? 58:30\n                    Behavior on anchors.topMargin{NumberAnimation{duration:root.animationDur;easing.type:Easing.OutCubic}}').replace('scale: 0.95 + 0.05 * showProgress','scale: 0.975 + 0.025 * showProgress\n                    transform:Translate{y:-8*(1-ccContent.showProgress)}')
 a=s.index('                    BoxGlass {\n                        visible:MediaCaptureState.controlCenterActive');b=s.index('                    property real showProgress:',a)
 s=s[:a]+'''                    ControlPrivacy{
                         visible:MediaCaptureState.controlCenterActive;backdrop:ccBackdrop
-                        anchors.horizontalCenter:parent.horizontalCenter;y:-62;width:parent.width;height:48
+                        anchors.horizontalCenter:parent.horizontalCenter;y:-29;width:Math.min(parent.width,160);height:22
                     }
 '''+s[b:];write(p,s)
 # Move the card inside its layer surface; keep native-dialog handoff untouched.
@@ -68,3 +76,86 @@ a='     Item{Layout.fillWidth:true;implicitHeight:52';assert a in s;s=s.replace(
 ''');write(p,s)
 
 p='ui/settings/pages/RosaPage.qml';s=(r/p).read_text().replace('group.modelData.names','group.modelData.names.filter(name=>name!=="eatPopups")');write(p,s)
+
+# Editing controls must stay above application windows while the gallery is open.
+p='ui/desktop/DesktopLayer.qml';s=(r/p).read_text()
+s=s.replace('WlrLayershell.layer:WidgetState.resizingId!=="" ? WlrLayer.Top:WlrLayer.Bottom','WlrLayershell.layer:WidgetState.resizingId!=="" || WidgetState.galleryZone==="desktop" ? WlrLayer.Top:WlrLayer.Bottom')
+s=s.replace('if (menu.target.kind === "widget") WidgetState.applyAction("desktop", menu.target.id, action)', '''if (menu.target.kind === "widget") {
+                    const id=menu.target.id
+                    Qt.callLater(function(){
+                        if(!WidgetState.entryOf("desktop",id))return
+                        DesktopFiles.desktopFocused=true
+                        WidgetState.applyAction("desktop",id,action)
+                    })
+                }''')
+write(p,s)
+p='services/WidgetState.qml';s=(r/p).read_text();s=s.replace('    Connections{target:DesktopFiles;function onDesktopFocusedChanged(){if(!DesktopFiles.desktopFocused)root.resizingId=""}}','')
+s=s.replace('    function removeWidget(zone, id) {','    function removeWidget(zone, id) {\n        if(root.resizingId===id)root.resizingId=""\n        if(root.editingId===id)root.editingId=""')
+write(p,s)
+
+# Keep dismissed cards alive until their exit has finished, then update history.
+p=base+'NotifItem.qml';s=(r/p).read_text()
+s=s.replace('    property bool showClose: true','''    property bool dismissing:false
+    property real exitProgress:1
+    property var dismissTarget:null
+    signal stackDismissRequested()
+    function dismissAnimated(){
+        if(dismissing || !notification)return
+        dismissTarget=notification;dismissing=true;exitAnimation.start()
+    }
+    SequentialAnimation{
+        id:exitAnimation
+        ParallelAnimation{
+            NumberAnimation{target:root;property:"opacity";to:0;duration:ShellMotion.exit(.55);easing.type:Easing.InCubic}
+            NumberAnimation{target:root;property:"scale";to:.96;duration:ShellMotion.exit(.55);easing.type:Easing.InCubic}
+            NumberAnimation{target:root;property:"exitProgress";to:0;duration:ShellMotion.exit(.65);easing.type:Easing.InOutCubic}
+        }
+        ScriptAction{script:{const n=root.dismissTarget;if(n)n.dismiss()}}
+    }
+    enabled:!dismissing
+    property bool showClose: true''')
+s=s.replace('height: root.expanded\n        ? (_headerZone.height + _footerZone.height)\n        : _headerZone.height','height: (root.expanded ? (_headerZone.height + _footerZone.height) : _headerZone.height)*root.exitProgress')
+s=s.replace('    Behavior on height {','    Behavior on height {\n        enabled:!root.dismissing')
+s=s.replace('if (root.notification) root.notification.dismiss()','root.dismissAnimated()')
+s=s.replace('NotifService.dismissGroup(root.stackItems)','root.stackDismissRequested()')
+s=s.replace('onNotificationChanged:receivedTime=Qt.formatTime(new Date(),"HH:mm")','''onNotificationChanged:{
+        receivedTime=Qt.formatTime(new Date(),"HH:mm")
+        if(dismissing){
+            const previous=dismissTarget
+            exitAnimation.stop();dismissing=false;exitProgress=1;opacity=1;scale=1;dismissTarget=null
+            if(previous && previous!==notification && previous.tracked)Qt.callLater(()=>previous.dismiss())
+        }
+    }''')
+write(p,s)
+p=base+'NotifStack.qml';s=(r/p).read_text()
+s=s.replace('    property bool expanded: false','''    property bool expanded: false
+    property bool dismissing:false
+    property real exitProgress:1
+    property real exitHeight:0
+    property var dismissTargets:[]
+    Layout.preferredHeight:dismissing ? exitHeight*exitProgress:-1
+    Layout.minimumHeight:0
+    clip:dismissing
+    enabled:!dismissing
+    function dismissAnimated(){
+        if(dismissing)return
+        dismissTargets=items.slice();exitHeight=height;_arrivalAnim.stop();dismissing=true;exitAnimation.start()
+    }
+    SequentialAnimation{
+        id:exitAnimation
+        ParallelAnimation{
+            NumberAnimation{target:root;property:"opacity";to:0;duration:ShellMotion.exit(.55);easing.type:Easing.InCubic}
+            NumberAnimation{target:root;property:"scale";to:.96;duration:ShellMotion.exit(.55);easing.type:Easing.InCubic}
+            NumberAnimation{target:root;property:"exitProgress";to:0;duration:ShellMotion.exit(.65);easing.type:Easing.InOutCubic}
+        }
+        ScriptAction{script:{NotifService.dismissGroup(root.dismissTargets);restoreAfterExit.start()}}
+    }
+    Timer{
+        id:restoreAfterExit;interval:140
+        onTriggered:if(root.items.some(n=>root.dismissTargets.indexOf(n)<0)){
+            root.dismissing=false;root.exitProgress=1;root.scale=1;root.opacity=1
+        }
+    }''')
+s=s.replace('            stackItems: root.items','            stackItems: root.items\n            onStackDismissRequested:root.dismissAnimated()')
+s=s.replace('onClicked: NotifService.dismissGroup(root.items)','onClicked: root.dismissAnimated()')
+write(p,s)

@@ -64,3 +64,9 @@ Widget review: three automated checks validate sound arbitration (own/idle/muted
 The final shell Fontconfig was checked with `fc-match` for all ten new families; each resolves to its actual bundled family rather than DejaVu/SF fallback. This check caught and corrected an upstream-only font-directory path before activation.
 
 Notification/panel review: real notifications were delivered over a private D-Bus session; corner and island routes, no duplication, history retention, DND and stable app-group counts passed. A separate Qt Quick Test pointer drag moved the real widget-editor header. Control Center opened and closed after its exit animation; a captured privacy-card image centered “Screen Sharing” and “Helium”. See `docs/NOTIFICATIONS.md`.
+
+## Display and widget editing follow-up
+
+- `python3 -m unittest discover -s tests -p test_display_transactions.py`: six fake-compositor tests cover validation, confirmation, independent timeout rollback, failed application, connector mismatch and profiles. No real display mutation is performed.
+- Private Wayland/QtTest probes exercised Remove Widget and Resize Widget through menu clicks, then dragged a resize handle and checked persisted custom dimensions.
+- Private Wayland probes checked delayed individual/group notification dismissal and rendered populated Displays and Wallpaper pages.

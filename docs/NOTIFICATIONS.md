@@ -8,7 +8,7 @@ Upper-right banners have a shared glass backdrop, a rounded neutral surface, app
 
 Notification Center uses a keyed application-group model. New messages update an existing group rather than reconstructing its delegate, preserving expansion state and avoiding replaying every arrival animation. Opening the center marks notifications read and hides outstanding banners. Panel motion uses spatial/fade durations rather than the previous 140/180ms caps, and respects Reduce Motion.
 
-Control Center uses the same opening/closing motion approach. Its privacy header centers the highest-priority category and shows the applications responsible below it, using the real active PipeWire capture inventory. It does not guess which app is capturing from window focus. Clicking the header opens privacy settings.
+Control Center uses the same opening/closing motion approach. Its compact, single-line glass privacy badge centers the highest-priority category, using the real active PipeWire capture inventory. Application details stay in privacy settings. It does not guess which app is capturing from window focus. Clicking the header opens privacy settings.
 
 The widget editor can be moved by dragging its title area. The card stays inside the display bounds. Double-clicking the title recenters it; its controls and native-file-dialog ownership are unchanged.
 
@@ -29,3 +29,5 @@ QUICKINTOSH_TEST_SOURCE=/path/to/built/source \
 QUICKINTOSH_TEST_QS=/path/to/qs \
 python3 -m unittest discover -s tests -p test_notification_delivery.py
 ```
+
+Dismissing a card or an entire application group now fades and contracts it before removing it from history. Repeated clicks are ignored during the exit. Animation durations respect the shell's motion settings.

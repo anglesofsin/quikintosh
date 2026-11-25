@@ -277,6 +277,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/editor-layout}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/widget-review}/integrate.py $out ${pkgs.python3}/bin/python3 ${pkgs.tzdata}/share/zoneinfo
       ${pkgs.python3}/bin/python3 ${./lickintosh/notification-polish}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/display-wallpaper}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock}/identity-integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/scale-geometry.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/icon-raster-quality.py} $out

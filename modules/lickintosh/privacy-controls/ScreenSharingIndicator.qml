@@ -61,8 +61,6 @@ Item {
                 height: 16
             }
         }
-        ToolTip.visible: hovered && !root.opened
-        ToolTip.text: Accessible.name
     }
 
     LazyLoader {
@@ -182,8 +180,6 @@ Item {
                                             Accessible.name: qsTr("Open app")
                                             implicitWidth: 28
                                             implicitHeight: 26
-                                            ToolTip.text: Accessible.name
-                                            ToolTip.visible: hovered && !down
                                             background: Rectangle {
                                                 radius: height / 2
                                                 color: parent.hovered || parent.activeFocus

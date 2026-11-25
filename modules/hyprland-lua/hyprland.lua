@@ -826,7 +826,7 @@ do
 end
 
 if shellActions["switcher-next"] then
-    hl.layer_rule({name="quickintosh-capture-chrome",match={namespace="^quickintosh-(quickshot-controls|island-dashboard|sharing-panel)$"},
+    hl.layer_rule({name="quickintosh-capture-chrome",match={namespace="^quickintosh-(quickshot-controls|island-dashboard|sharing-panel|status-popover)$"},
         no_anim=true,blur=true,ignore_alpha=0.20})
     if hl.plugin.hyprglass then
         local glass = hl.plugin.hyprglass
@@ -834,6 +834,7 @@ if shellActions["switcher-next"] then
         glass.layer("quickintosh-quickshot-controls", { mask_mode="contour", mask_threshold=0.18 })
         glass.layer("quickintosh-island-dashboard", { mask_mode="contour", mask_threshold=0.18 })
         glass.layer("quickintosh-sharing-panel", { mask_mode="contour", mask_threshold=0.18 })
+        glass.layer("quickintosh-status-popover", { mask_mode="contour", mask_threshold=0.18 })
     end
 end
 

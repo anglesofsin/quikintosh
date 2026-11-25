@@ -30,6 +30,31 @@ ScrollView{
   number:Number(root.value(option,minimum));value:number.toFixed(step<1 ? 2:0)
   onCommitted:value=>root.set(option,value)
  }
+ component AnimationOption: SettingsRow {
+     id: animationRow
+     property bool explain: false
+     required property var modelData
+     readonly property var field: modelData
+     readonly property var currentValue: root.value(field.key, field.default)
+     readonly property bool numeric: field.type === 'float' || field.type === 'int'
+     readonly property bool listed: field.type === 'string' && !!field.choices
+     label: field.path.substring(field.path.indexOf('.') + 1).split('.').join(' / ').replace(/_/g, ' ')
+     description: explain ? field.description : ''
+     available: root.data.values?.[field.key] != null
+     kind: field.type === 'boolean' ? 'switch' : listed ? 'choice' : numeric ? 'slider' : 'field'
+     checked: currentValue === true
+     choices: listed ? field.choices : []
+     selection: Math.max(0, choices.indexOf(currentValue))
+     minimum: field.min ?? (numeric ? -10000 : 0)
+     maximum: field.max ?? (numeric ? Math.max(10000, Number(field.default) * 2) : 1)
+     step: field.type === 'int' || maximum > 100 ? 1 : 0.01
+     number: numeric ? Number(currentValue) : 0
+     value: numeric && isFinite(number) ? number.toFixed(step < 1 ? 2 : 0) : field.type === 'color' && typeof currentValue === 'number' ? '0x' + currentValue.toString(16).padStart(8, '0') : String(currentValue ?? '')
+     onToggled: enabled => root.set(field.key, enabled)
+     onPicked: index => root.set(field.key, choices[index])
+     onCommitted: amount => root.set(field.key, amount)
+     onEdited: text => root.set(field.key, text)
+    }
  ColumnLayout{id:body;width:root.availableWidth;spacing:20
   SettingsCard{title:'Window appearance'
    Slider{label:'Corner radius';option:'decoration:rounding';minimum:0;maximum:50;step:1}
@@ -83,6 +108,97 @@ ScrollView{
    }
   }
   SettingsCard {
+   id: workspaceAnimations
+   title: 'Workspace animations'
+   readonly property string pluginPrefix: 'plugin:hyprimate:workspace:'
+   readonly property string nativePrefix: 'workspace-animation:'
+   readonly property var pluginStyles: root.data.hyprimate ? ['rotation','planet_hop','cube','lava','shader'] : []
+   readonly property var pluginLabels: root.data.hyprimate ? ['Rotation','Planet Hop','Cube','Lava','Custom Shader'] : []
+   readonly property var nativeStyles: ['slide','slidevert','fade','slidefade','slidefadevert','off']
+   readonly property var nativeLabels: ['Slide','Vertical Slide','Fade','Slide and Fade','Vertical Slide and Fade','Off']
+   readonly property bool pluginActive: root.data.hyprimate && !!root.value(pluginPrefix+'enabled',false)
+   readonly property string pluginStyle: root.value(pluginPrefix+'effect','') ? 'shader' : root.value(pluginPrefix+'style','rotation')
+   readonly property string nativeStyle: nativeValue('enabled',true) ? nativeValue('style','slide') : 'off'
+   readonly property var pluginFields: (root.data.animationFields || []).filter(field => {
+    if (!field.path.startsWith('workspace.') || ['workspace.enabled','workspace.style'].includes(field.path)) return false
+    if (pluginStyle === 'shader') return field.path.startsWith('workspace.effect')
+    return !field.path.startsWith('workspace.effect') &&
+        (!field.path.startsWith('workspace.options.') || field.path.startsWith('workspace.options.'+pluginStyle+'.'))
+   })
+   function nativeValue(key,fallback) {
+    return root.value(nativePrefix+key,root.data.workspaceNative?.[key] ?? fallback)
+   }
+   function select(index) {
+    const next=Object.assign({},SettingsPreferences.inputOverrides)
+    if (index<pluginStyles.length) {
+     const style=pluginStyles[index]
+     next[pluginPrefix+'enabled']=true
+     if (style==='shader') {
+      next[pluginPrefix+'effect']=root.value(pluginPrefix+'effect','')
+     } else {
+      next[pluginPrefix+'style']=style
+      next[pluginPrefix+'effect']=''
+     }
+    } else {
+     const style=nativeStyles[index-pluginStyles.length]
+     if (root.data.hyprimate) next[pluginPrefix+'enabled']=false
+     next[nativePrefix+'enabled']=style!=='off'
+     if (style!=='off') next[nativePrefix+'style']=style
+    }
+    SettingsPreferences.inputOverrides=next
+   }
+   // An empty manifest still uses the selected built-in effect. Keep the editor
+   // available while a custom manifest is being entered.
+   property bool editingShader: false
+   SettingsRow {
+    label:'Transition';kind:'choice'
+    choices:workspaceAnimations.pluginLabels.map(label=>'Hyprimate · '+label)
+        .concat(workspaceAnimations.nativeLabels.map(label=>'Hyprland · '+label))
+    selection:workspaceAnimations.pluginActive
+        ? Math.max(0,workspaceAnimations.pluginStyles.indexOf(workspaceAnimations.editingShader ? 'shader' : workspaceAnimations.pluginStyle))
+        : workspaceAnimations.pluginStyles.length+Math.max(0,workspaceAnimations.nativeStyles.indexOf(workspaceAnimations.nativeStyle))
+    onPicked:index=>{
+     workspaceAnimations.editingShader=workspaceAnimations.pluginStyles[index]==='shader'
+     workspaceAnimations.select(index)
+    }
+   }
+   Repeater {
+    model:workspaceAnimations.pluginActive
+     ? (workspaceAnimations.editingShader
+      ? (root.data.animationFields || []).filter(field=>field.path.startsWith('workspace.effect'))
+      : workspaceAnimations.pluginFields)
+     : []
+    delegate: AnimationOption { explain: true }
+   }
+   SettingsRow {
+    visible:!workspaceAnimations.pluginActive && workspaceAnimations.nativeStyle!=='off'
+    label:'Duration';kind:'slider';minimum:0.1;maximum:30;step:0.1
+    number:Number(workspaceAnimations.nativeValue('speed',5));value:Math.round(number*100)+' ms'
+    onCommitted:amount=>root.set(workspaceAnimations.nativePrefix+'speed',amount)
+   }
+   SettingsRow {
+    visible:!workspaceAnimations.pluginActive && workspaceAnimations.nativeStyle!=='off'
+    label:'Timing curve';kind:'choice'
+    readonly property string selectedCurve:workspaceAnimations.nativeValue('curve','default')
+    choices:Array.from(new Set([selectedCurve].concat(root.data.workspaceNative?.curves || [])))
+    selection:Math.max(0,choices.indexOf(selectedCurve))
+    onPicked:index=>root.set(workspaceAnimations.nativePrefix+'curve',choices[index])
+   }
+   SettingsRow {
+    visible:!workspaceAnimations.pluginActive && !['fade','off'].includes(workspaceAnimations.nativeStyle)
+    label:'Travel distance';kind:'slider';minimum:0;maximum:200;step:1
+    number:Number(workspaceAnimations.nativeValue('distance',100));value:number.toFixed(0)+'%'
+    onCommitted:amount=>root.set(workspaceAnimations.nativePrefix+'distance',amount)
+   }
+   SettingsRow {
+    visible:!workspaceAnimations.pluginActive && !['fade','off'].includes(workspaceAnimations.nativeStyle)
+    label:'Direction';kind:'choice';choices:['Automatic','Left','Right','Up','Down']
+    readonly property var directions:['','left','right','top','bottom']
+    selection:Math.max(0,directions.indexOf(workspaceAnimations.nativeValue('direction','')))
+    onPicked:index=>root.set(workspaceAnimations.nativePrefix+'direction',directions[index])
+   }
+  }
+  SettingsCard {
    id: animations
    title: 'Hyprimate'
    visible: root.data.hyprimate === true
@@ -94,7 +210,7 @@ ScrollView{
    readonly property int lastPage: Math.max(0, Math.ceil(fields.length / pageSize) - 1)
    onSectionChanged: page = 0
    onFilterChanged: page = 0
-   readonly property var sections: ['window', 'workspace', 'wallpaper']
+   readonly property var sections: ['window', 'wallpaper']
    readonly property var fields: (root.data.animationFields || []).filter(field => {
     const path = field.path.toLowerCase()
     return path.startsWith(section + '.') && path.includes(filter.trim().toLowerCase())
@@ -102,7 +218,7 @@ ScrollView{
 
    SettingsRow {
     label: 'Animation group'; kind: 'choice'
-    choices: ['Windows', 'Workspaces', 'Wallpaper']
+    choices: ['Windows', 'Wallpaper']
     selection: animations.sections.indexOf(animations.section)
     onPicked: index => animations.section = animations.sections[index]
    }
@@ -122,30 +238,7 @@ ScrollView{
    }
    Repeater {
     model: animations.visible ? animations.fields.slice(animations.page * animations.pageSize, (animations.page + 1) * animations.pageSize) : []
-    delegate: SettingsRow {
-     id: animationRow
-     required property var modelData
-     readonly property var field: modelData
-     readonly property var currentValue: root.value(field.key, field.default)
-     readonly property bool numeric: field.type === 'float' || field.type === 'int'
-     readonly property bool listed: field.type === 'string' && !!field.choices
-     label: field.path.substring(animations.section.length + 1).split('.').join(' / ').replace(/_/g, ' ')
-     description: animations.explain ? field.description : ''
-     available: root.data.values?.[field.key] != null
-     kind: field.type === 'boolean' ? 'switch' : listed ? 'choice' : numeric ? 'slider' : 'field'
-     checked: currentValue === true
-     choices: listed ? field.choices : []
-     selection: Math.max(0, choices.indexOf(currentValue))
-     minimum: field.min ?? (numeric ? -10000 : 0)
-     maximum: field.max ?? (numeric ? Math.max(10000, Number(field.default) * 2) : 1)
-     step: field.type === 'int' || maximum > 100 ? 1 : 0.01
-     number: numeric ? Number(currentValue) : 0
-     value: numeric && isFinite(number) ? number.toFixed(step < 1 ? 2 : 0) : field.type === 'color' && typeof currentValue === 'number' ? '0x' + currentValue.toString(16).padStart(8, '0') : String(currentValue ?? '')
-     onToggled: enabled => root.set(field.key, enabled)
-     onPicked: index => root.set(field.key, choices[index])
-     onCommitted: amount => root.set(field.key, amount)
-     onEdited: text => root.set(field.key, text)
-    }
+    delegate: AnimationOption { explain: animations.explain }
    }
   }
   SettingsCard{title:'Shadows'

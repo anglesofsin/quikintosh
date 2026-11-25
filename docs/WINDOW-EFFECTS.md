@@ -14,6 +14,8 @@ The Glass rendering group exposes background caching, live refresh and the refre
 
 [Hyprimate](https://github.com/JustinBacher/hyprimate) runs with the patched Hyprland 0.57.2 and its C++26 toolchain. Quickintosh loads the plugin on startup when built for the 0.57 series. The Liquid style is the plugin default. Settings → Windows & Effects exposes the window, workspace, and wallpaper groups as soon as the plugin loads. Custom Hyprland configuration can live alongside the settings.
 
+Settings → Windows & Effects → Workspace animations lists Hyprimate transitions first, followed by the five native Hyprland styles and Off. Hyprimate exposes the selected effect’s parameters. Native transitions support duration, timing curve, travel distance, and direction. This section preserves the separate special-workspace animations.
+
 The default Nix pin still targets 0.56.2. To build the 0.57 packages, override the compositor input in your host flake. For example, from a Quickintosh checkout:
 
 ```sh
@@ -24,6 +26,6 @@ nix build .#hyprland .#shell \
 
 Build the compositor, shell and plugins from the same pin. The new compositor takes effect when a new graphical session starts.
 
-The 0.57.2 ports keep the scrolling viewport clip on both window draw and occlusion passes, and keep the HyprGlass composite inside that clip while preserving its padded sample. HyprCanvas and Quickintosh accept named special-workspace identities from the new IPC API. The existing patches continue to apply to 0.56.2.
+The 0.57.2 ports keep the scrolling viewport clip on both window draw and occlusion passes, and keep the HyprGlass composite inside that clip while preserving its padded sample. During a Hyprimate Liquid animation, the glass keeps sampling the live scene, and the finished glass layer follows the same deformation as the window. HyprCanvas and Quickintosh accept named special-workspace identities from the new IPC API. The existing patches continue to apply to 0.56.2.
 
 The see-through capture port redraws the active workspace with Hyprland's protected-content filter for normal full-monitor capture. Region and rotated-monitor captures use Hyprland's native redaction. In a nested 0.57.2 session, a protected test window was omitted from a full-monitor screenshot, revealing the window behind it. Geometry, HyprGlass, HyprCanvas and Hyprimate loaded together. The smoke test opened and closed a window with Liquid, scrolled a special workspace in Canvas mode and captured a scrolling workspace transition with native glass enabled.

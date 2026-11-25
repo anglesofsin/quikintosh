@@ -21,4 +21,29 @@ class CompositorPolicy(unittest.TestCase):
   self.assertIn('"enabled"]=false',command)
   self.assertIn('"no_blur"]=true',command)
   with self.assertRaises(ValueError):policy.rule_commands([{'app':''}])
+ def test_native_workspace_overrides_keep_special_leaves_separate(self):
+  from tempfile import TemporaryDirectory
+  from types import SimpleNamespace
+  import json,os
+  with TemporaryDirectory() as state:
+   commands=[]
+   initial={"name":"workspaces","overridden":True,"bezier":"default","enabled":True,"speed":5,"style":"slide"}
+   special=dict(initial,name="specialWorkspaceIn",style="slidevert")
+   def run(args):
+    if args[1]=="animations":
+     return json.dumps([[initial,special],[{"name":"default"}]])
+    commands.append(args[-1])
+    return "ok"
+   def read_json(path):
+    return json.loads(path.read_text()) if path.exists() else {}
+   api=SimpleNamespace(STATE=Path(state),os=os,run=run,read_json=read_json,
+                       write_json=lambda path,data:path.write_text(json.dumps(data)))
+   policy.apply_native_workspace(api,{"style":"slidefadevert","speed":2.5,"distance":75,"direction":"top"})
+   self.assertIn("slidefadevert top 75%",commands[-1])
+   self.assertIn("workspacesIn",commands[-1])
+   self.assertIn("workspacesOut",commands[-1])
+   self.assertNotIn("specialWorkspace",commands[-1])
+   policy.apply_native_workspace(api,{},restore=True)
+   self.assertIn('["style"]="slide"',commands[-1])
+   self.assertNotIn("specialWorkspace",commands[-1])
 if __name__=='__main__':unittest.main()

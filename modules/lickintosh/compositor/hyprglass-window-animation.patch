@@ -1,0 +1,44 @@
+--- a/src/GlassDecoration.cpp
++++ b/src/GlassDecoration.cpp
+@@ -22,4 +22,19 @@
+ #include <hyprland/src/render/Renderer.hpp>
+ #include <hyprland/src/render/WindowRenderPresentation.hpp>
++#include <hyprland/src/plugins/PluginSystem.hpp>
++#include "WindowGlassAnimation.hpp"
++
++namespace {
++    HANDLE windowGlassAnimatorOwner = nullptr;
++    Quickintosh::AnimateWindowGlass windowGlassAnimator = nullptr;
++}
++
++extern "C" [[gnu::visibility("default")]] void quickintoshSetWindowGlassAnimatorV1(
++    HANDLE owner, Quickintosh::AnimateWindowGlass animator) {
++    if (!animator && windowGlassAnimatorOwner != owner)
++        return;
++    windowGlassAnimatorOwner = animator ? owner : nullptr;
++    windowGlassAnimator = animator;
++}
+ 
+ CGlassDecoration::CGlassDecoration(PHLWINDOW window)
+@@ -674,9 +689,16 @@
+     }
+ 
+-    GlassRenderer::applyGlassEffect(ctx, m_sampleFramebuffer, source,
+-                                     windowBox, glassAlpha,
+-                                     std::array<float, 4>{cornerRadius, cornerRadius, cornerRadius, cornerRadius},
+-                                     roundingPower, m_samplePaddingRatio, resolveContext, nullptr, focusLight,
+-                                     frostInput.copy ? &frostInput : nullptr, workspaceViewport);
++    const std::array<float, 4> radii{cornerRadius, cornerRadius, cornerRadius, cornerRadius};
++    const auto* frost = frostInput.copy ? &frostInput : nullptr;
++    if (windowGlassAnimator && g_pPluginSystem &&
++        g_pPluginSystem->getPluginByHandle(windowGlassAnimatorOwner) &&
++        windowGlassAnimator(window, &GlassRenderer::applyGlassEffect, ctx, m_sampleFramebuffer, source,
++            windowBox, glassAlpha, radii, roundingPower, m_samplePaddingRatio, resolveContext,
++            focusLight, frost, workspaceViewport))
++        return;
++
++    GlassRenderer::applyGlassEffect(ctx, m_sampleFramebuffer, source, windowBox, glassAlpha,
++        radii, roundingPower, m_samplePaddingRatio, resolveContext, nullptr, focusLight,
++        frost, workspaceViewport);
+ }
+ 

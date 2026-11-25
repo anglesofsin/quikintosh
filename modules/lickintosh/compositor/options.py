@@ -135,6 +135,87 @@ def read_config(path):
  except (OSError,ValueError):value={}
  return value if isinstance(value,dict) else {}
 
+NATIVE_PREFIX = 'workspace-animation:'
+NATIVE_STYLES = ('slide', 'slidevert', 'fade', 'slidefade', 'slidefadevert')
+NATIVE_LEAVES = ('workspacesIn', 'workspacesOut')
+
+
+def native_workspace_info(api):
+    animations, curves = json.loads(api.run(['hyprctl', 'animations', '-j']))
+    items = {item['name']: item for item in animations}
+    parent = next((items[name] for name in ('workspaces', 'global') if items.get(name, {}).get('overridden')), {})
+    leaves = {name: items[name] if items.get(name, {}).get('overridden') else parent for name in NATIVE_LEAVES}
+    return leaves, sorted({'default', *(item['name'] for item in curves)})
+
+
+def native_workspace_values(api, state=None):
+    leaves, curves = state if state is not None else native_workspace_info(api)
+    entry = leaves[NATIVE_LEAVES[0]]
+    style = (entry.get('style') or 'slide').split()
+    distance = int(style[-1][:-1]) if re.fullmatch(r'[0-9]+%', style[-1]) else 100
+    direction = next((word for word in style[1:] if word in ('left', 'right', 'top', 'bottom')), '')
+    return dict(
+        style=style[0] if style[0] in NATIVE_STYLES else 'slide',
+        speed=entry.get('speed') or 5, curve=entry.get('bezier') or 'default',
+        distance=distance, direction=direction, enabled=entry.get('enabled', True),
+        curves=curves,
+    )
+
+
+def native_leaf_command(leaf, settings):
+    assert leaf in NATIVE_LEAVES
+    enabled = settings.get('enabled', True)
+    table = {'leaf': leaf, 'enabled': enabled}
+    if enabled:
+        curve = settings.get('bezier') or 'default'
+        table.update(speed=settings.get('speed') or 5, style=settings.get('style') or '')
+        if curve.startswith('spring:'):
+            table['spring'] = curve.removeprefix('spring:')
+        else:
+            table['bezier'] = curve
+    return 'hl.animation(' + lua(table) + ')'
+
+
+def apply_native_workspace(api, overrides, restore=False):
+    path = api.STATE / 'workspace-animation-runtime.json'
+    instance = api.os.environ.get('HYPRLAND_INSTANCE_SIGNATURE', '')
+    saved = api.read_json(path)
+    same_instance = saved.get('instance') == instance
+    if restore or not overrides:
+        if same_instance:
+            result = api.run(['hyprctl', 'eval', ';'.join(
+                native_leaf_command(leaf, saved['original'][leaf]) for leaf in NATIVE_LEAVES)])
+            if 'error' in result.lower():
+                raise RuntimeError(result)
+        path.unlink(missing_ok=True)
+        return
+    leaves, curves = native_workspace_info(api)
+    if not same_instance:
+        saved = {'instance': instance, 'original': leaves}
+    current = native_workspace_values(api, (leaves, curves))
+    current.update(overrides)
+    style = typed(current['style'], ('choice', NATIVE_STYLES))
+    enabled = typed(current['enabled'], ('bool',))
+    speed = typed(current['speed'], ('number', .1, 100))
+    distance = typed(current['distance'], ('int', 0, 200))
+    direction = typed(current['direction'], ('choice', ('', 'left', 'right', 'top', 'bottom')))
+    curve = typed(current['curve'], ('choice', [*curves, *(leaf.get('bezier') for leaf in leaves.values())]))
+    if style != 'fade':
+        style = ' '.join(filter(None, (style, direction, f'{int(distance)}%')))
+    target = {'style': style, 'enabled': enabled, 'speed': speed, 'bezier': curve}
+    if saved.get('applied') == target and all(
+        item.get('enabled') == enabled and (not enabled or
+        (item.get('style') == style and item.get('bezier') == curve and item.get('speed') == speed))
+        for item in leaves.values()
+    ):
+        return
+    api.write_json(path, saved)
+    result = api.run(['hyprctl', 'eval', ';'.join(native_leaf_command(leaf, target) for leaf in NATIVE_LEAVES)])
+    if 'error' in result.lower():
+        raise RuntimeError(result)
+    api.write_json(path, dict(saved, applied=target))
+
+
 def query(api):
  plugins=json.loads(api.run(['hyprctl','plugins','list','-j']))
  hyprimate=any(p.get('name')=='hyprimate' for p in plugins)
@@ -145,7 +226,7 @@ def query(api):
  clients=json.loads(api.run(['hyprctl','clients','-j']))
  return {'values':values,'options':OPTIONS,'rules':read_config(api.HOME/'.config/lickintosh/core/compositor.json').get('rules',[]),
          'applications':sorted({c.get('class','') for c in clients if c.get('class')}),
-         'hyprimate':hyprimate,'animationFields':HYPRIMATE_FIELDS if hyprimate else []}
+         'workspaceNative':native_workspace_values(api), 'hyprimate':hyprimate,'animationFields':HYPRIMATE_FIELDS if hyprimate else []}
 
 def apply_rules(api,rules=None,restore=False):
  path=api.STATE/'compositor-rules-runtime.json';record=api.read_json(path)

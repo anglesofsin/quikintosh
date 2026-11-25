@@ -1,0 +1,49 @@
+--- a/src/workspace/WorkspaceAnimation.cpp
++++ b/src/workspace/WorkspaceAnimation.cpp
+@@ -410,2 +410,8 @@
+         }
++        if (workspace && workspace->type() == Workspace::eWorkspaceType::SPECIAL) {
++            if (manager != nullptr)
++                manager->cancel_transition(self->m_self.lock());
++            function(self, workspace, internal, no_mouse_move, no_focus);
++            return;
++        }
+         const auto MONITOR = self->m_self.lock();
+@@ -454,27 +460,5 @@
+         }
+-        const auto MONITOR = self->m_self.lock();
+-        const auto PREVIOUS = workspace ? workspace->m_monitor.lock() : PHLMONITOR{};
+-        if (manager != nullptr && manager->m_window_planes &&
+-            (!manager->burn_window_planes_allowed(MONITOR, workspace != nullptr) ||
+-                (PREVIOUS && !manager->burn_window_planes_allowed(PREVIOUS, workspace != nullptr)))) {
+-            if (workspace || manager->special_workspace_in_native_scene()) {
+-                manager->decline_all_burn_transitions();
+-            } else {
+-                manager->decline_burn_transition({MONITOR, PREVIOUS});
+-            }
+-            function(self, workspace, no_focus);
+-            return;
+-        }
+-        if (manager != nullptr &&
+-            !manager->transition_destination_allowed(MONITOR, self->m_activeWorkspace, workspace)) {
+-            manager->cancel_transition(MONITOR);
+-            function(self, workspace, no_focus);
+-            return;
+-        }
+-        if (manager == nullptr || !manager->request_enabled() ||
+-            workspace == self->m_activeSpecialWorkspace) {
+-            function(self, workspace, no_focus);
+-            return;
+-        }
+-        manager->mutate({MONITOR, PREVIOUS}, [&] { function(self, workspace, no_focus); });
++        if (manager != nullptr)
++            manager->cancel_transition(self->m_self.lock());
++        function(self, workspace, no_focus);
+     }
+@@ -573,2 +557,6 @@
+         // offset; instant completion avoids a competing native animation.
++        if (workspace && workspace->type() == Workspace::eWorkspaceType::SPECIAL) {
++            function(workspace, type, left, instant, std::move(style));
++            return;
++        }
+         const auto MONITOR = workspace ? workspace->m_monitor.lock() : PHLMONITOR{};

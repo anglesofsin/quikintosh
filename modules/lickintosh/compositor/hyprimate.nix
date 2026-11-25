@@ -13,7 +13,7 @@ hyprland.stdenv.mkDerivation {
     --replace-fail '#include "gl/Storage.hpp"' $'#include "gl/RawGlState.hpp"\n#include "gl/Storage.hpp"'
  '';
  nativeBuildInputs = [ cmake ninja pkg-config binutils (lib.getBin glibc) ];
- buildInputs = [ hyprland hyprland.dev libpng nlohmann_json libGL lua5_5 ] ++ hyprland.buildInputs;
+ buildInputs = hyprland.buildInputs ++ [ hyprland hyprland.dev libpng nlohmann_json libGL lua5_5 ];
  cmakeBuildType = "Release";
  cmakeFlags = [ "-DBUILD_TESTING=OFF" "-DHYPRLAND_EXECUTABLE=${hyprland}/bin/.Hyprland-wrapped" "-DHYPRIMATE_SPRITE_DIR=${placeholder "out"}/share/hyprimate/sprites" ];
  ninjaFlags = [ "hyprimate" ];

@@ -24,7 +24,7 @@ compiler.mkDerivation {
     '';
 
     nativeBuildInputs = with pkgs; [ pkg-config ];
-    buildInputs = with pkgs; [
+    buildInputs = lib.optionals modern hyprland.buildInputs ++ (with pkgs; [
       hyprland.dev
       aquamarine
       hyprcursor
@@ -44,7 +44,7 @@ compiler.mkDerivation {
       libxcb-errors
       xorg.xcbutilwm
       xorg.xcbutilrenderutil
-    ] ++ lib.optionals modern hyprland.buildInputs;
+    ]);
 
     NIX_CFLAGS_COMPILE = lib.optionalString modern "-I${hyprland.dev}/include/hyprland/protocols";
     makeFlags = [ "CXX=${compiler.cc.targetPrefix}c++" ];

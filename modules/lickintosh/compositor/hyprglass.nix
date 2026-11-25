@@ -13,7 +13,7 @@ compiler.mkDerivation {
   ${lib.optionalString modern "substituteInPlace src/PluginConfig.cpp --replace-fail 'ConfigKeys::ENABLED, true' 'ConfigKeys::ENABLED, false'"}
  '';
  nativeBuildInputs = [ pkg-config wayland-scanner ];
- buildInputs = [ hyprland.dev lua5_5 wayland aquamarine hyprcursor hyprgraphics hyprlang hyprutils pixman libdrm libglvnd libinput wayland-protocols libxkbcommon libxcb libxcb-errors xorg.xcbutilwm xorg.xcbutilrenderutil glslang cairo ] ++ lib.optionals modern hyprland.buildInputs;
+ buildInputs = lib.optionals modern hyprland.buildInputs ++ [ hyprland.dev lua5_5 wayland aquamarine hyprcursor hyprgraphics hyprlang hyprutils pixman libdrm libglvnd libinput wayland-protocols libxkbcommon libxcb libxcb-errors xorg.xcbutilwm xorg.xcbutilrenderutil glslang cairo ];
  makeFlags = [ "CXX=${compiler.cc.targetPrefix}c++" "HYPRGLASS_VERSION=${if modern then "1.1.0" else "0.11.0"}" ];
  NIX_CFLAGS_COMPILE = "-I${lua5_5}/include -I${hyprland.dev}/include/hyprland/protocols";
  enableParallelBuilding = true;

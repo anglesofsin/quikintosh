@@ -5,7 +5,7 @@
      // window's own surface tree.
      void markBackgroundDirty();
 +    [[nodiscard]] bool backgroundDirty() const { return m_backgroundDirty; }
- 
+
      // Applies a mark markBackgroundDirty() owed under the rate limit once its
      // deadline passed, or re-arms the shared timer for it.
 --- a/src/BackgroundDamageObserver.cpp
@@ -17,5 +17,5 @@
 -                if (!decoration)
 +                if (!decoration || decoration->backgroundDirty())
                      continue;
- 
+
                  const auto window = decoration->getOwner();

@@ -7,7 +7,7 @@ import qs.services
 import Quickshell.Io
 FloatingWindow {
  id:window
- visible:QuickLookState.opened
+ visible:QuickLookState.opened || closeMotion.running
  title:'Lickintosh Quick Look — '+(QuickLookState.data.name || '')
  onVisibleChanged:if(!visible && QuickLookState.opened)QuickLookState.close()
  color:'transparent';implicitWidth:880;implicitHeight:650;minimumSize:Qt.size(460,320)
@@ -20,7 +20,24 @@ FloatingWindow {
  property bool imageDragging:false
  readonly property color foreground:Theme.isLight ? '#202127':'#f6f7fb'
  readonly property color secondary:Theme.isLight ? '#535761':'#b9bbc5'
- readonly property var info:QuickLookState.data
+ property var retainedInfo: ({})
+ property bool presented: false
+ readonly property var info:QuickLookState.opened ? QuickLookState.data : retainedInfo
+ readonly property int motionDuration: ShellMotion.fade()
+ Timer { id:closeMotion; interval:Math.max(1,window.motionDuration); onTriggered:window.retainedInfo=({}) }
+ Connections {
+  target: QuickLookState
+  function onDataChanged() { if (QuickLookState.opened) window.retainedInfo=QuickLookState.data }
+  function onOpenedChanged() {
+   if (QuickLookState.opened) {
+    closeMotion.stop()
+    Qt.callLater(()=>{ if (QuickLookState.opened) window.presented=true })
+   } else {
+    window.presented=false
+    if (window.motionDuration>0) closeMotion.restart()
+   }
+  }
+ }
  readonly property string kind:info.kind || ''
  readonly property bool raster:['image','pdf'].includes(kind)
  Shortcut{sequences:['Escape','Space'];enabled:QuickLookState.opened;context:Qt.ApplicationShortcut;onActivated:window.closePreview()}
@@ -40,6 +57,12 @@ FloatingWindow {
  }
  FocusScope{
   id:keys;anchors.fill:parent;focus:true
+  enabled:QuickLookState.opened
+  opacity:window.presented ? 1 : 0
+  scale:window.presented ? 1 : .88
+  transformOrigin:Item.Center
+  Behavior on opacity { NumberAnimation { duration:window.motionDuration; easing.type:Easing.OutCubic } }
+  Behavior on scale { NumberAnimation { duration:window.motionDuration; easing.type:Easing.OutCubic } }
   Keys.onPressed:event=>{
    if(event.key===Qt.Key_Escape){window.closePreview();event.accepted=true}
    else if(event.key===Qt.Key_Space && !(event.modifiers & Qt.ControlModifier)){window.closePreview();event.accepted=true}

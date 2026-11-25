@@ -64,7 +64,7 @@ in
 {
   programs.hyprland = {
     enable = true;
-    portalPackage = pkgs.xdg-desktop-portal-hyprland;
+    portalPackage = import ./lickintosh/share-picker/package.nix { inherit pkgs; portal = pkgs.xdg-desktop-portal-hyprland; };
     xwayland.enable = true;
   };
 

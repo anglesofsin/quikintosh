@@ -12,3 +12,18 @@ p=root/'rosa/services/Privacy.qml';s=p.read_text().replace('readonly property bo
 p=root/'rosa/overlays/IslandWindow.qml';s=p.read_text().replace('IslandConfig.s("privacy") && Privacy.active','IslandConfig.s("privacy") && Privacy.active && !(NativeSettings.PrivacyPreferences.hideFullscreen && Hyprland.monitorFor(win.screen)?.activeWorkspace?.hasFullscreen)');s=s.replace('visible: scale > 0.01 && !win.wide && !win.seeking && Math.abs(morph.value) < 0.02 && Math.abs(seek.value) < 0.02','visible: scale > 0.01 && (NativeSettings.PrivacyPreferences.showExpanded || (!win.wide && !win.seeking && Math.abs(morph.value) < 0.02 && Math.abs(seek.value) < 0.02))');save('rosa/overlays/IslandWindow.qml',s)
 p=root/'ui/topbar/statusarea/controlcenter/ControlCenter.qml';save('ui/topbar/statusarea/controlcenter/ControlCenter.qml',p.read_text().replace('MediaCaptureState.active','MediaCaptureState.controlCenterActive'))
 p=root/'ui/settings/pages/qmldir';save('ui/settings/pages/qmldir',p.read_text()+'\nPrivacyIndicatorsPage PrivacyIndicatorsPage.qml\n')
+
+status = 'ui/topbar/statusarea/'
+(root/(status+'ScreenSharingIndicator.qml')).write_text((here/'ScreenSharingIndicator.qml').read_text())
+module = root/(status+'qmldir')
+if module.is_file(): save(status+'qmldir', module.read_text() + '\nScreenSharingIndicator ScreenSharingIndicator.qml\n')
+p = root/(status+'StatusArea.qml')
+source = p.read_text()
+anchor = '        Item {\n            id: spotlightBtn'
+assert source.count(anchor) == 1
+save(status+'StatusArea.qml', source.replace(anchor, '''        ScreenSharingIndicator {
+            Layout.alignment: Qt.AlignVCenter
+            hostWindow: root.hostWindow
+        }
+
+'''+anchor, 1))

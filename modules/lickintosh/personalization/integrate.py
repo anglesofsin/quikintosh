@@ -43,6 +43,8 @@ p='ui/widgets/WidgetSettings.qml';s=(r/p).read_text();needle="ConfigSwitch{text:
 write('ui/widgets/types/WeatherAtmosphere.qml',(here/'WeatherAtmosphere.qml').read_text())
 p='ui/widgets/types/qmldir';write(p,(r/p).read_text()+'\nWeatherAtmosphere WeatherAtmosphere.qml\n')
 p='ui/widgets/types/WeatherWidget.qml';s=(r/p).read_text();needle='    id: w';assert needle in s
+s=s.replace('readonly property bool dark: w.look ? !w.look.light : true',
+            'readonly property bool dark: w.hasData || (w.look ? !w.look.light : true)')
 s=s.replace(needle,needle+'''
     WeatherAtmosphere{
         anchors.fill:parent;z:0

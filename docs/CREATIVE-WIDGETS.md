@@ -20,7 +20,7 @@ Choose Modern, Classic, Rounded, Typewriter, Serif, Handwriting or Neon styling,
 
 ## Live lyrics
 
-**Live Lyrics** follows the shell's active MPRIS player, including Spotify clients that publish track metadata and playback position. Online lyrics use the existing LRCLIB integration. Choose a current-line, surrounding-lines or line-progress layout; customize typography and colors and adjust synchronization offset. A local timestamped `.lrc` file can replace the online source.
+**Live Lyrics** follows the shell's active MPRIS player, including Spotify clients that publish track metadata and playback position. Online lyrics use the existing LRCLIB integration. Choose a current-line, surrounding-lines or line-progress layout; customize typography and colors and adjust synchronization offset. A local timestamped `.lrc` file can replace the online source. **Hide text when lyrics are unavailable** starts enabled: no track, no lyric, disabled lyrics or an in-progress unsuccessful lookup leaves the widget text empty, including its song title. Disable the option to see status messages.
 
 Availability and timing depend on the track's lyrics and the player's published metadata. Untimed lyrics are identified as untimed; word-level timing is not invented. Local music widgets play their own files; the live lyrics widget follows the active MPRIS player rather than publishing a second player.
 

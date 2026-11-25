@@ -108,6 +108,7 @@ background:Rectangle{radius:12;color:Theme.fillControl}}
    Text{text:'Layout';color:Theme.textPrimary;Layout.fillWidth:true}
    TahoeCombo{model:['Current line','Surrounding lines','Line progress'];currentIndex:Math.max(0,['line','stacked','karaoke'].indexOf(root.entry.variant || 'stacked'));onActivated:i=>root.set('variant',['line','stacked','karaoke'][i])}
   }
+  ConfigSwitch{text:'Hide text when lyrics are unavailable';checked:root.entry.lyricsHideUnavailable!==false;onToggled:v=>root.set('lyricsHideUnavailable',v)}
   ConfigSwitch{text:'Show song title';checked:root.entry.lyricsTrack!==false;onToggled:v=>root.set('lyricsTrack',v)}
   ConfigSlider{text:'Synchronization offset (seconds)';from:-15;to:15;decimals:1;value:root.entry.lyricsOffset || 0;onMoved:v=>root.set('lyricsOffset',v)}
   RowLayout{Layout.fillWidth:true

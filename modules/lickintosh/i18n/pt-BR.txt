@@ -1131,3 +1131,4 @@ Styled Text|Texto estilizado
 Live Lyrics|Letras ao vivo
 Your media, your space|Sua mídia, seu espaço
 Add photos, GIFs, videos or a folder|Adicione fotos, GIFs, vídeos ou uma pasta
+Hide text when lyrics are unavailable|Ocultar texto quando não houver letra disponível

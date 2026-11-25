@@ -33,16 +33,8 @@ for mode in bank:
 # No fabricated dark folder: share the provided light rendition when absent.
 for key in ['folder','inode-directory','folder-download','folder-downloads']:
  if key in bank['light']:bank['dark'].setdefault(key,bank['light'][key])
-# Preserve the official Canary identity instead of aliasing it to Stable.
-import shutil
-canary=root/'layered-icons/native/discord-canary.png'
-canary.parent.mkdir(parents=True,exist_ok=True)
-shutil.copyfile(Path(sys.argv[5]),canary)
-for mode in bank:
- for key in ['discord-canary','discordcanary','com.discordapp.DiscordCanary'.lower()]:bank[mode][key]=str(canary)
-(root/'layered-icons/bank.json').write_text(json.dumps(bank,separators=(',',':')))
 # Desktop-file icon names differ between distributions and Discord channels.
-compat={'zen':'zen-browser','app.zen-browser.zen':'zen-browser','zen-twilight':'zen-browser','brave-browser':'brave','com.brave.browser':'brave','discord-ptb':'discord','com.discordapp.discord':'discord','discordptb':'discord','org.gnome.nautilus':'finder'}
+compat={'discord-canary':'discord','discordcanary':'discord','com.discordapp.discordcanary':'discord','zen':'zen-browser','app.zen-browser.zen':'zen-browser','zen-twilight':'zen-browser','brave-browser':'brave','com.brave.browser':'brave','discord-ptb':'discord','com.discordapp.discord':'discord','discordptb':'discord','org.gnome.nautilus':'finder'}
 for mode,table in bank.items():
  for alias,target in compat.items():
   if target in table:table[alias]=table[target]

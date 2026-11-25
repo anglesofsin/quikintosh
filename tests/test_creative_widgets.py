@@ -13,7 +13,7 @@ class CreativeWidgets(unittest.TestCase):
    (types/'MediaPlaylist.qml').write_text((source/'MediaPlaylist.qml').read_text().replace('@MEDIA_PYTHON@',os.sys.executable))
    (types/'qmldir').write_text('module qs.types\nMediaPlaylist MediaPlaylist.qml\n')
    stubs={'DesktopFiles':'property bool desktopFocused:true','WidgetState':"property string galleryZone:'';property string editingId:''"}
-   for name,body in stubs.items():(services/(name+'.qml')).write_text('pragma Singleton\nimport Quickshell\nSingleton{'+body+'}')
+   for name,body in stubs.items():(services/(name+'.qml')).write_text('pragma Singleton\nimport QtQuick\nimport Quickshell\nSingleton{'+body+'}')
    (services/'qmldir').write_text('module qs.services\n'+''.join('singleton '+n+' '+n+'.qml\n' for n in ['CreativeMedia',*stubs]))
    rosa=root/'rosa/services';rosa.mkdir(parents=True)
    (rosa/'IslandBus.qml').write_text('pragma Singleton\nimport Quickshell\nSingleton{property bool locked:false}')
@@ -46,4 +46,34 @@ Scope{
  }}
 }''')
    self.assertIn('CREATIVE_POLICY_PLAYLIST_OK',output)
+ def test_unavailable_lyrics_can_be_silent(self):
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);services=root/'services';services.mkdir()
+   source=ROOT/'modules/lickintosh/creative-widgets'
+   (root/'LyricsSticker.qml').write_text((source/'LyricsSticker.qml').read_text())
+   (root/'CreativeText.qml').write_text("import QtQuick\nItem{property string value:'';property var options;property color ink;property bool isSnapshot;property bool animationEnabled}")
+   stubs={'MprisState':"property bool hasPlayer:false;property real position:0;property real length:10;property string trackTitle:'Track';property int fastWatchers:0;function watchPosition(on){}",'LyricsState':"property var lines:[];property bool synced:false;property string status:'idle';function watch(on){}",'CreativeMedia':'property bool locked:false','Theme':"property color accent:'blue';property color textPrimary:'white'"}
+   for name,body in stubs.items():(services/(name+'.qml')).write_text('pragma Singleton\nimport QtQuick\nimport Quickshell\nSingleton{'+body+'}')
+   (services/'qmldir').write_text('module qs.services\n'+''.join('singleton '+n+' '+n+'.qml\n' for n in stubs))
+   output=qml.Interface.run_qml(self,directory,'''import QtQuick
+import Quickshell
+import qs.services
+Scope{
+ LyricsSticker{id:lyrics;widgetData:({id:'test'})}
+ Timer{interval:80;running:true;onTriggered:{
+  if(!lyrics.blank){Qt.exit(40);return}
+  MprisState.hasPlayer=true;LyricsState.status='loading'
+  if(!lyrics.blank){Qt.exit(41);return}
+  LyricsState.lines=[{t:0,text:'A real lyric'}];LyricsState.synced=true
+  if(lyrics.blank){Qt.exit(42);return}
+  LyricsState.lines=[]
+  if(!lyrics.blank){Qt.exit(43);return}
+  lyrics.widgetData={id:'test',lyricsHideUnavailable:false}
+  if(lyrics.blank){Qt.exit(44);return}
+  lyrics.widgetData={id:'test',lyricsEnabled:false}
+  if(!lyrics.blank){Qt.exit(45);return}
+  console.log('EMPTY_LYRICS_POLICY_OK');Qt.quit()
+ }}
+}''')
+   self.assertIn('EMPTY_LYRICS_POLICY_OK',output)
 if __name__=='__main__':unittest.main()

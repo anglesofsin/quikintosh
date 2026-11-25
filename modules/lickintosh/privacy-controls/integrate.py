@@ -15,6 +15,7 @@ p=root/'ui/settings/pages/qmldir';save('ui/settings/pages/qmldir',p.read_text()+
 
 status = 'ui/topbar/statusarea/'
 (root/(status+'ScreenSharingIndicator.qml')).write_text((here/'ScreenSharingIndicator.qml').read_text())
+(root/(status+'sharing-display.svg')).write_text((here/'sharing-display.svg').read_text())
 module = root/(status+'qmldir')
 if module.is_file(): save(status+'qmldir', module.read_text() + '\nScreenSharingIndicator ScreenSharingIndicator.qml\n')
 p = root/(status+'StatusArea.qml')

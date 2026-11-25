@@ -78,6 +78,9 @@ qml = qml.replace('    mask: Region { item: stage }', '''    property bool dashb
         active: win.visible && IslandConfig.s("dashboardEnabled") && (win.dashboardRequested || dashboardClose.running)
         IslandDashboard {
             output: win.modelData
+            capsuleTop: stage.y + surface.y
+            capsuleWidth: surface.width
+            capsuleHeight: surface.height
             expanded: win.dashboardRequested
             onPointerChanged: inside => { if (inside) pointerLeave.stop(); else pointerLeave.restart() }
             onDismissed: win.dashboardRequested = false
@@ -85,6 +88,9 @@ qml = qml.replace('    mask: Region { item: stage }', '''    property bool dashb
     }
 
     mask: Region { item: stage }''', 1)
+anchor = 'opacity: birth.value * Math.min(1,idleVisibility.progress*4)'
+assert qml.count(anchor) == 1
+qml = qml.replace(anchor, anchor + ' * (win.dashboardRequested || dashboardClose.running ? 0 : 1)')
 window.write_text(qml)
 
 config = root / 'rosa/services/IslandConfig.qml'

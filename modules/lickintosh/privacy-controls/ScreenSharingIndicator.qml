@@ -18,7 +18,7 @@ Item {
     }
     property bool opened: false
 
-    implicitWidth: 28
+    implicitWidth: 26
     implicitHeight: 24
     visible: sessions.length > 0
 
@@ -34,7 +34,7 @@ Item {
     onVisibleChanged: if (!visible) opened = false
 
     component ShareIcon: Image {
-        source: Quickshell.shellPath("assets/icons/screenshare.svg")
+        source: Qt.resolvedUrl("sharing-display.svg")
         sourceSize: Qt.size(48, 48)
         fillMode: Image.PreserveAspectFit
     }
@@ -43,22 +43,22 @@ Item {
         id: indicator
         anchors.centerIn: parent
         width: parent.width
-        height: 19
+        height: 17
         Accessible.name: qsTr("Screen sharing")
         checkable: true
         checked: root.opened
         onClicked: root.opened = !root.opened
 
         background: Rectangle {
-            radius: 5
+            radius: 8
             color: indicator.hovered || indicator.checked ? "#685acf" : "#5849ba"
             border.color: "#40c8bbff"
         }
         contentItem: Item {
             ShareIcon {
                 anchors.centerIn: parent
-                width: 17
-                height: 17
+                width: 15
+                height: 13
             }
         }
         ToolTip.visible: hovered && !root.opened
@@ -92,7 +92,7 @@ Item {
                 id: card
                 readonly property real buttonEdge: root.mapToItem(null, root.width, 0).x
                 x: Math.max(8, Math.min(popup.width - width - 8, buttonEdge - width))
-                y: Math.max(32, root.hostWindow.height) + 5
+                y: Math.max(30, root.mapToItem(null, 0, root.height).y + 8)
                 width: Math.min(320, popup.width - 16)
                 height: panel.implicitHeight + 28
                 opacity: popup.entered ? 1 : 0
@@ -165,7 +165,8 @@ Item {
                                         }
                                         Text {
                                             Layout.fillWidth: true
-                                            text: modelData
+                                            text: DesktopEntries.heuristicLookup(modelData)?.name
+                                                || modelData.charAt(0).toUpperCase() + modelData.slice(1)
                                             textFormat: Text.PlainText
                                             color: Theme.textPrimary
                                             elide: Text.ElideRight

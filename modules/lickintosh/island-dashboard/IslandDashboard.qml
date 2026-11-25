@@ -14,8 +14,8 @@ PanelWindow {
     required property var output
     screen: output
     anchors.top: true
-    margins.top: 29
-    implicitWidth: Math.min(output.width - 32, 1010)
+    margins.top: Math.max(0, capsuleTop)
+    implicitWidth: Math.min(output.width - 24, 1120)
     implicitHeight: 360
     exclusiveZone: -1
     color: 'transparent'
@@ -23,6 +23,10 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
 
+    property real capsuleTop: 3
+    property real capsuleWidth: 92
+    property real capsuleHeight: 26
+    readonly property bool expandedBody: expanded && entered
     property bool expanded: false
     property bool entered: false
     Component.onCompleted: Qt.callLater(() => entered = true)
@@ -58,17 +62,14 @@ PanelWindow {
     mask: Region { item: body; radius: 30 }
     ClippingRectangle {
         id: body
-        width: parent.width
-        height: panel.page === 1 ? 360 : 276
-        radius: 30
-        color: "#ee101319"
+        anchors.horizontalCenter: parent.horizontalCenter
+        width: panel.expandedBody ? parent.width : Math.min(parent.width, panel.capsuleWidth)
+        height: panel.expandedBody ? 360 : panel.capsuleHeight
+        radius: Math.min(30, height / 2)
+        color: panel.expandedBody ? "#ee151b24" : "#f5000000"
         border.width: 1
         border.color: "#36c2d2f4"
-        opacity: panel.expanded && panel.entered ? 1 : 0
-        scale: panel.expanded && panel.entered ? 1 : .88
-        transformOrigin: Item.Top
-        Behavior on opacity { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
-        Behavior on scale { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
+        Behavior on width { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
         Behavior on height { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
         HoverHandler { onHoveredChanged: panel.pointerChanged(hovered) }
 
@@ -113,6 +114,8 @@ PanelWindow {
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 18
+            opacity: panel.expandedBody && body.height > 210 ? 1 : 0
+            Behavior on opacity { NumberAnimation { duration: ShellMotion.fade() } }
             spacing: 12
 
             RowLayout {
@@ -154,8 +157,18 @@ PanelWindow {
 
     Component {
         id: overview
-        DashboardPage {
-            profileModule: IslandConfig.s('dashboardCamera') ? cameraPage : null
+        Flickable {
+            id: overviewScroll
+            clip: true
+            contentWidth: Math.max(width, 1040)
+            contentHeight: height
+            boundsBehavior: Flickable.StopAtBounds
+            ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AsNeeded }
+            DashboardPage {
+                width: overviewScroll.contentWidth
+                height: overviewScroll.height - 12
+                profileModule: IslandConfig.s('dashboardCamera') ? cameraPage : null
+            }
         }
     }
 

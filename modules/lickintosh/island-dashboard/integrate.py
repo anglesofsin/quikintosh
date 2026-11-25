@@ -121,3 +121,20 @@ for name, before, after in [
     text = path.read_text()
     assert before in text, name
     path.write_text(text.replace(before, after, 1))
+
+
+# A failed screencopy must not leave a visible Dock waiting on a readiness
+# signal forever. Its background can recover after the surface is mapped.
+path = root / 'tahoedock/TahoeDockSurface.qml'
+text = path.read_text()
+text = text.replace('readonly property bool displayShown:dock.shown && (Theme.plainSurfaces || glassPresented)',
+                    'readonly property bool displayShown:dock.shown')
+text = text.replace('visible:Theme.plainSurfaces || root.glassPresented',
+                    'visible:dockGlassPresence.present')
+path.write_text(text)
+
+path = root / 'rosa/overlays/IslandWindow.qml'
+text = path.read_text()
+text = text.replace('privacy.restOffset+privacy.restWidth/2+7',
+                    'privacy.restOffset+Math.max(privacy.restWidth,surface.width)/2+9')
+path.write_text(text)

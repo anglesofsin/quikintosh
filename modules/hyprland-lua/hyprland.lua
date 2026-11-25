@@ -830,7 +830,7 @@ if shellActions["switcher-next"] then
         no_anim=true,blur=true,ignore_alpha=0.20})
     if hl.plugin.hyprglass then
         local glass = hl.plugin.hyprglass
-        glass.config({ layers = { enabled = true } })
+        glass.config({ enabled = true, default_preset = "pomme", layers = { enabled = true } })
         glass.layer("quickintosh-quickshot-controls", { mask_mode="contour", mask_threshold=0.18 })
         glass.layer("quickintosh-island-dashboard", { mask_mode="contour", mask_threshold=0.18 })
         glass.layer("quickintosh-sharing-panel", { mask_mode="contour", mask_threshold=0.18 })

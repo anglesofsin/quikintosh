@@ -26,22 +26,6 @@ ClippingRectangle {
     radius: Math.min(22, height / 6)
     color: "transparent"
 
-    Image {
-        anchors.fill: parent
-        source: root.visible ? Quickshell.shellPath("rosa/overlays/assets/" + root.artwork + ".webp") : ""
-        fillMode: Image.PreserveAspectCrop
-        asynchronous: true
-        opacity: .88
-    }
-
-    Rectangle {
-        anchors.fill: parent
-        gradient: Gradient {
-            GradientStop { position: 0; color: "#48213250" }
-            GradientStop { position: 1; color: "#9c0a1424" }
-        }
-    }
-
     FrameAnimation {
         running: root.running
         onTriggered: root.phase = (root.phase + Math.min(frameTime, .05) * root.speed) % 120

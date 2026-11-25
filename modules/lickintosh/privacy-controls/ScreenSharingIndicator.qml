@@ -100,7 +100,7 @@ Item {
                 Behavior on scale { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
                 radius: 19
                 color: Theme.plainSurfaces ? (Theme.isLight ? "#f4f4f6" : "#242426")
-                                          : (Theme.isLight ? "#70ffffff" : "#50202022")
+                                          : (Theme.isLight ? "#40ffffff" : "#30181818")
                 border.width: 1
                 border.color: Theme.isLight ? "#25000000" : "#37ffffff"
 

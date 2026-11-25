@@ -54,7 +54,8 @@ PanelWindow {
     component IslandSwitch: Switch {
         id: control
         implicitHeight: 36
-        implicitWidth: caption.implicitWidth + 68
+        implicitWidth: caption.implicitWidth + 54
+        Layout.maximumWidth: parent ? parent.width : implicitWidth
         spacing: 16
         padding: 0
         indicator: Rectangle {
@@ -76,7 +77,8 @@ PanelWindow {
             font.family: "SF Pro Text"
             font.pixelSize: 13
             verticalAlignment: Text.AlignVCenter
-            rightPadding: 60
+            rightPadding: 48
+            elide: Text.ElideRight
         }
     }
 
@@ -182,7 +184,7 @@ PanelWindow {
                 RowLayout {
                     id: tabs
                     Repeater {
-                        model: [qsTr('Dashboard'), qsTr('Weather'), qsTr('Performance'), qsTr('Media'), qsTr('Notifications'), qsTr('Camera'), qsTr('Settings')]
+                        model: [qsTr('Dashboard'), qsTr('Weather'), qsTr('Performance'), qsTr('Media'), qsTr('Notifications'), qsTr('Camera')]
                         delegate: IslandButton {
                             required property string modelData
                             required property int index
@@ -219,7 +221,7 @@ PanelWindow {
                     scale: Math.min(1,pageFrame.width / width)
                     height: pageFrame.height / scale
                     transformOrigin: Item.TopLeft
-                    sourceComponent: [overview, forecast, performance, media, notifications, cameraFull, preferences][panel.page]
+                    sourceComponent: [overview, forecast, performance, media, notifications, cameraFull][panel.page]
                     NumberAnimation on opacity {
                         id: pageArrival
                         from: .35; to: 1
@@ -274,15 +276,16 @@ PanelWindow {
                 Text { anchors.centerIn: parent; visible: !MprisState.artUrl; text: "♫"; color: "#aaa"; font.pixelSize: 34 }
             }
             ColumnLayout {
-                Layout.preferredWidth: 210
+                Layout.preferredWidth: 240
+                Layout.alignment: Qt.AlignVCenter
                 spacing: 7
                 Text { Layout.fillWidth: true; text: MprisState.trackTitle || qsTr("Nothing playing"); color: "white"; font.pixelSize: 16; font.weight: Font.DemiBold; elide: Text.ElideRight }
                 Text { Layout.fillWidth: true; text: MprisState.trackArtist || MprisState.identity; color: "#a6a6ac"; font.pixelSize: 12; elide: Text.ElideRight }
                 Text { Layout.fillWidth: true; text: MprisState.trackAlbum; color: "#818188"; font.pixelSize: 11; elide: Text.ElideRight }
-                Item { Layout.fillHeight: true }
             }
             ColumnLayout {
                 Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
                 spacing: 10
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
@@ -354,28 +357,6 @@ PanelWindow {
                 }
                 Label { anchors.centerIn: parent; visible: notificationList.count === 0; text: qsTr("No notifications"); color: "#c0ffffff" }
             }
-        }
-    }
-
-    Component {
-        id: preferences
-        ColumnLayout {
-            spacing: 4
-            Label { text: qsTr("Dashboard preferences"); color: "white"; font.pixelSize: 16; font.weight: Font.DemiBold }
-            Repeater {
-                model: [
-                    ["dashboardCamera", qsTr("Camera in profile tile")],
-                    ["dashboardWeatherArt", qsTr("Weather effects")],
-                    ["dashboardWeatherLocation", qsTr("Show weather location")]
-                ]
-                delegate: IslandSwitch {
-                    required property var modelData
-                    text: modelData[1]
-                    checked: IslandConfig.s(modelData[0])
-                    onToggled: IslandConfig.setStyle(modelData[0], checked)
-                }
-            }
-            Item { Layout.fillHeight: true }
         }
     }
 

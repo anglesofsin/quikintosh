@@ -1,7 +1,7 @@
 { stdenv, pkg-config, hyprland, aquamarine, hyprcursor, hyprgraphics, hyprlang, hyprutils, pixman, libdrm, libglvnd, libinput, wayland, wayland-protocols, libxkbcommon, libxcb, libxcb-errors, xorg, glslang, cairo }:
 stdenv.mkDerivation {
  pname = "quickintosh-geometry";
- version = "1.0.0";
+ version = "1.1.0";
  src = ./.;
  nativeBuildInputs = [ pkg-config ];
  buildInputs = [ hyprland.dev aquamarine hyprcursor hyprgraphics hyprlang hyprutils pixman libdrm libglvnd libinput wayland wayland-protocols libxkbcommon libxcb libxcb-errors xorg.xcbutilwm xorg.xcbutilrenderutil glslang cairo ];

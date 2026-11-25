@@ -39,7 +39,7 @@ Singleton {
  function applyPreset(name){const preset=presets[name];if(!preset)return;for(const key in preset)options[key]=preset[key];SettingsPreferences.accessibility.reduceMotion=false}
  readonly property string profile:{for(const name in presets)if(!SettingsPreferences.accessibility.reduceMotion && Object.keys(presets[name]).every(key=>options[key]===presets[name][key]))return name;return 'custom'}
  IpcHandler{target:'frames'
-  function status():string{return JSON.stringify({limit:root.maximumFps,glassLimit:root.glassFps,geometryLimit:root.geometryFps,measuring:Native.FramePacer.measuring,preciseGeometry:root.geometryAvailable,windows:root.statistics()})}
+  function status():string{return JSON.stringify({limit:root.maximumFps,glassLimit:root.glassFps,geometryLimit:root.geometryFps,measuring:Native.FramePacer.measuring,preciseGeometry:root.geometryAvailable,frameSynchronized:Native.FramePacer.frameSynchronized,windows:root.statistics()})}
   function monitor(enabled:bool):void{root.options.measureFrames=enabled}
  }
 }

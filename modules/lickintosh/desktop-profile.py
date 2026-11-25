@@ -17,7 +17,13 @@ FILES=list(dict.fromkeys(FILES+['qt5ct/qt5ct.conf','qt6ct/qt6ct.conf','kdeglobal
 NAUTILUS_KEYS=[('org.gnome.nautilus.preferences',k) for k in ['default-folder-viewer','show-image-thumbnails']]+[('org.gnome.nautilus.icon-view','default-zoom-level')]
 KEYS=NAUTILUS_KEYS+[('org.gnome.desktop.interface',k) for k in ['gtk-theme','icon-theme','color-scheme']]+[('org.gnome.desktop.wm.preferences','button-layout')]+[('org.nemo.window-state',k) for k in ['start-with-menu-bar','start-with-status-bar','start-with-sidebar']]
 def run(*args):
- return subprocess.run(args,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=10)
+ try:
+  return subprocess.run(args,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=3)
+ except (subprocess.TimeoutExpired,OSError) as error:
+  # Theme services may be unavailable during login or a D-Bus reload. The
+  # file-based profile still applies; optional desktop IPC must not abort login.
+  print('Quickintosh profile: '+str(args[0])+' unavailable; continuing with file settings.',file=sys.stderr)
+  return subprocess.CompletedProcess(args,124,stdout='',stderr=str(error))
 def write(path,data):
  path.parent.mkdir(parents=True,exist_ok=True);tmp=path.with_name(path.name+'.rice-tmp');tmp.write_bytes(data);tmp.replace(path)
 def capture():

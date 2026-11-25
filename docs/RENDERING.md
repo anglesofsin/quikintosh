@@ -12,11 +12,12 @@ Automatic. Limits do not affect applications outside Quickintosh.
 Glass uses a small read-only Hyprland plugin to obtain current animated window
 positions and workspace viewports. Normal Hyprland client IPC supplies target
 positions, which cannot represent every intermediate frame of a workspace
-slide. The plugin registers only `quickintosh:geometry`; it does not hook the
-renderer or change windows. It must match the compositor ABI. The launcher
+slide. The plugin exposes `quickintosh:geometry` as a fallback and observes the
+public pre-render event after animation updates. It does not replace rendering
+functions, draw into the compositor or change windows. It must match the compositor ABI. The launcher
 loads the bundled matching plugin; an incompatible compositor keeps the normal
-geometry fallback rather than bypassing the version check. Geometry queries
-stop after motion settles, and capture subscriptions pause for closed surfaces.
+geometry fallback rather than bypassing the version check. High-frequency geometry polling is replaced by frame notifications when supported;
+subscriptions expire automatically, and capture subscriptions pause for closed surfaces.
 
 Live widget dragging is the default. Cached drag previews are available for
 slower GPUs. Widget edits are merged per frame and snapshots retain delegate
@@ -59,3 +60,23 @@ is authoritative: a missing window is not drawn from a stale workspace cache.
 These rules apply to all surfaces using LiquidGlassBackdrop/GlassWindows,
 including Dock, panels, Settings, widgets and Quick Look. Refraction remains a
 Quickintosh GPU shader; this does not install Apple's proprietary renderer.
+
+Version 1.1 sends frame snapshots through a private UNIX datagram socket. The
+client drains queued events to the latest snapshot, applies an optional explicit
+FPS cap, ignores late RPC replies while frame delivery is healthy, and removes
+its subscriber socket on exit. A low-frequency heartbeat renews the subscription;
+RPC/timer delivery remains available for older or incompatible compositors.
+This removes independently timed geometry polling, but does not make two separate
+processes render in the same compositor frame: capture, Qt rendering and Wayland
+presentation still contribute latency.
+
+Regression validation includes native socket delivery without a QML animation
+window: 63 geometry publications uncapped versus 12 with an explicit 30 FPS cap
+for the same short event burst. A live read-only probe received 122 compositor
+packets in one second during existing desktop activity; this is not a workspace
+animation FPS benchmark or a guarantee for other workloads.
+
+Optional theme-service IPC has a bounded timeout and cannot abort shell login or
+restart when gsettings/D-Bus is temporarily unresponsive. File profile errors
+remain visible. The running shell confirmed `frameSynchronized:true` with all
+FPS limits at zero after activation.

@@ -11,12 +11,14 @@ class QQuickWindow;
 class QLocalSocket;
 class QTimer;
 class QChronoTimer;
+class QSocketNotifier;
 struct FramePolicy;
 struct WindowFrames;
 class FramePacer : public QObject {
  Q_OBJECT
  QML_ELEMENT
  QML_SINGLETON
+ Q_PROPERTY(bool frameSynchronized READ frameSynchronized NOTIFY geometryChanged)
  Q_PROPERTY(QVariantMap geometry READ geometry NOTIFY geometryChanged)
  Q_PROPERTY(bool geometryAvailable READ geometryAvailable NOTIFY geometryChanged)
  Q_PROPERTY(int maximumFps READ maximumFps WRITE setMaximumFps NOTIFY maximumFpsChanged)
@@ -28,6 +30,7 @@ public:
  void setMaximumFps(int value);
  bool measuring() const;
  void setMeasuring(bool value);
+ bool frameSynchronized()const;
  QVariantMap geometry()const{return renderedGeometry;}
  bool geometryAvailable()const{return hasGeometry;}
  Q_INVOKABLE void requestGeometry();
@@ -50,6 +53,12 @@ private:
  int geometryLimit=0;
  double reportedRefresh=0;
  void updateGeometryTimer();
+ void consumeGeometry(const QByteArray&,bool fromFrame);
+ bool watchFrames();
+ int frameFd=-1;
+ QSocketNotifier* frameNotifier=nullptr;
+ QByteArray framePath,frameServer;
+ qint64 lastFramePacket=0,lastGeometryDelivery=0;
  QLocalSocket *geometrySocket=nullptr;
  QTimer *geometryTimeout=nullptr;
  QByteArray geometryReply;

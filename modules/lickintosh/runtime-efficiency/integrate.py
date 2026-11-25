@@ -222,3 +222,5 @@ s=s.replace('            function restart() {\n                restarting = true
 s=s.replace('id: restartTimer\n                interval: 80','id: restartTimer\n                interval:Math.min(4000,80*Math.pow(2,Math.min(6,Math.max(0,view.restartFailures-1))))',1)
 s=s.replace('&& !restarting && !dying ? modelData.wayland','&& !restarting && !dying && !sourceClosed ? modelData.wayland',1).replace('live: gate.wanted && !restarting && !dying','live: gate.wanted && !restarting && !dying && !sourceClosed',1).replace('if (gate.wanted && !dying) view.restart()','if (gate.wanted && !dying && !sourceClosed) view.restart()',1)
 write(p,s)
+
+exec(compile((here/"responsiveness.py").read_text(),str(here/"responsiveness.py"),"exec"))

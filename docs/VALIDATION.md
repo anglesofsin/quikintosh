@@ -78,3 +78,6 @@ Notification/panel review: real notifications were delivered over a private D-Bu
 ## Runtime efficiency audit
 
 See [PERFORMANCE.md](PERFORMANCE.md) for coverage, measurement conditions and results. Added tests: `test_pipewire_monitor.py`, `test_clipboard_history_cache.py`, and optional offscreen `test_runtime_efficiency.py` (requires `QUICKINTOSH_TEST_SOURCE` and `QUICKINTOSH_TEST_QS`). Dock tests also cover bounded/failed thumbnail work and cached desktop-entry parsing. Private GUI probes verified resource subscriptions across show/hide and glass readiness through Dock/Control Center opening and closing.
+
+
+Panel responsiveness checks are opt-in and refuse the host runtime. Set `QUICKINTOSH_TEST_SOURCE` and `QUICKINTOSH_TEST_QS` to the built source/binary, and `QUICKINTOSH_TEST_PRIVATE_RUNTIME`, `QUICKINTOSH_TEST_PRIVATE_WAYLAND`, and `QUICKINTOSH_TEST_PRIVATE_HYPRLAND` to a separate compositor with read-only Hyprland fixture sockets (signature prefixed `quickintosh-`). Then run `python3 tests/test_panel_responsiveness.py -v`. The test supplies its own temporary HOME and never falls back to the host Wayland socket. Software-rendered timings are diagnostic; real GPU, lock and multi-monitor behavior require their own validation.

@@ -47,7 +47,7 @@ Scope{
    (services/'qmldir').write_text('module qs.services\n'+''.join('singleton '+name+' '+name+'.qml\n' for name in stubs))
    (testing/'qmldir').write_text('module qs.testing\nsingleton Registry Registry.qml\nScreencopyView ScreencopyView.qml\n')
    (testing/'Registry.qml').write_text('pragma Singleton\nimport QtQuick\nQtObject{property var viewer:null}')
-   (testing/'ScreencopyView.qml').write_text('import QtQuick\nimport qs.testing\nItem{property var captureSource:null;property bool live:false;property bool hasContent:true;signal stopped();function captureFrame(){}Component.onCompleted:Registry.viewer=this}')
+   (testing/'ScreencopyView.qml').write_text('import QtQuick\nimport qs.testing\nItem{property var captureSource:null;property bool live:false;readonly property bool hasContent:captureSource!==null;signal stopped();function captureFrame(){}Component.onCompleted:Registry.viewer=this}')
    (root/'GlassWindows.qml').write_text((Path(SOURCE)/'components/glass/GlassWindows.qml').read_text().replace('import Quickshell.Wayland','import qs.testing').replace('import Quickshell.Hyprland','import qs.services'))
    (root/'CaptureGate.qml').write_text((Path(SOURCE)/'components/glass/CaptureGate.qml').read_text())
    output=qml.Interface.run_qml(self,directory,'''import QtQuick
@@ -62,12 +62,15 @@ Scope{
   if(step===0){Hyprland.toplevels=[{wayland:source,address:'0x1',workspace:{id:1},lastIpcObject:{address:'0x1',pid:1,monitor:0,workspace:{id:1},at:[0,0],size:[100,100],mapped:true}}];step++;return}
   const view=Testing.Registry.viewer
   if(!view){console.error('NO_VIEW',Hyprland.toplevels.length,glass.children.length);Qt.exit(5);return}
-  if(step===1){if(view.captureSource!==source || !view.live){console.error('CAPTURE_NOT_STARTED');Qt.exit(6);return}source.closed();step++;return}
+  if(step===1){if(view.captureSource!==source || !view.live){console.error('CAPTURE_NOT_STARTED');Qt.exit(6);return}glass.capturing=false;step++;return}
+  if(step===2){if(view.live || view.captureSource!==source){console.error('PAUSED_CAPTURE_DISCARDED');Qt.exit(8);return}glass.capturing=true;step++;return}
+  if(step===3){if(!view.live || view.captureSource!==source){Qt.exit(9);return}source.closed();step++;return}
   for(let n=0;n<10;n++){view.stopped();view.restart()}
   if(view.captureSource!==null || view.live || view.restartFailures!==0){console.error('CLOSED_CAPTURE_RESTARTED');Qt.exit(7);return}
   console.log('CLOSED_CAPTURE_DETACHED_OK');Qt.quit()
  }}
 }''')
    self.assertIn('CLOSED_CAPTURE_DETACHED_OK',output)
+   self.assertNotIn('Binding loop',output)
 
 if __name__=='__main__':unittest.main()

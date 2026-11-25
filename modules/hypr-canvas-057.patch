@@ -1,5 +1,5 @@
 diff --git a/src/canvas.cpp b/src/canvas.cpp
-index 2d5aa01..3f5bd21 100644
+index 2d5aa01..a55e368 100644
 --- a/src/canvas.cpp
 +++ b/src/canvas.cpp
 @@ -3,0 +4,3 @@
@@ -13,6 +13,21 @@ index 2d5aa01..3f5bd21 100644
 -        std::ifstream     state("/home/pg/.local/state/infinite-desktop/state-" + key);
 +        const std::string key = ws->type() == Workspace::eWorkspaceType::SPECIAL ? ws->displayName() : ws->addressableName();
 +        std::ifstream     state(std::string(std::getenv("HOME") ? std::getenv("HOME") : "") + "/.local/state/infinite-desktop/state-" + key);
+@@ -104 +108 @@ static void hkOnMouseWheel(CInputManager* self, IPointer::SAxisEvent e, SP<IPoin
+-    const uint32_t mods = g_pInputManager->getModsFromAllKBs();
++    const auto mods = g_pInputManager->getModsFromAllKBs();
+@@ -106 +110 @@ static void hkOnMouseWheel(CInputManager* self, IPointer::SAxisEvent e, SP<IPoin
+-    if ((mods & HL_MODIFIER_META) && g_pCanvas && isCanvasWorkspace(true) && e.axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
++    if ((mods & Input::HL_MODIFIER_META) && g_pCanvas && isCanvasWorkspace(true) && e.axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+@@ -137 +141 @@ static void hkOnMouseButton(CInputManager* self, IPointer::SButtonEvent e) {
+-    const uint32_t mods = g_pInputManager->getModsFromAllKBs();
++    const auto mods = g_pInputManager->getModsFromAllKBs();
+@@ -139 +143 @@ static void hkOnMouseButton(CInputManager* self, IPointer::SButtonEvent e) {
+-    if (g_pCanvas && isCanvasWorkspace(true) && (mods & HL_MODIFIER_META) && e.button == BTN_MIDDLE && e.state == WL_POINTER_BUTTON_STATE_PRESSED) {
++    if (g_pCanvas && isCanvasWorkspace(true) && (mods & Input::HL_MODIFIER_META) && e.button == BTN_MIDDLE && e.state == WL_POINTER_BUTTON_STATE_PRESSED) {
+@@ -145 +149 @@ static void hkOnMouseButton(CInputManager* self, IPointer::SButtonEvent e) {
+-        if (mods & HL_MODIFIER_META) {
++        if (mods & Input::HL_MODIFIER_META) {
 @@ -211,14 +214,0 @@ static Vector2D hkClosestValid(Pointer::CPointerManager* self, const Vector2D& p
 -// --- Monitor detection hook ---
 -// getMonitorFromCursor uses position() which now returns canvas coords.
@@ -28,6 +43,9 @@ index 2d5aa01..3f5bd21 100644
 -    return original(self);
 -}
 -
+@@ -240 +230 @@ static bool hkShouldRenderWindow(Render::IHyprRenderer* self, PHLWINDOW pWindow,
+-    if (canvasActive() && pWindow && pWindow->m_isFloating && pWindow->m_isMapped && !pWindow->isHidden() && pWindow->m_workspace &&
++    if (canvasActive() && pWindow && pWindow->isFloating() && pWindow->mapped() && !pWindow->isHidden() && pWindow->m_workspace &&
 @@ -249 +239 @@ static bool hkShouldRenderWindow(Render::IHyprRenderer* self, PHLWINDOW pWindow,
 -typedef CRegion (*renderPassRenderFn)(Render::CRenderPass*, const CRegion&);
 +typedef CRegion (*renderPassRenderFn)(Render::CRenderPass*, Render::CRenderContext&, const CRegion&);
@@ -46,7 +64,7 @@ index 2d5aa01..3f5bd21 100644
 @@ -290,2 +280,2 @@ static bool g_canvasRenderScope = false;
 -static void pushRenderModif(const Render::SRenderModifData& modif) {
 -    g_pHyprRenderer->m_renderPass.add(makeUnique<CRendererHintsPassElement>(CRendererHintsPassElement::SData{modif}));
-+static void pushRenderModif(ctx, Render::CRenderContext& ctx, const Render::SRenderModifData& modif) {
++static void pushRenderModif(Render::CRenderContext& ctx, const Render::SRenderModifData& modif) {
 +    g_pHyprRenderer->currentPass(ctx).add(makeUnique<CRendererHintsPassElement>(CRendererHintsPassElement::SData{modif}));
 @@ -305 +295 @@ static Render::SRenderModifData canvasModif() {
 -static void onRenderStage(eRenderStage stage) {
@@ -124,8 +142,8 @@ index 2d5aa01..3f5bd21 100644
 -
 @@ -471 +442,6 @@ static CFunctionHook* hookByName(const std::string& name, void* dest) {
 -    auto fns = HyprlandAPI::findFunctionsByName(PHANDLE, name);
-+    const auto start = name.rfind("::");
 +    const auto signature = name.find('(');
++    const auto start = name.rfind("::", signature);
 +    const auto leaf = start == std::string::npos ? name : name.substr(start + 2, signature - start - 2);
 +    auto fns = HyprlandAPI::findFunctionsByName(PHANDLE, leaf);
 +    if (start != std::string::npos)

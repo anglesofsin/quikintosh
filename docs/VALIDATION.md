@@ -45,3 +45,8 @@ O componente real de relógio passou por 48 combinações de horário, incluindo
 ## Espessura estável na música
 
 O estado compacto de música agora tem pelo menos 30 px de altura (4 px acima da altura configurada), capa de 20 px na configuração padrão e margens externas de 7 px nos dois lados. A borda pulsante, o halo reativo e a deformação elástica são desativados nesse estado; o visualizador continua reagindo ao áudio. O componente real foi renderizado em sessão isolada, comparado com a chamada de 26 px e exercitado com `beat` alternando entre 0 e 1 sem mudar altura ou margens.
+
+## Espaçamentos da ilha e galeria simplificada
+
+A altura da música voltou a seguir a altura configurada da ilha, preservando a remoção das deformações reativas. A apresentação na menubar mantém afastamento mínimo de 4 px do topo; a capa e o visualizador mantêm 6 px de margem lateral. O teste gráfico mediu 26 px de altura e margens iguais de 3 px à esquerda/acima/abaixo do avatar da chamada. A galeria de imagens oferece uma única entrada, mantendo todos os tamanhos, formatos e redimensionamento no editor. O relógio da ilha passa a vir desligado no padrão de novos perfis; preferências persistidas não são sobrescritas.
+O fechamento agora retira as atividades laterais no início da ocultação (incluindo fullscreen e ocultação por inatividade), antes de a pill principal terminar de encolher. O campo de fusão das bolinhas é atualizado junto, evitando contornos residuais.

@@ -25,3 +25,6 @@ edit('rosa/overlays/IslandBody.qml','case "clock":  return Qt.formatDateTime(clo
 edit('rosa/overlays/IslandBody.qml','case "clock":  return "󰥔";','case "clock":  return IslandConfig.on("clock") ? "󰥔" : "";')
 import json
 p=root/'rosa/lang/en.json';data=json.loads(p.read_text());data['isle.o.srcClock']='Show clock';p.chmod(p.stat().st_mode|0o200);p.write_text(json.dumps(data,ensure_ascii=False))
+
+# New profiles start with a quiet island; stored user preferences still win.
+edit('rosa/services/IslandConfig.qml','srcClock:    { type: "bool", def: true }','srcClock:    { type: "bool", def: false }')

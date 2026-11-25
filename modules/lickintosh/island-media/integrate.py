@@ -8,14 +8,14 @@ def edit(name,old,new,count=1):
  p.chmod(p.stat().st_mode|0o200);p.write_text(s.replace(old,new))
 name='rosa/overlays/IslandPill.qml'
 edit(name,'import qs.rosa.services','import qs.rosa.services\nimport qs.services as Native')
-edit(name,'    readonly property int inner: Math.max(12, pill.height - 8)','    readonly property bool compactMedia: pill.miniMedia && !pill.flashing && pill.kind !== "voice"\n    readonly property int inner: Math.max(12, pill.height - (pill.miniMedia ? 10 : 8))')
+edit(name,'    readonly property int inner: Math.max(12, pill.height - 8)','    readonly property bool compactMedia: pill.miniMedia && !pill.flashing && pill.kind !== "voice"\n    readonly property int inner: Math.max(12, pill.height - 8)')
 edit(name,'pill.miniMedia ? Math.round(pill.inner + 14) : 0','pill.miniMedia ? Math.round(pill.inner + 8) : 0')
 edit(name,'pill.coreW + pill.sideRoom * 2 + 24','pill.coreW + pill.sideRoom * 2 + (pill.compactMedia ? 14 : 24)')
 p=root/name;s=p.read_text();a=s.index('        Item {\n            id: miniArt');b=s.index('        IslandBars {\n            id: miniBars',a)
 s=s[:a]+'''        Item {
             id: miniArt
             anchors.left: parent.left
-            anchors.leftMargin: pill.compactMedia ? 7 : 6
+            anchors.leftMargin: pill.compactMedia ? 6 : 6
             anchors.verticalCenter: parent.verticalCenter
             width: pill.inner
             height: width
@@ -54,7 +54,7 @@ s=s[:a]+'''        Item {
         }
 
 '''+s[b:];p.write_text(s)
-a=s.index('        IslandBars {\n            id: miniBars');tail=s[a:].replace('anchors.rightMargin: 8','anchors.rightMargin: pill.compactMedia ? 7 : 8',1).replace('width: Math.round(pill.inner * 1.1)','width: pill.inner',1).replace('height: Math.round(pill.inner * 0.8)','height: Math.round(pill.inner * 0.8)',1);p.write_text(s[:a]+tail)
+a=s.index('        IslandBars {\n            id: miniBars');tail=s[a:].replace('anchors.rightMargin: 8','anchors.rightMargin: pill.compactMedia ? 6 : 8',1).replace('width: Math.round(pill.inner * 1.1)','width: pill.inner',1).replace('height: Math.round(pill.inner * 0.8)','height: Math.round(pill.inner * 0.8)',1);p.write_text(s[:a]+tail)
 name='rosa/overlays/IslandWindow.qml'
 edit(name,'target: win.hub.kind === "voice" ? pill.implicitWidth : Math.max(IslandConfig.s("pillMin"), pill.implicitWidth + 26)','target: win.hub.kind === "voice" || pill.compactMedia ? pill.implicitWidth : Math.max(IslandConfig.s("pillMin"), pill.implicitWidth + 26)')
 edit(name,'win.hub.kind === "voice" ? pill.implicitWidth : Math.max(IslandConfig.s("pillMin"),pill.implicitWidth+26)','win.hub.kind === "voice" || pill.compactMedia ? pill.implicitWidth : Math.max(IslandConfig.s("pillMin"),pill.implicitWidth+26)')
@@ -65,7 +65,22 @@ edit(name,'visible: !IslandConfig.s("goo") || goo.count <= 0 || win.hub.voiceSid
 
 # The outside silhouette is stable. Only the bars respond to audio levels;
 # border pulse and jelly must not make the black capsule look compressed.
-edit(name,'readonly property int pillH: IslandConfig.s("pillHeight")','readonly property int pillH: pill.compactMedia ? Math.max(30, IslandConfig.s("pillHeight") + 4) : IslandConfig.s("pillHeight")')
 edit(name,'IslandConfig.s("pulse") && win.hub.miniMedia && win.visible','IslandConfig.s("pulse") && win.hub.miniMedia && !pill.compactMedia && win.visible')
 edit(name,'readonly property real jelly: IslandConfig.s("jelly")','readonly property real jelly: IslandConfig.s("jelly") && !pill.compactMedia')
 edit(name,'visible: IslandConfig.s("glow") && aura.power > 0.005 && !win.hub.voiceSide','visible: IslandConfig.s("glow") && aura.power > 0.005 && !win.hub.voiceSide && !pill.compactMedia')
+
+# Keep the configured height shared by music/call/idle. Guarantee breathing
+# room at the screen edge for both collapsed and expanded presentations.
+edit(name,'? Math.max(0, Math.round(\n                (BarConfig.s("barHeight", win.modelData.name)','? Math.max(4, Math.round(\n                (BarConfig.s("barHeight", win.modelData.name)')
+# The call avatar already has vertical centering. Match its outer left inset
+# to that same inset, without moving the centered clock or replacing icons.
+edit('rosa/overlays/IslandPill.qml','VoiceView { id:voice; anchors.centerIn:parent; visible:pill.kind === "voice"; width:implicitWidth; height:implicitHeight }','VoiceView { id:voice; anchors.centerIn:parent; visible:pill.kind === "voice"; width:Math.max(24,pill.width-Math.max(0,pill.height-20)); height:implicitHeight }')
+# Retire side activities at the start of hiding, before the main capsule folds.
+edit(name,'    readonly property bool privacyHandoff:', '''    readonly property bool sideActivitiesVisible:win.mine && win.wanted && !win.blocked
+        && !idleVisibility.hideRequested && !IslandBus.locked && IslandConfig.s("enabled")
+    onSideActivitiesVisibleChanged:Qt.callLater(function(){goo.requestSync()})
+    readonly property bool privacyHandoff:''')
+edit(name,'target: stage.minimalOn ? 1 : 0','target: win.sideActivitiesVisible && stage.minimalOn ? 1 : 0')
+edit(name,'target: stage.leftOn ? 1 : 0','target: win.sideActivitiesVisible && stage.leftOn ? 1 : 0')
+edit(name,'visible: stage.dotShow > 0.015','visible: win.sideActivitiesVisible && stage.dotShow > 0.015')
+edit(name,'visible: stage.headDetach > 0.015','visible: win.sideActivitiesVisible && stage.headDetach > 0.015')

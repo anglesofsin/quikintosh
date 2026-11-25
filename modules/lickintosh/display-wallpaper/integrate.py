@@ -96,5 +96,5 @@ write(p,s)
 edit('shell.qml','    id: appRoot','    id: appRoot\n    readonly property var displayManager:MonitorState')
 
 # Match the wallpaper matte and dimming in the glass fallback as well.
-p='components/glass/WallpaperSlot.qml';s=(r/p).read_text();s=s.replace('    property string path:',"    Rectangle{anchors.fill:parent;z:-1;color:ShellConfig.options.wallpaper.backgroundColor}\n    property string path:",1);write(p,s)
+p='components/glass/WallpaperSlot.qml';s=(r/p).read_text();s=s.replace('    property string path:',"    Rectangle{anchors.fill:parent;z:-1;visible:slot.path!==\"\" && slot.imageStatus===Image.Ready;color:ShellConfig.options.wallpaper.backgroundColor}\n    property string path:",1);write(p,s)
 p='components/glass/LiquidGlassBackdrop.qml';s=(r/p).read_text();s=s.replace('        DesktopSnapshot {','        Rectangle{anchors.fill:parent;color:"black";opacity:ShellConfig.options.wallpaper.dim}\n        DesktopSnapshot {',1);write(p,s)

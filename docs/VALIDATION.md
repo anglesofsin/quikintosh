@@ -70,3 +70,7 @@ Notification/panel review: real notifications were delivered over a private D-Bu
 - `python3 -m unittest discover -s tests -p test_display_transactions.py`: six fake-compositor tests cover validation, confirmation, independent timeout rollback, failed application, connector mismatch and profiles. No real display mutation is performed.
 - Private Wayland/QtTest probes exercised Remove Widget and Resize Widget through menu clicks, then dragged a resize handle and checked persisted custom dimensions.
 - Private Wayland probes checked delayed individual/group notification dismissal and rendered populated Displays and Wallpaper pages.
+
+## Wallpaper glass regression
+
+`test_wallpaper_glass.py` renders the real crossfade and wallpaper-slot components offscreen and checks their pixels. It reproduces the empty-slot black matte, then verifies the corrected colors on initial load and after a transition. Run with Pillow, `QUICKINTOSH_TEST_SOURCE` and `QUICKINTOSH_TEST_QS`. Empty slots must not draw a matte. A private Wayland visual check also confirmed the Personal Clock's glass samples the wallpaper instead of black.

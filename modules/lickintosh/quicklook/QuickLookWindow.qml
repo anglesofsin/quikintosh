@@ -7,11 +7,11 @@ import qs.services
 import Quickshell.Io
 FloatingWindow {
  id:window
- visible:QuickLookState.opened || closeMotion.running
+ visible:QuickLookState.opened
  title:'Lickintosh Quick Look — '+(QuickLookState.data.name || '')
  onVisibleChanged:if(!visible && QuickLookState.opened)QuickLookState.close()
  color:'transparent';implicitWidth:880;implicitHeight:650;minimumSize:Qt.size(460,320)
- property bool glassReady: false
+ property bool glassReady: true
  readonly property rect glassRegion: Qt.rect(QuickLookState.geometry.x || 0, QuickLookState.geometry.y || 0, window.width, window.height)
  readonly property bool videoFrames:window.kind==='video' && video.contentRect.width>0 && video.contentRect.height>0
  property real zoom:1
@@ -47,7 +47,7 @@ FloatingWindow {
  Connections{target:QuickLookState;function onActivated(){Qt.callLater(()=>keys.forceActiveFocus())}function onDataChanged(){window.zoom=1;window.angle=0}function onOpenedChanged(){if(QuickLookState.opened){window.indexSheet=false;Qt.callLater(()=>keys.forceActiveFocus())}else{player.stop();trimPopup.close();shareMenu.close();window.fullscreen=false}}}
  Process {
   command: ['hyprctl', '-j', 'hyprglass', 'status']
-  running: window.visible
+  running: true
   stdout: StdioCollector {
    onStreamFinished: {
     try { window.glassReady = JSON.parse(text).versionCheck === 'match' }
@@ -58,11 +58,9 @@ FloatingWindow {
  FocusScope{
   id:keys;anchors.fill:parent;focus:true
   enabled:QuickLookState.opened
-  opacity:window.presented ? 1 : 0
-  scale:window.presented ? 1 : .88
+  opacity:1
+  scale:1
   transformOrigin:Item.Center
-  Behavior on opacity { NumberAnimation { duration:window.motionDuration; easing.type:Easing.OutCubic } }
-  Behavior on scale { NumberAnimation { duration:window.motionDuration; easing.type:Easing.OutCubic } }
   Keys.onPressed:event=>{
    if(event.key===Qt.Key_Escape){window.closePreview();event.accepted=true}
    else if(event.key===Qt.Key_Space && !(event.modifiers & Qt.ControlModifier)){window.closePreview();event.accepted=true}

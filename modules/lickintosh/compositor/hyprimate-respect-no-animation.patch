@@ -1,7 +1,16 @@
 --- a/src/window/hyprland/HyprWindowPort.cpp
 +++ b/src/window/hyprland/HyprWindowPort.cpp
-@@ -98,2 +98,4 @@
+@@ -8,2 +8,3 @@
+ #include <hyprland/src/desktop/view/window/WindowEffectsController.hpp>
++#include <hyprland/src/desktop/view/window/WindowMetadata.hpp>
+ #include <hyprland/src/desktop/view/window/WindowPresentation.hpp>
+@@ -98,2 +99,9 @@
      }
-+    if (WINDOW->m_ruleApplicator->noAnim().valueOrDefault())
++    // QuickLook owns a centered native scale transition. Never deform it a
++    // second time; compositor decorations then share the exact same geometry.
++    const auto& title = WINDOW->metadata().title();
++    if (WINDOW->m_ruleApplicator->noAnim().valueOrDefault() ||
++        title.starts_with("Lickintosh Quick Look") ||
++        title.starts_with("Quickintosh Quick Look"))
 +        return std::nullopt;
      const auto MONITOR = WINDOW->m_monitor.lock();

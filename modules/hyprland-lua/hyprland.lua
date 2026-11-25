@@ -162,6 +162,7 @@ if capabilities then
 end
 local shortcutOverrides = {}
 if shellActions["switcher-next"] then
+    hl.config({misc={focus_on_activate=true}})
     local config = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
     local shortcuts = io.open(config .. "/lickintosh/core/shortcuts.tsv", "r")
     if shortcuts then
@@ -438,7 +439,7 @@ hl.window_rule({
 -- Preview pixels stay opaque; HyprGlass draws behind the translucent chrome.
 if shellActions["switcher-next"] then
     hl.window_rule({name="lickintosh-settings",match={class="^org[.]lickintosh[.]Settings$"},float=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
-    hl.window_rule({name="lickintosh-quick-look",match={title="^(Lickintosh|Quickintosh) Quick Look.*"},float=true,center=true,stay_focused=true,focus_on_activate=true,no_anim=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
+    hl.window_rule({name="lickintosh-quick-look",match={title="^(Lickintosh|Quickintosh) Quick Look.*"},float=true,center=true,stay_focused=true,focus_on_activate=true,no_anim=false,animation="popin 88%",opacity="1.0 1.0",tag="+hyprglass_enabled"})
 end
 
 hl.layer_rule({

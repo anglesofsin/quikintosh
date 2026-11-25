@@ -208,3 +208,5 @@ path = root / 'ui/settings/pages/RosaPage.qml'
 text = path.read_text()
 text = text.replace('                {key:"dashboardWeatherArt", label:"Show weather backgrounds"},\n', '')
 path.write_text(text)
+
+exec(compile((source/'interaction.py').read_text(),str(source/'interaction.py'),'exec'))

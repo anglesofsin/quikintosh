@@ -41,3 +41,7 @@ O componente real de relógio passou por 48 combinações de horário, incluindo
 - A capa gira no renderizador, sem capturas de tela por frame, e respeita pausa/redução de movimento. O teste gráfico isolado conferiu altura de 26 px e capa circular de 20 px, comparadas com o estado de chamada.
 - A tray analisa uma imagem de 32 px apenas quando o ícone muda. O teste Qt verificou ícones brancos/pretos, preservação de imagem colorida e atualização da cor da barra. Também foram lidos os ícones reais publicados pelo Discord, Canary e Steam em uma janela de teste fora da tela principal.
 - Após a checagem de integração detectar uma importação ausente no consumidor da tray, ela foi corrigida e a shell completa carregou com sucesso em uma sessão gráfica isolada. As verificações de componente isolado não foram usadas como substituto dessa checagem completa.
+
+## Espessura estável na música
+
+O estado compacto de música agora tem pelo menos 30 px de altura (4 px acima da altura configurada), capa de 20 px na configuração padrão e margens externas de 7 px nos dois lados. A borda pulsante, o halo reativo e a deformação elástica são desativados nesse estado; o visualizador continua reagindo ao áudio. O componente real foi renderizado em sessão isolada, comparado com a chamada de 26 px e exercitado com `beat` alternando entre 0 e 1 sem mudar altura ou margens.

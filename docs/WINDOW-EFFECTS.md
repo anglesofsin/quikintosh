@@ -10,10 +10,20 @@ Clock widget → Typography/Colors & effects supports separate colors, wallpaper
 
 The Glass rendering group exposes background caching, live refresh and the refresh limit. Zero means unlimited. The existing visual defaults are retained.
 
-## Hyprimate compatibility work
+## Hyprimate
 
-The requested [Hyprimate](https://github.com/JustinBacher/hyprimate) revision targets Hyprland 0.57.x and a C++26 toolchain. The current Quickintosh compositor is 0.56.2 with custom capture and scrolling-workspace clipping patches. Those patches do not apply unchanged to 0.57.2. Hyprimate is **not installed or enabled** by this change: the compositor, existing plugins and both patches must be ported and tested together before activating that upgrade. The package uses the target compositor’s toolchain and the Quickintosh launcher loads it when built for the 0.57 series. Settings → Windows & Effects shows the Hyprimate controls when the plugin is loaded, with searchable groups for windows, workspaces and wallpaper. User Lua configuration must be retained, and activation of a new compositor requires a new session.
+[Hyprimate](https://github.com/JustinBacher/hyprimate) runs with the patched Hyprland 0.57.2 and its C++26 toolchain. Quickintosh loads the plugin on startup when built for the 0.57 series. The Liquid style is the plugin default. Settings → Windows & Effects exposes the window, workspace, and wallpaper groups as soon as the plugin loads. Custom Hyprland configuration can live alongside the settings.
 
-The experimental 0.57.2 viewport port is in `modules/hyprland-0.57-workspace-viewport.patch`. It moves the clip onto the active render context and preserves the tiled-window clipping for both drawing and occlusion. The active 0.56.2 build still uses its existing patches. The 0.57.2 port needs a compositor build and a visual scrolling-workspace regression test before activation.
+The default Nix pin still targets 0.56.2. To build the 0.57 packages, override the compositor input in your host flake. For example, from a Quickintosh checkout:
 
-The 0.57 migration also has candidate ports for see-through monitor capture, HyprCanvas and HyprGlass. The capture port redraws the active workspace with Hyprland's protected-content filter for normal full-monitor capture. Region and rotated-monitor captures retain Hyprland's native redaction. The HyprGlass port clips the final composite while keeping the padded sample and obtains window fade from the compositor's render presentation. The 0.56 packages continue using their existing patches. Validate capture privacy, canvas zoom and input, workspace slides and plugin coexistence before changing the pinned compositor.
+```sh
+nix build .#hyprland .#shell \
+  --override-input hyprland-src 'git+https://github.com/hyprwm/Hyprland.git?ref=refs/tags/v0.57.2&rev=11cbc6c577b84ffb1edf4df3fc5b6128c3ae6947&submodules=1' \
+  --max-jobs 1 --cores 3
+```
+
+Build the compositor, shell and plugins from the same pin. The new compositor takes effect when a new graphical session starts.
+
+The 0.57.2 ports keep the scrolling viewport clip on both window draw and occlusion passes, and keep the HyprGlass composite inside that clip while preserving its padded sample. HyprCanvas and Quickintosh accept named special-workspace identities from the new IPC API. The existing patches continue to apply to 0.56.2.
+
+The see-through capture port redraws the active workspace with Hyprland's protected-content filter for normal full-monitor capture. Region and rotated-monitor captures use Hyprland's native redaction. In a nested 0.57.2 session, a protected test window was omitted from a full-monitor screenshot, revealing the window behind it. Geometry, HyprGlass, HyprCanvas and Hyprimate loaded together. The smoke test opened and closed a window with Liquid, scrolled a special workspace in Canvas mode and captured a scrolling workspace transition with native glass enabled.

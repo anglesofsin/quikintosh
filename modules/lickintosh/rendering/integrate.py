@@ -120,6 +120,21 @@ write(p,s)
 p='components/glass/GlassPrewarm.qml';s=(root/p).read_text().replace('if(!item || !item.preload','if(!RenderingState.prewarm || !item || !item.preload',1)
 s=s.replace(' Connections{target:GlassTracker;', ' Connections{target:RenderingState;function onPrewarmChanged(){if(RenderingState.prewarm)root.requestAll();else{root.queue=[];root.finish()}}}\n Connections{target:GlassTracker;',1);write(p,s)
 edit('components/glass/GlassBackdrop.qml','(root.prewarming || root.retained)','(root.prewarming || (RenderingState.prewarm && root.retained))')
+# Keep glass alive for the actual exit animation, including custom motion speed.
+p='tahoedock/TahoeDockSurface.qml';s=(root/p).read_text()
+s=s.replace('Presence{id:dockGlassPresence;wanted:dock.shown;exitDuration:160}', 'Presence{id:dockGlassPresence;wanted:dock.shown || dockSlideX.running || dockSlideY.running;exitDuration:0}')
+s=s.replace('transform:Translate{x:!root.displayShown', 'transform:Translate{id:dockSlide;x:!root.displayShown',1)
+s=s.replace('Behavior on x{NumberAnimation{duration:160;', 'Behavior on x{NumberAnimation{id:dockSlideX;duration:160;',1)
+s=s.replace('Behavior on y{NumberAnimation{duration:160;', 'Behavior on y{NumberAnimation{id:dockSlideY;duration:160;',1)
+s=s.replace('root.origin.x+plate.x,root.origin.y+plate.y,plate.width,plate.height', 'root.origin.x+plate.x+dockSlide.x,root.origin.y+plate.y+dockSlide.y,plate.width,plate.height',1)
+assert 'id:dockSlideX' in s and 'id:dockSlideY' in s
+write(p,s)
+# Parent transforms move glass without changing the quad's own x/y.
+p='components/glass/TahoeGlass.qml';s=(root/p).read_text()
+s=s.replace('if (nx !== root.screenPosition.x || ny !== root.screenPosition.y)\n            root.screenPosition = Qt.point(nx, ny)', 'if (nx !== root.screenPosition.x || ny !== root.screenPosition.y){\n            root.screenPosition = Qt.point(nx, ny)\n            root.invalidate()\n        }',1)
+s=s.replace('if (ew !== root.screenExtent.width || eh !== root.screenExtent.height)\n            root.screenExtent = Qt.size(ew, eh)', 'if (ew !== root.screenExtent.width || eh !== root.screenExtent.height){\n            root.screenExtent = Qt.size(ew, eh)\n            root.invalidate()\n        }',1)
+write(p,s)
+p='components/glass/LiquidGlassBackdrop.qml';s=(root/p).read_text().replace('id: regionTimer\n        interval: 16','id: regionTimer\n        interval: 0',1);write(p,s)
 edit('ui/desktop/DesktopLayer.qml','interactionPaused:slot.dragging','interactionPaused:slot.dragging && RenderingState.options.cacheWidgetDrag')
 edit('ui/desktop/DesktopLayer.qml','live:false;hideSource:slot.dragging;visible:slot.dragging','live:false;hideSource:slot.dragging && RenderingState.options.cacheWidgetDrag;visible:slot.dragging && RenderingState.options.cacheWidgetDrag')
 for name in ['PersonalClock.qml','CreativeText.qml']:

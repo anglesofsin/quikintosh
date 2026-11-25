@@ -80,3 +80,9 @@ Optional theme-service IPC has a bounded timeout and cannot abort shell login or
 restart when gsettings/D-Bus is temporarily unresponsive. File profile errors
 remain visible. The running shell confirmed `frameSynchronized:true` with all
 FPS limits at zero after activation.
+
+Exit-animation capture lifetime follows the actual Dock slide animations, not a
+fixed 160 ms timer; custom motion duration is respected. The capture region
+includes the animated translation. Shared glass quads invalidate their capture
+region when parent transforms move or scale them, with event-loop coalescing
+instead of a fixed 16 ms debounce. Captures still pause after exit completes.

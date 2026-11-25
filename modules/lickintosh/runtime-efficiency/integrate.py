@@ -180,7 +180,12 @@ s=s.replace(' property bool revealed:false',''' Presence{id:dockGlassPresence;wa
 s=s.replace('ready:!Theme.plainSurfaces && dock.shown;', 'instantReveal:true;ready:!Theme.plainSurfaces && dockGlassPresence.present;',1)
 s=s.replace("monitorName:dock.screen.name;element:'dock';captureWindows:","captureRegion:Qt.rect(root.origin.x+plate.x,root.origin.y+plate.y,plate.width,plate.height)\n   monitorName:dock.screen.name;element:'dock';captureWindows:",1)
 s=s.replace('   id:plate\n','   id:plate\n   visible:Theme.plainSurfaces || root.glassPresented\n',1)
-s=s.replace('x:!dock.shown && root.vertical','x:!root.displayShown && root.vertical').replace('y:!dock.shown && !root.vertical','y:!root.displayShown && !root.vertical')
+# Reveal at the final position. Grid reflow must also settle before movement
+# transitions are enabled, otherwise icons drift sideways during appearance.
+a=s.index('   transform:Translate{x:!dock.shown');b=s.index('\n',a);s=s[:a]+s[b:]
+s=s.replace('readonly property bool displayShown:', 'property bool dockMotionReady:false\n onDisplayShownChanged:{dockMotionReady=false;if(displayShown)dockMotionDelay.restart();else dockMotionDelay.stop()}\n Timer{id:dockMotionDelay;interval:200;onTriggered:root.dockMotionReady=true}\n readonly property bool displayShown:',1)
+s=s.replace('visible:Theme.plainSurfaces || root.glassPresented', 'visible:root.displayShown',1)
+s=s.replace("move:Transition{NumberAnimation{properties:'x,y';duration:180", "move:Transition{enabled:root.dockMotionReady;NumberAnimation{properties:'x,y';duration:180",1)
 s=s.replace('automatic:options.hoverToReveal,visible:dock.shown,','automatic:options.hoverToReveal,visible:dock.shown,presented:root.displayShown,glassReady:dockGlass.captureSettled,')
 write(p,s)
 # The old image-choice dropdown no longer has consumers; media/folder pickers

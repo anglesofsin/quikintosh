@@ -7,7 +7,7 @@ The audit inventoried 572 QML files and approximately 332 timer declarations in 
 | Area | Change |
 |---|---|
 | Liquid Glass | Hidden or inactive glass components stop per-frame coordinate mapping. Stationary geometry checks retain unchanged objects and avoid republishing the native window model; moving/precision paths remain active. |
-| First visible frame | Control Center begins its opening animation after the backdrop is ready. Dock prepares capture at its resting bounds before sliding in, and retains capture through its closing animation. |
+| First visible frame | Control Center begins its opening animation after the backdrop is ready. Dock prepares capture at its resting bounds before appearing at its final position. Grid movement transitions stay disabled while the opening layout settles. |
 | Capture lifecycle | Closed toplevels are detached immediately. Failed screencopy restarts back off from 80 ms up to 4 seconds, and stop for closed sources. |
 | Dock | Identical preview, trash, identity and grouped-app replies do not rewrite models. Filesystem notifications remain immediate; the fallback Trash check runs every 30 seconds. Unrelated shared-data writes no longer refresh recent files. Explicitly pinned shared-data folders still receive their own changes. |
 | File previews | At most two thumbnail jobs execute and 128 are pending. Failed files are negatively cached for five minutes or until their fingerprint changes; that cache is bounded to 512 entries. Large Trash listings generate thumbnails only for returned entries. Listing metadata is reused. |

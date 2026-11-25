@@ -52,7 +52,7 @@ Scope{
    (testing/'ScreencopyView.qml').write_text('import QtQuick\nimport qs.testing\nItem{property var captureSource:null;property bool live:false;readonly property bool hasContent:captureSource!==null;signal stopped();function captureFrame(){}Component.onCompleted:Registry.viewer=this}')
    (root/'GlassWindows.qml').write_text((Path(SOURCE)/'components/glass/GlassWindows.qml').read_text().replace('import Quickshell.Wayland','import qs.testing').replace('import Quickshell.Hyprland','import qs.services'))
    (root/'CaptureGate.qml').write_text((Path(SOURCE)/'components/glass/CaptureGate.qml').read_text())
-   output=qml.Interface.run_qml(self,directory,'''import QtQuick
+   fixture='''import QtQuick
 import Quickshell
 import qs.services
 import qs.testing as Testing
@@ -65,15 +65,18 @@ Scope{
   const view=Testing.Registry.viewer
   if(!view){console.error('NO_VIEW',Hyprland.toplevels.length,glass.children.length);Qt.exit(5);return}
   if(step===1){if(view.captureSource!==source || !view.live){console.error('CAPTURE_NOT_STARTED');Qt.exit(6);return}glass.capturing=false;step++;return}
-  if(step===2){if(view.live || view.captureSource!==source){console.error('PAUSED_CAPTURE_DISCARDED');Qt.exit(8);return}glass.capturing=true;step++;return}
-  if(step===3){if(!view.live || view.captureSource!==source){Qt.exit(9);return}RenderingState.geometry={'1':{at:[-50,10],size:[120,100],clip:[-100,0,1000,720],visible:true,opacity:1}};step++;return}
-  if(step===4){if(view.x+view.parent.x!==-50 || view.y+view.parent.y!==10 || view.width!==120 || view.parent.width!==1000 || !view.parent.clip){console.error('RENDERED_VIEWPORT_GEOMETRY_FAILED');Qt.exit(10);return}source.closed();step++;return}
+  if(step===2){if(view.live || view.captureSource!==source){console.error('PAUSED_CAPTURE_DISCARDED');Qt.exit(8);return}RenderingState.geometry={'1':{at:[50,0],size:[100,100],clip:[0,0,1280,720],visible:true,opacity:1}};step++;return}
+  if(step===3){if(Object.keys(glass.motionGeometry).length || view.x!==0 || view.live){console.error('HIDDEN_CAPTURE_CONSUMED_MOTION');Qt.exit(11);return}glass.capturing=true;step++;return}
+  if(step===4){if(!view.live || view.captureSource!==source){Qt.exit(9);return}RenderingState.geometry={'1':{at:[-50,10],size:[120,100],clip:[-100,0,1000,720],clipActive:true,visible:true,opacity:1}};step++;return}
+  if(step===5){if(view.x+view.parent.x!==-50*glass.coordinateScale || view.y+view.parent.y!==10*glass.coordinateScale || view.width!==120*glass.coordinateScale || view.parent.width!==1000*glass.coordinateScale || !view.parent.clip){console.error('RENDERED_VIEWPORT_GEOMETRY_FAILED',view.x,view.y,view.width,view.parent.x,view.parent.y,view.parent.width,JSON.stringify(view.parent.rendered));Qt.exit(10);return}source.closed();step++;return}
   for(let n=0;n<10;n++){view.stopped();view.restart()}
   if(view.captureSource!==null || view.live || view.restartFailures!==0){console.error('CLOSED_CAPTURE_RESTARTED');Qt.exit(7);return}
   console.log('CLOSED_CAPTURE_DETACHED_OK');Qt.quit()
  }}
-}''')
-   self.assertIn('CLOSED_CAPTURE_DETACHED_OK',output)
-   self.assertNotIn('Binding loop',output)
+}'''
+   for factor in ('1','2'):
+    output=qml.Interface.run_qml(self,directory,fixture,factor)
+    self.assertIn('CLOSED_CAPTURE_DETACHED_OK',output)
+    self.assertNotIn('Binding loop',output)
 
 if __name__=='__main__':unittest.main()

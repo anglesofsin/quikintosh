@@ -21,6 +21,7 @@ s=s.replace('monitorObject.width / (monitorObject.scale || 1)', 'monitorObject.w
 s=s.replace('monitorObject.height / (monitorObject.scale || 1)', 'monitorObject.height / (monitorObject.scale || 1) * root.coordinateScale')
 s=s.replace('for(var c of clients) {', 'for(var entry of clients) {\n            var c=root.normalizedIpc(entry)')
 s=s.replace('readonly property var ipc: modelData.lastIpcObject', 'readonly property var ipc: root.normalizedIpc(modelData.lastIpcObject)')
+s=s.replace('readonly property var ipc: viewport.rendered ? Object.assign({},modelData.lastIpcObject,{at:viewport.rendered.at,size:viewport.rendered.size}):modelData.lastIpcObject', 'readonly property var ipc: root.normalizedIpc(viewport.rendered ? Object.assign({},modelData.lastIpcObject,{at:viewport.rendered.at,size:viewport.rendered.size}):modelData.lastIpcObject)')
 p.write_text(s)
 p=root/'settingsapp/SettingsWindowGlass.qml'
 s=p.read_text().replace('import QtQuick\n','import QtQuick\nimport Quickshell\n',1)

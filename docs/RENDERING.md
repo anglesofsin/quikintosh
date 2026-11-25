@@ -40,3 +40,14 @@ hardware. The matching geometry plugin was loaded and returned valid viewport
 rectangles on the author's 239.997 Hz compositor. Regression tests cover widget
 edit coalescing, clock metric reuse during resizing, current-geometry offsets,
 workspace clipping, and capture shutdown without binding loops.
+
+Workspace motion regression fixes: the geometry expression is preserved through
+shell scaling, so the image and its viewport use the same current coordinates.
+Retained closed panels disconnect from geometry publications; they keep their
+cached texture without dirtying their scene on every workspace frame. With the
+native geometry reader available, motion no longer also refreshes the complete
+Hyprland client model repeatedly on the QML animation clock.
+
+Startup packaging includes the profile script, its Quick Look MIME module and
+Finder stylesheet in the same source directory. This avoids a missing-module
+failure before shell startup on a fresh login.

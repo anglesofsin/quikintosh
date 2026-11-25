@@ -49,7 +49,7 @@ p='components/glass/GlassTracker.qml';s='import qs.services\n'+(root/p).read_tex
 a=s.index('    Timer {\n        interval: root.precisionUsers>0 ? 16');s=s[:a]+'''    property double lastNativeInventory:0
     property double lastGeometryFrame:0
     FrameAnimation{
-        running:root.captureUsers>0 && (root.precisionUsers>0 || root.fast)
+        running:root.captureUsers>0 && !RenderingState.geometryAvailable && (root.precisionUsers>0 || root.fast)
         onTriggered:{
             const now=Date.now(),fps=RenderingState.geometryFps
             if(fps>0 && now-root.lastGeometryFrame<1000/fps-.5)return
@@ -69,6 +69,7 @@ a=s.index('    Timer {\n        interval: root.precisionUsers>0 ? 16');s=s[:a]+'
 ''';write(p,s)
 p='components/glass/GlassWindows.qml';s=(root/p).read_text()
 s=s.replace('    property bool capturing:true','''    property bool capturing:true
+    readonly property var motionGeometry:root.capturing ? RenderingState.geometry:({})
     property double lastCaptureFrame:0
     FrameAnimation{
         running:root.capturing && RenderingState.glassFps>0
@@ -82,7 +83,7 @@ s=s.replace('live: root.capturing && gate.wanted &&','live: RenderingState.glass
 s=s.replace('        ScreencopyView {\n            id: view',"""        Item {
             id:viewport
             required property var modelData
-            readonly property var rendered:RenderingState.geometry[root.addressOf(modelData.address)] || null
+            readonly property var rendered:root.motionGeometry[root.addressOf(modelData.address)] || null
             readonly property var clipBox:rendered && rendered.clipActive!==false ? (rendered.clip || null):null
             x:clipBox ? (clipBox[0]-root.monitorX)*root.coordinateScale:0
             y:clipBox ? (clipBox[1]-root.monitorY)*root.coordinateScale:0
@@ -103,7 +104,13 @@ s=s.replace('        ScreencopyView {\n            id: view',"""        Item {
 # The newly inserted viewport is the delegate; the child receives its model.
 a=s.index('        ScreencopyView {\n            id: view');b=s.index('            readonly property var ipc:',a)
 s=s[:a]+s[a:b].replace('required property var modelData','property var modelData:viewport.modelData')+s[b:]
-s=s.replace('readonly property var ipc: root.normalizedIpc(modelData.lastIpcObject)','readonly property var ipc: root.normalizedIpc(viewport.rendered ? Object.assign({},modelData.lastIpcObject,{at:viewport.rendered.at,size:viewport.rendered.size}):modelData.lastIpcObject)',1)
+# Production runs before scale-geometry; fixtures may already be scaled.
+merge='viewport.rendered ? Object.assign({},modelData.lastIpcObject,{at:viewport.rendered.at,size:viewport.rendered.size}):modelData.lastIpcObject'
+if 'readonly property var ipc: root.normalizedIpc(modelData.lastIpcObject)' in s:
+ s=s.replace('readonly property var ipc: root.normalizedIpc(modelData.lastIpcObject)','readonly property var ipc: root.normalizedIpc('+merge+')',1)
+else:
+ assert 'readonly property var ipc: modelData.lastIpcObject' in s
+ s=s.replace('readonly property var ipc: modelData.lastIpcObject','readonly property var ipc: '+merge,1)
 s=s.replace('&& root.workspaceVisible(ipc, modelData.workspace)','&& (viewport.rendered ? viewport.rendered.visible:root.workspaceVisible(ipc, modelData.workspace))',1)
 s=s.replace('x: ipc && ipc.at ? ipc.at[0] - root.monitorX : 0','x: ipc && ipc.at ? ipc.at[0] - root.monitorX - viewport.x:0',1)
 s=s.replace('y: ipc && ipc.at ? ipc.at[1] - root.monitorY : 0','y: ipc && ipc.at ? ipc.at[1] - root.monitorY - viewport.y:0',1)

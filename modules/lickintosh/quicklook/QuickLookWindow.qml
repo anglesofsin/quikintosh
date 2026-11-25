@@ -4,15 +4,15 @@ import QtQuick.Layouts
 import QtMultimedia
 import Quickshell
 import qs.services
-import qs.components.glass
+import Quickshell.Io
 FloatingWindow {
  id:window
  visible:QuickLookState.opened
  title:'Lickintosh Quick Look — '+(QuickLookState.data.name || '')
  onVisibleChanged:if(!visible && QuickLookState.opened)QuickLookState.close()
  color:'transparent';implicitWidth:880;implicitHeight:650;minimumSize:Qt.size(460,320)
- readonly property bool glassReady:glass.captureSettled
- readonly property rect glassRegion:glass.glassRegion
+ property bool glassReady: false
+ readonly property rect glassRegion: Qt.rect(QuickLookState.geometry.x || 0, QuickLookState.geometry.y || 0, window.width, window.height)
  readonly property bool videoFrames:window.kind==='video' && video.contentRect.width>0 && video.contentRect.height>0
  property real zoom:1
  property real angle:0
@@ -24,26 +24,19 @@ FloatingWindow {
  readonly property string kind:info.kind || ''
  readonly property bool raster:['image','pdf'].includes(kind)
  Shortcut{sequences:['Escape','Space'];enabled:QuickLookState.opened;context:Qt.ApplicationShortcut;onActivated:window.closePreview()}
- onFullscreenChanged:{QuickLookState.beginMove();GlassTracker.captureSnapshot()}
  function closePreview(){QuickLookState.close()}
  function timeText(ms){const s=Math.floor(ms/1000);return (s>=3600 ? Math.floor(s/3600)+':':'')+String(Math.floor(s/60)%60).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
  function sizeText(n){return n>1048576 ? (n/1048576).toFixed(1)+' MB':n>1024 ? (n/1024).toFixed(1)+' KB':n+' B'}
  Connections{target:QuickLookState;function onActivated(){Qt.callLater(()=>keys.forceActiveFocus())}function onDataChanged(){window.zoom=1;window.angle=0}function onOpenedChanged(){if(QuickLookState.opened){window.indexSheet=false;Qt.callLater(()=>keys.forceActiveFocus())}else{player.stop();trimPopup.close();shareMenu.close();window.fullscreen=false}}}
- LiquidGlassBackdrop{
-  id:glass;element:'menus';ready:window.visible && Boolean(QuickLookState.geometry.address)
-  wallpaperPath:GlassWallpaper.path
-  screenSize:window.screen ? Qt.size(window.screen.width,window.screen.height):Qt.size(1920,1080)
-  windowPosition:Qt.point(QuickLookState.geometry.x || 0,QuickLookState.geometry.y || 0)
-  monitorName:QuickLookState.geometry.monitor || ''
-  excludedAddress:QuickLookState.geometry.address || ''
-  excludedPid:QuickLookState.ownerPid
-  captureInterval:ShellConfig.options.glass.captureIntervalMs
-  instantReveal:true
-  captureWindows:ShellConfig.options.glass.captureWindows
-  windowOpacity:ShellConfig.options.glass.windowOpacity
-  windowOpacityByClass:ShellConfig.options.glass.windowOpacityByClass
-  Component.onCompleted:GlassRegistry.register(window,glass)
-  Component.onDestruction:GlassRegistry.unregister(glass)
+ Process {
+  command: ['hyprctl', '-j', 'hyprglass', 'status']
+  running: window.visible
+  stdout: StdioCollector {
+   onStreamFinished: {
+    try { window.glassReady = JSON.parse(text).versionCheck === 'match' }
+    catch (_) { window.glassReady = false }
+   }
+  }
  }
  FocusScope{
   id:keys;anchors.fill:parent;focus:true
@@ -55,13 +48,14 @@ FloatingWindow {
    else if(event.key===Qt.Key_Plus || event.key===Qt.Key_Equal){window.zoom=Math.min(5,window.zoom+.25);event.accepted=true}
    else if(event.key===Qt.Key_Minus){window.zoom=Math.max(.25,window.zoom-.25);event.accepted=true}
   }
-  BoxGlass{
-   id:surface;anchors.fill:parent;anchors.margins:1;radius:20;color:'#5c202027';backdrop:glass
-   opacity:glass.captureSettled ? (window.imageDragging ? .4:1):0
+  Rectangle{
+   id:surface;anchors.fill:parent;anchors.margins:1;radius:20
+   color:window.glassReady && !Theme.plainSurfaces ? (Theme.isLight ? '#70ffffff' : '#58202027') : (Theme.isLight ? '#fafafa' : '#22232b')
+   opacity:window.imageDragging ? .4 : 1
    Rectangle{anchors.fill:parent;anchors.margins:1;radius:19;color:Theme.isLight ? '#10ffffff':'#35000000'}
    Item{
     id:header;height:54;anchors{left:parent.left;right:parent.right;top:parent.top}
-    MouseArea{anchors.fill:parent;onPressed:{QuickLookState.beginMove();window.startSystemMove()}
+    MouseArea{anchors.fill:parent;onPressed:window.startSystemMove()
 onDoubleClicked:window.fullscreen=!window.fullscreen}
     Row{id:leftActions;anchors.left:parent.left;anchors.leftMargin:14;anchors.verticalCenter:parent.verticalCenter;spacing:7
      Action{label:'×';tip:'Close';onTriggered:window.closePreview()}
@@ -166,7 +160,7 @@ height:42;spacing:10
  Component{id:genericPreview;Item{Image{anchors.centerIn:parent;width:120;height:120;source:window.kind==='directory' ? IconResolver.forFolder():IconResolver.forFile(window.info.name || '');fillMode:Image.PreserveAspectFit}}}
  Menu{
   id:shareMenu;parent:keys;x:Math.max(8,window.width-width-12);y:49
-  background:BoxGlass{radius:15;color:'#98282a32';backdrop:glass}
+  background:Rectangle{radius:15;color:'#e6282a32'}
   MenuItem{text:'Open with another app…';onTriggered:QuickLookState.send({action:'chooseApp',path:window.info.path})}
   MenuItem{text:'Show in Finder';onTriggered:Quickshell.execDetached(['lickintosh-finder','--select',window.info.path])}
   MenuItem{text:'Copy file location';onTriggered:Quickshell.execDetached(['wl-copy','--',window.info.path])}
@@ -174,7 +168,7 @@ height:42;spacing:10
  Popup{
   id:trimPopup;parent:keys;width:Math.min(440,window.width-40);height:210;x:(window.width-width)/2;y:(window.height-height)/2;modal:true;focus:true
   onOpened:{player.pause();trimRange.first.value=0;trimRange.second.value=player.duration}
-  background:BoxGlass{radius:20;color:'#c0202028';backdrop:glass}
+  background:Rectangle{radius:20;color:'#ec202028'}
   ColumnLayout{anchors.fill:parent;anchors.margins:18;spacing:12
    Text{textFormat:Text.PlainText;text:'Trim '+window.info.name;color:window.foreground;font.family:'SF Pro Display';font.pixelSize:16;font.weight:Font.DemiBold;Layout.fillWidth:true;elide:Text.ElideMiddle}
    RangeSlider{id:trimRange;Layout.fillWidth:true;implicitHeight:32;leftPadding:7;rightPadding:7;from:0;to:Math.max(1,player.duration);first.onMoved:player.position=first.value;second.onMoved:player.position=second.value

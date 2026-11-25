@@ -12,6 +12,24 @@ ContentPage {
     pageTitle: "Dynamic Island"
     property string settingsFilter: ""
     property bool weatherLocationRevealed:false
+    ContentSection {
+        title: "Dashboard"
+        Repeater {
+            model: [
+                {key:"dashboardEnabled", label:"Open dashboard with right click"},
+                {key:"dashboardCamera", label:"Offer camera in profile tile"},
+                {key:"dashboardWeatherArt", label:"Show weather backgrounds"},
+                {key:"dashboardWeatherLocation", label:"Show weather location"}
+            ]
+            delegate: ConfigSwitch {
+                required property var modelData
+                text: modelData.label
+                checked: Rosa.IslandConfig.s(modelData.key)
+                onToggled: function(value) { Rosa.IslandConfig.setStyle(modelData.key, value) }
+            }
+        }
+    }
+
     readonly property var settingsHost:QsWindow.window
     Connections {
         target:root.settingsHost

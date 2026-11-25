@@ -12,6 +12,7 @@ import pwd
 import re
 import shutil
 import subprocess
+import tempfile
 import sys
 import threading
 from urllib.parse import urlsplit
@@ -247,6 +248,36 @@ def audio_info():
     return dict(outputs=outputs, inputs=inputs, **defaults)
 
 
+SHORTCUT_MODIFIERS = [(64, 'Super'), (4, 'Ctrl'), (8, 'Alt'), (1, 'Shift')]
+
+
+def shortcut_path():
+    return Path(os.environ.get('XDG_CONFIG_HOME', HOME / '.config')) / 'lickintosh/core/shortcuts.tsv'
+
+
+def shortcut_overrides():
+    return dict(line.split('\t', 1) for line in read(shortcut_path()).splitlines() if '\t' in line)
+
+
+EDITABLE_LUA_SHORTCUTS = {
+    'Spotlight', 'Launchpad', 'Clipboard history', 'Emoji picker', 'Command runner',
+    'Control center', 'Toggle bar', 'Toggle dock', 'Open shell settings', 'Session menu',
+    'Lock screen', 'Shell AI assistant', 'Toggle shell game mode', 'Toggle keep awake',
+    'Shell profiles', 'Activate notch item', 'Notch information', 'Wallpaper panel',
+    'Toggle dark mode', 'Toggle night light', 'Turn off monitors', 'Edit desktop widgets',
+    'Screenshot menu (freeze, select: Copy/Save/Editor/OCR/Lens)', 'Capture / Quickshot',
+    'OCR (region selector)', 'Fullscreen markup/annotation',
+    'Capture display under pointer (save + clipboard)', 'Toggle do not disturb',
+    'Volume up', 'Volume down', 'Mute audio', 'Brightness up', 'Brightness down',
+    'Notification center',
+}
+
+
+def editable_shortcut(bind):
+    return (bind.get('dispatcher') in {'HL.Dispatcher(global)', 'HL.Dispatcher(exec_cmd)'}
+            and bind.get('description') in EDITABLE_LUA_SHORTCUTS and not bind.get('submap'))
+
+
 def shortcuts_info():
     binds = json.loads(run(['hyprctl', 'binds', '-j']))
     rows = []
@@ -254,9 +285,57 @@ def shortcuts_info():
         if not bind.get('description'):
             continue
         mask = int(bind.get('modmask', 0))
-        mods = [name for bit, name in [(64, 'Super'), (4, 'Ctrl'), (8, 'Alt'), (1, 'Shift')] if mask & bit]
-        rows.append(dict(name=bind['description'], key='+'.join(mods + [str(bind.get('key') or bind.get('keycode', ''))])))
-    return dict(items=sorted(rows, key=lambda row: row['name'].casefold()))
+        mods = [name for bit, name in SHORTCUT_MODIFIERS if mask & bit]
+        key = bind.get('key') or f"code:{bind.get('keycode', 0)}"
+        rows.append(dict(name=bind['description'], key='+'.join(mods + [str(key)]),
+                         editable=editable_shortcut(bind)))
+    return dict(items=sorted(rows, key=lambda row: (not row['editable'], row['name'].casefold())),
+                customized=bool(shortcut_overrides()))
+
+
+def save_shortcut(args):
+    path = shortcut_path()
+    previous = shortcut_overrides()
+    desired = dict(previous)
+    if args.get('reset'):
+        desired.clear()
+    else:
+        label = args['label']
+        binds = json.loads(run(['hyprctl', 'binds', '-j']))
+        if not any(b.get('description') == label and editable_shortcut(b) for b in binds):
+            raise ValueError('This shortcut is managed by the Hyprland configuration.')
+        parts = [part.strip() for part in str(args['value']).split('+')]
+        key = parts.pop()
+        aliases = {name.casefold(): (bit, name.upper()) for bit, name in SHORTCUT_MODIFIERS}
+        if not re.fullmatch(r'(?:[a-zA-Z0-9_]{1,48}|code:[1-9][0-9]{0,2})', key) or any(
+                part.casefold() not in aliases for part in parts):
+            raise ValueError('Use a shortcut such as Super+Shift+S.')
+        mods = {aliases[part.casefold()] for part in parts}
+        mask = sum(bit for bit, _ in mods)
+        for bind in binds:
+            existing = bind.get('key') or f"code:{bind.get('keycode', 0)}"
+            if (bind.get('modmask') == mask and existing.casefold() == key.casefold()
+                    and bind.get('description') != label):
+                raise ValueError('Already used by ' + (bind.get('description') or 'another shortcut') + '.')
+        desired[label] = ' + '.join([name for _, name in sorted(mods, reverse=True)] + [key])
+
+    def write(entries):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, delete=False) as target:
+            for label, key in sorted(entries.items()):
+                target.write(f'{label}\t{key}\n')
+            temporary = target.name
+        os.replace(temporary, path)
+
+    write(desired)
+    try:
+        if run(['hyprctl', 'reload']).strip() != 'ok':
+            raise RuntimeError('Hyprland did not reload the shortcuts.')
+    except Exception:
+        write(previous)
+        run(['hyprctl', 'reload'], check=False)
+        raise
+    return shortcuts_info()
 
 
 def login_items():
@@ -495,6 +574,8 @@ def action(name, args):
     active = read(Path(os.environ.get('RICE_SHELL_STATE_DIR',str(Path(os.environ.get('XDG_STATE_HOME', HOME/'.local/state'))/'nixos-rice')))/'active-shell')
     if name != 'runtime-restore' and active != 'lickintosh':
         raise RuntimeError('Select Lickintosh before applying these settings. Other desktop profiles are unchanged.')
+    if name == 'shortcut-save':
+        return save_shortcut(args)
     if name == 'runtime':
         runtime(args.get('values', {}))
     elif name == 'runtime-restore':

@@ -4,7 +4,6 @@ import Quickshell
 import Quickshell.Wayland
 import qs.services
 import qs.capture
-import qs.components.glass
 import "Draw.js" as Draw
 PanelWindow {
  id:win
@@ -56,17 +55,6 @@ PanelWindow {
  readonly property string annotationColor:colors[colorIndex]
  readonly property var tools:[{name:"move",glyph:"\ue121",key:"M"},{name:"arrow",glyph:"\ue493",key:"A"},{name:"rect",glyph:"\ue167",key:"R"},{name:"ellipse",glyph:"\ue076",key:"E"},{name:"pen",glyph:"\ue1f9",key:"P"},{name:"text",glyph:"\ue198",key:"T"},{name:"mosaic",glyph:"\ue4ff",key:"B"}]
  FontLoader {id:lucide;source:Qt.resolvedUrl("assets/lucide.ttf")}
- LiquidGlassBackdrop {
-  id:captureBackdrop
-  frozenSource:background
-  ready:win.visible && win.frameReady
-  screenSize:Qt.size(win.width,win.height)
-  windowPosition:Qt.point(0,0)
-  element:"menus"
-  captureWindows:false;showDesktopItems:false;showDesktopWidgets:false
-  instantReveal:true
- }
-
  function clone(value){return JSON.parse(JSON.stringify(value))}
  function history(){undoStack=undoStack.concat([clone(items)]).slice(-100);redoStack=[]}
  function redraw(){annotations.requestPaint();exportCanvas.requestPaint()}
@@ -129,8 +117,26 @@ PanelWindow {
   padding:0;color:win.annotationColor;selectionColor:'#80678cff';selectedTextColor:'white';font.family:'SF Pro Text';font.pixelSize:24;wrapMode:TextEdit.NoWrap;selectByMouse:true;textFormat:TextEdit.PlainText;background:Rectangle{color:'#18000000';border.color:'#88ffffff';border.width:1}
   Keys.onPressed:event=>{if(event.key===Qt.Key_Escape){win.commitText(true);event.accepted=true}else if((event.key===Qt.Key_Return || event.key===Qt.Key_Enter) && !(event.modifiers & Qt.ShiftModifier)){win.commitText(false);event.accepted=true}}
  }
+ PanelWindow {
+  id:chrome
+  screen:win.screen
+  anchors {top:true;bottom:true;left:true;right:true}
+  visible:win.visible && (win.chosen || CaptureState.resultTitle !== "" || lensConfirm.visible || saveDialog.visible)
+  color:'transparent'
+  exclusiveZone:-1
+  WlrLayershell.namespace:'quickintosh-quickshot-controls'
+  WlrLayershell.layer:WlrLayer.Overlay
+  WlrLayershell.keyboardFocus:lensConfirm.visible || saveDialog.visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+  mask:Region {
+   Region { item:toolbar.visible ? toolbar : null }
+   Region { item:toolbar.visible && toolStyles.visible ? toolStyles : null }
+   Region { item:actions.visible ? actions : null }
+   Region { item:results.visible ? results : null }
+   Region { item:lensConfirm.visible || saveDialog.visible ? chrome.contentItem : null }
+  }
+ }
  CaptureGlass {
-  id:toolbar;z:30;visible:win.chosen && !CaptureState.resultTitle;width:toolRow.implicitWidth+16;height:56;radius:18;backdrop:captureBackdrop
+  id:toolbar;parent:chrome.contentItem;z:30;visible:win.chosen && !CaptureState.resultTitle;width:toolRow.implicitWidth+16;height:56;radius:18
   x:win.toolbarManual ? win.toolbarX : Math.max(6,Math.min(win.width-width-6,win.selection.x+win.selection.w/2-width/2))
   y:win.toolbarManual ? win.toolbarY : (win.selection.y+win.selection.h+height+100<win.height ? win.selection.y+win.selection.h+8 : Math.max(6,win.selection.y-height-100))
   MouseArea {anchors.fill:parent}
@@ -138,7 +144,7 @@ PanelWindow {
    id:toolRow;z:1;anchors.centerIn:parent;spacing:2
    Item {width:24;height:40
     Text {anchors.centerIn:parent;text:'⠿';color:'#909096';font.pixelSize:21}
-    MouseArea {anchors.fill:parent;cursorShape:Qt.SizeAllCursor;property real dx:0;property real dy:0;onPressed:m=>{const p=mapToItem(win.contentItem,m.x,m.y);dx=p.x-toolbar.x;dy=p.y-toolbar.y;win.toolbarX=toolbar.x;win.toolbarY=toolbar.y;win.toolbarManual=true};onPositionChanged:m=>{if(pressed){const p=mapToItem(win.contentItem,m.x,m.y);win.toolbarX=Math.max(0,Math.min(win.width-toolbar.width,p.x-dx));win.toolbarY=Math.max(0,Math.min(win.height-toolbar.height-48,p.y-dy))}}}
+    MouseArea {anchors.fill:parent;cursorShape:Qt.SizeAllCursor;property real dx:0;property real dy:0;onPressed:m=>{const p=mapToItem(chrome.contentItem,m.x,m.y);dx=p.x-toolbar.x;dy=p.y-toolbar.y;win.toolbarX=toolbar.x;win.toolbarY=toolbar.y;win.toolbarManual=true};onPositionChanged:m=>{if(pressed){const p=mapToItem(chrome.contentItem,m.x,m.y);win.toolbarX=Math.max(0,Math.min(win.width-toolbar.width,p.x-dx));win.toolbarY=Math.max(0,Math.min(win.height-toolbar.height-48,p.y-dy))}}}
    }
    Repeater {model:win.tools;ToolButton {required property var modelData;glyph:modelData.glyph;label:modelData.name;iconFont:lucide.name;selected:win.tool===modelData.name;onClicked:{if(win.textEditing)win.commitText(false);win.tool=modelData.name}}}
    Rectangle {width:13;height:32;anchors.verticalCenter:parent.verticalCenter;color:'transparent';Rectangle{anchors.centerIn:parent;width:1;height:24;color:'#3c3c41'}}
@@ -153,7 +159,7 @@ PanelWindow {
    ToolButton {glyph:CaptureState.mode==='record' ? '●' : '✓';label:'Confirm';primary:true;onClicked:if(CaptureState.mode==='lens')lensConfirm.open();else win.finish(CaptureState.mode==='record' ? 'record' : 'copy')}
   }
   CaptureGlass {
-   backdrop:captureBackdrop;visible:win.tool!=='move';anchors.top:parent.bottom;anchors.topMargin:6;anchors.horizontalCenter:parent.horizontalCenter;width:styles.implicitWidth+16;height:44;radius:15
+   id:toolStyles;visible:win.tool!=='move';anchors.top:parent.bottom;anchors.topMargin:6;anchors.horizontalCenter:parent.horizontalCenter;width:styles.implicitWidth+16;height:44;radius:15
    MouseArea {anchors.fill:parent}
    Row {id:styles;z:1;anchors.centerIn:parent;spacing:4
     Repeater {model:win.colors;Item {required property string modelData;required property int index;width:30;height:30;opacity:win.tool==='mosaic' ? .4 : 1
@@ -168,7 +174,7 @@ PanelWindow {
   Text {visible:win.hints;anchors.top:parent.bottom;anchors.topMargin:win.tool==='move' ? 44 : 94;anchors.horizontalCenter:parent.horizontalCenter;text:'M Move · A Arrow · R Rectangle · E Ellipse · P Pen · T Text · B Mosaic · Ctrl+Z Undo · Enter Copy · Esc Cancel';color:'white';font.pixelSize:11;style:Text.Outline;styleColor:'#1c1c1f'}
  }
  CaptureActions {
-  z:35;visible:win.extras && win.chosen;backdrop:captureBackdrop
+  id:actions;parent:chrome.contentItem;z:35;visible:win.extras && win.chosen
   x:Math.max(8,Math.min(win.width-width-8,toolbar.x+toolbar.width-width))
   y:Math.max(8,Math.min(win.height-height-8,toolbar.y+toolbar.height+54))
   onSelected:action=>{
@@ -182,14 +188,14 @@ PanelWindow {
   }
  }
  CaptureResults {
-  z:36;anchors.centerIn:parent;backdrop:captureBackdrop
+  id:results;parent:chrome.contentItem;z:36;anchors.centerIn:parent
   visible:CaptureState.resultTitle!=='' && CaptureState.resultText!=='' && CaptureState.opened
   title:CaptureState.resultTitle;result:CaptureState.resultText;colors:CaptureState.palette
   onCopyRequested:value=>CaptureState.send({action:'text',text:value})
   onDismissed:{CaptureState.resultTitle='';keys.forceActiveFocus()}
  }
  CaptureGlass {
-  backdrop:captureBackdrop;id:loupe;z:40;visible:CaptureState.options.magnifier && (CaptureState.mode==='color' || win.selecting)
+  id:loupe;z:40;visible:CaptureState.options.magnifier && (CaptureState.mode==='color' || win.selecting)
   x:Math.min(win.width-width-8,win.cursorX+24);y:Math.min(win.height-height-8,win.cursorY+24);width:178;height:226;radius:18
   ShaderEffectSource {id:zoom;x:8;y:8;width:162;height:162;sourceItem:background;sourceRect:Qt.rect(win.cursorX-6.5/win.factor,win.cursorY-6.5/win.factor,13/win.factor,13/win.factor);textureSize:Qt.size(13,13);smooth:false;live:true}
   Canvas {x:8;y:8;width:162;height:162;onPaint:{const c=getContext('2d');c.clearRect(0,0,width,height);c.strokeStyle='#22777777';c.lineWidth=1;for(let i=1;i<13;i++){c.beginPath();c.moveTo(i*width/13,0);c.lineTo(i*width/13,height);c.moveTo(0,i*height/13);c.lineTo(width,i*height/13);c.stroke()}}}
@@ -199,6 +205,6 @@ PanelWindow {
  }
  Rectangle {z:50;visible:win.exporting;anchors.centerIn:parent;width:160;height:38;radius:10;color:'#ee1c1c1f';Text {anchors.centerIn:parent;text:'Rendering screenshot…';color:'white';font.pixelSize:13}}
  Timer {id:colorPick;interval:80;onTriggered:CaptureState.pickColor()}
- Dialog {id:lensConfirm;background:CaptureGlass{backdrop:captureBackdrop}parent:win.contentItem;x:(win.width-width)/2;y:(win.height-height)/2;width:460;title:'Search with Google Lens?';modal:true;standardButtons:Dialog.Ok | Dialog.Cancel;contentItem:Label {text:'This sends only the selected image to the temporary host uguu.se, then opens it in Google Lens. Other tools stay local.';wrapMode:Text.WordWrap}onAccepted:win.finish('lens')}
- SaveDialog {id:saveDialog;glassBackdrop:captureBackdrop;parent:win.contentItem;suggestedName:CaptureState.filename(win.selection.w*win.factor,win.selection.h*win.factor,'region');onSaveRequested:path=>win.finish('save',path)}
+ Dialog {id:lensConfirm;background:CaptureGlass{}parent:chrome.contentItem;x:(win.width-width)/2;y:(win.height-height)/2;width:460;title:'Search with Google Lens?';modal:true;standardButtons:Dialog.Ok | Dialog.Cancel;contentItem:Label {text:'This sends only the selected image to the temporary host uguu.se, then opens it in Google Lens. Other tools stay local.';wrapMode:Text.WordWrap}onAccepted:win.finish('lens')}
+ SaveDialog {id:saveDialog;parent:chrome.contentItem;suggestedName:CaptureState.filename(win.selection.w*win.factor,win.selection.h*win.factor,'region');onSaveRequested:path=>win.finish('save',path)}
 }

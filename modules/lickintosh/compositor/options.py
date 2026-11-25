@@ -163,7 +163,7 @@ def native_workspace_values(api, state=None):
 
 
 def native_leaf_command(leaf, settings):
-    assert leaf in NATIVE_LEAVES
+    assert leaf in (*NATIVE_LEAVES, 'windowsIn', 'windowsOut')
     enabled = settings.get('enabled', True)
     table = {'leaf': leaf, 'enabled': enabled}
     if enabled:
@@ -216,6 +216,70 @@ def apply_native_workspace(api, overrides, restore=False):
     api.write_json(path, dict(saved, applied=target))
 
 
+WINDOW_PREFIX = 'window-animation:'
+WINDOW_LEAVES = ('windowsIn', 'windowsOut')
+WINDOW_STYLES = ('slide', 'popin')
+
+
+def native_window_info(api):
+    animations, curves = json.loads(api.run(['hyprctl', 'animations', '-j']))
+    items = {item['name']: item for item in animations}
+    parent = next((items[name] for name in ('windows', 'global') if items.get(name, {}).get('overridden')), {})
+    return {
+        name: items[name] if items.get(name, {}).get('overridden') else parent
+        for name in WINDOW_LEAVES
+    }, sorted({'default', *(item['name'] for item in curves)})
+
+
+def native_window_values(api, state=None):
+    leaves, curves = state if state is not None else native_window_info(api)
+    result = {'curves': curves}
+    for leaf, entry in leaves.items():
+        style = (entry.get('style') or 'popin').split()
+        amount = int(style[-1][:-1]) if re.fullmatch(r'[0-9]+%', style[-1]) else 80
+        result[leaf] = dict(style=style[0], amount=amount,
+                            speed=entry.get('speed') or 5, curve=entry.get('bezier') or 'default',
+                            enabled=entry.get('enabled', True))
+    return result
+
+
+def apply_native_windows(api, values, restore=False):
+    path = api.STATE / 'window-animation-runtime.json'
+    instance = api.os.environ.get('HYPRLAND_INSTANCE_SIGNATURE', '')
+    saved = api.read_json(path)
+    original = saved.get('original', {}) if saved.get('instance') == instance else {}
+    if not values and not original:
+        return
+    leaves, curves = native_window_info(api)
+    defaults = native_window_values(api, (leaves, curves))
+    commands = []
+    for leaf in WINDOW_LEAVES:
+        overrides = {key.split(':', 2)[2]: value for key, value in values.items()
+                     if key.startswith(WINDOW_PREFIX + leaf + ':')}
+        if restore or not overrides:
+            if leaf in original:
+                commands.append(native_leaf_command(leaf, original.pop(leaf)))
+            continue
+        original.setdefault(leaf, leaves[leaf])
+        entry = defaults[leaf] | overrides
+        style = typed(entry['style'], ('choice', WINDOW_STYLES))
+        if style == 'popin':
+            style += f" {int(typed(entry['amount'], ('int', 0, 100)))}%"
+        target = dict(style=style, enabled=typed(entry['enabled'], ('bool',)),
+                      speed=typed(entry['speed'], ('number', .1, 100)),
+                      bezier=typed(entry['curve'], ('choice', [*curves, defaults[leaf]['curve']])))
+        if any(leaves[leaf].get(key) != value for key, value in target.items()):
+            commands.append(native_leaf_command(leaf, target))
+    if commands:
+        response = api.run(['hyprctl', 'eval', ';'.join(commands)])
+        if 'error' in response.lower():
+            raise RuntimeError(response)
+    if original:
+        api.write_json(path, dict(instance=instance, original=original))
+    else:
+        path.unlink(missing_ok=True)
+
+
 def query(api):
  plugins=json.loads(api.run(['hyprctl','plugins','list','-j']))
  hyprimate=any(p.get('name')=='hyprimate' for p in plugins)
@@ -226,7 +290,7 @@ def query(api):
  clients=json.loads(api.run(['hyprctl','clients','-j']))
  return {'values':values,'options':OPTIONS,'rules':read_config(api.HOME/'.config/lickintosh/core/compositor.json').get('rules',[]),
          'applications':sorted({c.get('class','') for c in clients if c.get('class')}),
-         'workspaceNative':native_workspace_values(api), 'hyprimate':hyprimate,'animationFields':HYPRIMATE_FIELDS if hyprimate else []}
+         'workspaceNative':native_workspace_values(api), 'windowNative':native_window_values(api), 'hyprimate':hyprimate,'animationFields':HYPRIMATE_FIELDS if hyprimate else []}
 
 def apply_rules(api,rules=None,restore=False):
  path=api.STATE/'compositor-rules-runtime.json';record=api.read_json(path)

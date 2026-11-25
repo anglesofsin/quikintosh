@@ -160,8 +160,23 @@ if capabilities then
     capabilities:close()
     if chunk then local ok, result = pcall(chunk); if ok then shellActions = result end end
 end
+local shortcutOverrides = {}
+if shellActions["switcher-next"] then
+    local config = os.getenv("XDG_CONFIG_HOME") or (os.getenv("HOME") .. "/.config")
+    local shortcuts = io.open(config .. "/lickintosh/core/shortcuts.tsv", "r")
+    if shortcuts then
+        for line in shortcuts:lines() do
+            local label, binding = line:match("^([^%c]+)	([%w_+ :%-]+)$")
+            if label then shortcutOverrides[label] = binding end
+        end
+        shortcuts:close()
+    end
+end
+local function configurableBind(key, dispatcher, options)
+    hl.bind(shortcutOverrides[options.description] or key, dispatcher, options)
+end
 local function shellBind(key, action, options)
-    if shellActions[action] then hl.bind(key, riceAction(action), options) end
+    if shellActions[action] then configurableBind(key, riceAction(action), options) end
 end
 
 -- 1. Window Management
@@ -191,8 +206,8 @@ hl.bind(m .. " + E", hl.dsp.exec_cmd("rice-file-manager"), { description = "Rice
 
 -- 4. Active desktop shell (capabilities are reloaded on each explicit switch)
 if shellActions["switcher-next"] then
-    hl.bind(m .. " + P", hl.dsp.global("lickintosh:spotlight"), { description = "Spotlight" })
-    hl.bind("ALT + P", hl.dsp.global("lickintosh:launchpad"), { description = "Launchpad" })
+    configurableBind(m .. " + P", hl.dsp.global("lickintosh:spotlight"), { description = "Spotlight" })
+    configurableBind("ALT + P", hl.dsp.global("lickintosh:launchpad"), { description = "Launchpad" })
 elseif shellActions["launchpad"] then
     shellBind(m .. " + P", "launchpad", { description = "Launchpad" })
     shellBind("ALT + SPACE", "spotlight", { description = "Spotlight" })
@@ -202,7 +217,7 @@ end
 shellBind(m .. " + period", "emoji", { description = "Emoji picker" })
 shellBind(m .. " + SHIFT + Return", "command-runner", { description = "Command runner" })
 if shellActions["screenshot-fullscreen"] then
-    hl.bind(m .. " + V", hl.dsp.global("lickintosh:clipboard"), { description = "Clipboard history" })
+    configurableBind(m .. " + V", hl.dsp.global("lickintosh:clipboard"), { description = "Clipboard history" })
 else
     shellBind(m .. " + V", "clipboard", { locked = true, description = "Clipboard history" })
 end
@@ -420,10 +435,10 @@ hl.window_rule({
     opacity = shellActions["switcher-next"] and "1.0 1.0" or "0.97 0.93",
 })
 
--- Preview pixels stay opaque; its own Liquid Glass paints translucent chrome.
+-- Preview pixels stay opaque; HyprGlass draws behind the translucent chrome.
 if shellActions["switcher-next"] then
     hl.window_rule({name="lickintosh-settings",match={class="^org[.]lickintosh[.]Settings$"},float=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
-    hl.window_rule({name="lickintosh-quick-look",match={title="^(Lickintosh|Quickintosh) Quick Look.*"},float=true,center=true,stay_focused=true,focus_on_activate=true,no_anim=true,opacity="1.0 1.0"})
+    hl.window_rule({name="lickintosh-quick-look",match={title="^(Lickintosh|Quickintosh) Quick Look.*"},float=true,center=true,stay_focused=true,focus_on_activate=true,no_anim=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
 end
 
 hl.layer_rule({
@@ -808,6 +823,17 @@ do
     local shell = file and file:read("*all"):match("^%s*(.-)%s*$") or ""
     if file then file:close() end
     if shell == "lickintosh" then hl.config({ decoration = { rounding = 20 } }) end
+end
+
+if shellActions["switcher-next"] then
+    hl.layer_rule({name="quickintosh-capture-chrome",match={namespace="^quickintosh-(quickshot-controls|island-dashboard)$"},
+        no_anim=true,blur=true,ignore_alpha=0.20})
+    if hl.plugin.hyprglass then
+        local glass = hl.plugin.hyprglass
+        glass.config({ layers = { enabled = true } })
+        glass.layer("quickintosh-quickshot-controls", { mask_mode="contour", mask_threshold=0.18 })
+        glass.layer("quickintosh-island-dashboard", { mask_mode="contour", mask_threshold=0.18 })
+    end
 end
 
 -- The transparent Quick Look click shield has no visible entrance/exit motion.

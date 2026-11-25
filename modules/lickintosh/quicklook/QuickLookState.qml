@@ -32,11 +32,6 @@ Singleton {
  property string context:''
  property var data:({})
  property string error:''
- Binding{target:GlassTracker;property:'precisionUsers';value:root.opened && root.moving ? 1:0}
- property string motionStamp:''
- property bool moving:false
- property double moveUntil:0
- function beginMove(){moving=true;moveUntil=Date.now()+350;GlassTracker.markActive();GlassTracker.refreshWindows()}
  property int openedSnapshot:0
  function addressOf(value){return String(value || '').replace(/^0x/i,'').toLowerCase()}
  readonly property var previewClient:opened && GlassTracker.snapshotSerial>=openedSnapshot ? GlassTracker.clientsSnapshot.find(c=>c.pid===root.ownerPid && c.mapped!==false && !c.hidden && String(c.title || '').startsWith('Lickintosh Quick Look')) || null:null
@@ -56,7 +51,7 @@ Singleton {
  function urlFor(path){return String(path).startsWith('file:') ? String(path):'file://'+String(path).split('/').map(encodeURIComponent).join('/')}
  function send(value){if(ready)worker.write(JSON.stringify(value)+'\n');else if(enabled)pending=pending.concat([value])}
  function requestFocus(){if(!opened || !focusPending || focusSent)return;if(Date.now()>focusDeadline){focusPending=false;return}if(geometry.address){focusSent=true;send({action:'focus',address:geometry.address})}}
- onGeometryChanged:{requestFocus();const stamp=geometry.address ? [geometry.address,geometry.x,geometry.y,geometry.width,geometry.height].join(':'):'';if(opened && motionStamp!=='' && stamp!=='' && stamp!==motionStamp){moving=true;moveUntil=Date.now()+180}motionStamp=stamp}
+ onGeometryChanged: requestFocus()
  function thumbnail(path,version){
   if(enabled)Qt.callLater(()=>root.requestThumbnail(path,version))
   return thumbnailMap[path] || ''
@@ -70,7 +65,7 @@ Singleton {
  }
  function show(files,position,source){if(!enabled || !files.length)return;paths=files.slice();index=Math.max(0,Math.min(paths.length-1,position));context=source;if(!opened){openedSnapshot=GlassTracker.snapshotSerial+1;GlassTracker.captureSnapshot();focusPending=true;focusSent=false;focusDeadline=Date.now()+1800}opened=true;GlassTracker.refreshWindows();send({action:'visible',value:true});inspect(1);requestFocus()}
  function inspect(page){loading=true;error='';notice='';send({action:'inspect',path:paths[index],page:page || 1,id:++requestId})}
- function close(){if(opened && enabled && context==='desktop'){returnToDesktop=true;desktopReturn.restart()}opened=false;moving=false;focusPending=false;focusSent=false;data=({});loading=false;send({action:'visible',value:false})}
+ function close(){if(opened && enabled && context==='desktop'){returnToDesktop=true;desktopReturn.restart()}opened=false;focusPending=false;focusSent=false;data=({});loading=false;send({action:'visible',value:false})}
  function navigate(direction){if(context==='finder'){send({action:'navigate',direction:direction});return}const step=direction===2 || direction===4 ? -1:1;index=Math.max(0,Math.min(paths.length-1,index+step));inspect(1)}
  function fileAction(operation,paths,name,destination){send({action:'fileOperation',operation:operation,paths:paths || [],name:name || '',destination:destination || ''})}
  function transfer(urls,destination,operation){const token=++transferSerial;send({action:'transfer',id:token,paths:urls.map(String),destination:destination,operation:operation});return token}
@@ -97,8 +92,6 @@ Singleton {
   onExited:{root.ready=false;root.bridgeReady=false;root.opened=false;if(root.active){root.restartReady=false;retry.restart()}}
  }
  Timer{interval:120;running:root.opened && root.focusPending;repeat:true;onTriggered:{GlassTracker.refreshWindows();root.requestFocus()}}
- Timer{interval:60;running:root.opened && root.moving;repeat:true;triggeredOnStart:true;onTriggered:GlassTracker.captureSnapshot()}
- Timer{interval:16;running:root.opened && root.moving;repeat:true;triggeredOnStart:true;onTriggered:{if(Date.now()>root.moveUntil){root.moving=false;return}}}
  Timer{id:retry;interval:1000;onTriggered:root.restartReady=true}
  Timer{id:desktopReturn;interval:180;onTriggered:root.returnToDesktop=false}
  Timer{interval:120;running:root.opened && (!root.geometry.address || root.focusPending);repeat:true;triggeredOnStart:true;onTriggered:{GlassTracker.captureSnapshot();GlassTracker.refreshWindows()}}

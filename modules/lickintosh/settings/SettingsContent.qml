@@ -36,7 +36,7 @@ ScrollView{
  function refresh(){const name=current?.query;if(name)SettingsState.query(name);if(['account','about'].includes(pageId))SettingsState.query('system');if(pageId==='notifications')SettingsState.query('apps');if(pageId==='sound')SettingsState.query('audio');if(pageId==='games')SettingsState.query('main');if(pageId==='shortcuts')SettingsState.query('shortcuts');permissionSelection()}
  Component.onCompleted:refresh()
  onPageIdChanged:{selectedApp='';selectedPermissionApp='';Qt.callLater(root.refresh)}
- Connections{target:SettingsState;function onReadyChanged(){root.refresh()}function onDataChanged(){root.permissionSelection()}function onCompleted(name,result){if(['audio-volume','audio-mute','audio-default'].includes(name))SettingsState.query('audio',true);if(name==='default-app'){const next=Object.assign({},SettingsPreferences.defaultApps);next[result.mime]=result.app;SettingsPreferences.defaultApps=next;SettingsState.query('apps',true);}if(name==='login-toggle')SettingsState.query('login',true);if(name.startsWith('network-'))SettingsState.query('network',true);if(name==='printer-default')SettingsState.query('printers',true);if(name==='flatpak-permission'){const id=root.selectedPermissionApp || root.stateData.privacy?.flatpaks?.[0]?.id;if(id)SettingsState.query('permissions',true,{app:id})}if(name==='usage-clear')SettingsState.query('usage',true)}}
+ Connections{target:SettingsState;function onReadyChanged(){root.refresh()}function onDataChanged(){root.permissionSelection()}function onCompleted(name,result){if(['audio-volume','audio-mute','audio-default'].includes(name))SettingsState.query('audio',true);if(name==='default-app'){const next=Object.assign({},SettingsPreferences.defaultApps);next[result.mime]=result.app;SettingsPreferences.defaultApps=next;SettingsState.query('apps',true);}if(name==='login-toggle')SettingsState.query('login',true);if(name.startsWith('network-'))SettingsState.query('network',true);if(name==='printer-default')SettingsState.query('printers',true);if(name==='flatpak-permission'){const id=root.selectedPermissionApp || root.stateData.privacy?.flatpaks?.[0]?.id;if(id)SettingsState.query('permissions',true,{app:id})}if(name==='usage-clear')SettingsState.query('usage',true);if(name==='shortcut-save')SettingsState.query('shortcuts',true)}}
  Timer{interval:2000;repeat:true;running:root.pageId==='sound' && root.visible && !!QsWindow.window?.visible;onTriggered:SettingsState.query('audio',true)}
  function build(){
   const sys=stateData.system || {},cap=sys.capabilities || {},result=[]
@@ -185,7 +185,11 @@ ScrollView{
    }
    result.push(card('Profile',[button('Restore Input Settings','Restore Original Settings','input-reset')],'Input overrides are active only in Lickintosh and are restored when switching to another rice.'))
   }else if(pageId==='shortcuts'){
-   result.push(card('Keyboard Shortcuts',(stateData.shortcuts?.items || []).map(item=>info(item.name,item.key)), 'These are the actual shortcuts registered by your current Hyprland configuration.'))
+   const shortcuts=stateData.shortcuts?.items || []
+   result.push(card('Quickintosh',shortcuts.filter(item=>item.editable).map(item=>
+    row(item.name,'field',{value:item.key,action:'shortcut-save',target:item.name}))
+    .concat([button('Restore shortcuts','↶ Restore Defaults','shortcut-reset',{available:!!stateData.shortcuts?.customized})])))
+   result.push(card('Hyprland',shortcuts.filter(item=>!item.editable).map(item=>info(item.name,item.key))))
   }else if(pageId==='printers'){
    result.push(card('Printers',(stateData.printers?.printers || []).map(printer=>button(printer.name,printer.name===stateData.printers.default ? 'Default':'Make Default','printer-default',{target:printer.name,description:printer.status,available:printer.name!==stateData.printers.default}))))
    if(!stateData.printers?.printers?.length)result.push(card('Printers',[info('Printers',stateData.printers?.available ? 'No printer has been added':'The printing service is not running')]))
@@ -217,6 +221,8 @@ ScrollView{
    if(['start','end'].includes(row.key) && !/^([01]\d|2[0-3]):[0-5]\d$/.test(value)){SettingsState.error='Enter a valid time in 24-hour format.';return}
    SettingsPreferences[row.group][row.key]=value;return
   }
+  if(name==='shortcut-save'){SettingsState.change(name,{label:row.target,value:value});return}
+  if(name==='shortcut-reset'){SettingsState.change('shortcut-save',{reset:true});return}
   if(name==='input'){SettingsPreferences.input(row.key,value);return}
   if(name==='input-reset'){SettingsPreferences.inputOverrides=({});return}
   if(name==='input-layout'){const next=Object.assign({},SettingsPreferences.inputOverrides);next['input:kb_layout']=['us','br','pt','gb','de','fr','es'][value];next['input:kb_variant']='';SettingsPreferences.inputOverrides=next;return}

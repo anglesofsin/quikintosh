@@ -17,7 +17,7 @@ ScrollView{
  function value(key,fallback){const v=SettingsPreferences.inputOverrides[key];return v!==undefined ? v:data.values?.[key] ?? fallback}
  function set(key,value){const next=Object.assign({},SettingsPreferences.inputOverrides);next[key]=value;SettingsPreferences.inputOverrides=next}
  function isPageOption(key) {
-  return key.startsWith('workspace-animation:') || key.startsWith('plugin:hyprimate:') ||
+  return key.startsWith('window-animation:') || key.startsWith('workspace-animation:') || key.startsWith('plugin:hyprimate:') ||
          Object.prototype.hasOwnProperty.call(root.data.options || {},key)
  }
  readonly property bool canReset: Object.keys(SettingsPreferences.inputOverrides).some(root.isPageOption)
@@ -256,6 +256,60 @@ ScrollView{
     readonly property var directions:['','left','right','top','bottom']
     selection:Math.max(0,directions.indexOf(workspaceAnimations.nativeValue('direction','')))
     onPicked:index=>root.set(workspaceAnimations.nativePrefix+'direction',directions[index])
+   }
+  }
+  Repeater {
+   model: ['windowsIn', 'windowsOut']
+   delegate: SettingsCard {
+    id: nativeWindow
+    required property string modelData
+    readonly property string prefix: 'window-animation:'+modelData+':'
+    readonly property var current:root.data.windowNative?.[modelData] || ({})
+    function read(key,fallback){return root.value(prefix+key,current[key] ?? fallback)}
+    readonly property string effectKey: 'plugin:hyprimate:window:'+(modelData==='windowsIn' ? 'open' : 'close')+':enabled'
+    readonly property bool useHyprimate: root.data.hyprimate===true &&
+        root.value('plugin:hyprimate:window:enabled',true) && root.value(effectKey,true)
+    title:modelData==='windowsIn' ? 'Window opening' : 'Window closing'
+    SettingsRow {
+     visible:root.data.hyprimate===true
+     label:'Animation provider';kind:'choice';choices:['Hyprland','Hyprimate']
+     selection:nativeWindow.useHyprimate ? 1:0
+     onPicked:index=>{
+      if(index===1)root.set('plugin:hyprimate:window:enabled',true)
+      root.set(nativeWindow.effectKey,index===1)
+     }
+    }
+    SettingsRow {
+     visible:!nativeWindow.useHyprimate
+     label:'Enabled';kind:'switch';checked:nativeWindow.read('enabled',true)
+     onToggled:value=>root.set(nativeWindow.prefix+'enabled',value)
+    }
+    SettingsRow {
+     visible:!nativeWindow.useHyprimate
+     label:'Style';kind:'choice';choices:['Slide','Scale']
+     selection:nativeWindow.read('style','popin')==='slide' ? 0:1
+     onPicked:index=>root.set(nativeWindow.prefix+'style',['slide','popin'][index])
+    }
+    SettingsRow {
+     label:'Scale from';kind:'slider';minimum:0;maximum:100;step:1
+     visible:!nativeWindow.useHyprimate && nativeWindow.read('style','popin')==='popin'
+     number:nativeWindow.read('amount',80);value:number+'%'
+     onCommitted:amount=>root.set(nativeWindow.prefix+'amount',amount)
+    }
+    SettingsRow {
+     visible:!nativeWindow.useHyprimate
+     label:'Duration';kind:'slider';minimum:.1;maximum:20;step:.1
+     number:nativeWindow.read('speed',5);value:Math.round(number*100)+' ms'
+     onCommitted:amount=>root.set(nativeWindow.prefix+'speed',amount)
+    }
+    SettingsRow {
+     visible:!nativeWindow.useHyprimate
+     label:'Easing';kind:'choice'
+     readonly property string selectedCurve:nativeWindow.read('curve','default')
+     choices:Array.from(new Set([selectedCurve].concat(root.data.windowNative?.curves || [])))
+     selection:choices.indexOf(selectedCurve)
+     onPicked:index=>root.set(nativeWindow.prefix+'curve',choices[index])
+    }
    }
   }
   SettingsCard {

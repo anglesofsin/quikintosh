@@ -19,7 +19,7 @@ Dialog {
  onOpened:{folders.folder=folderUrl(ShellConfig.options.capture.lastSaveDirectory || ShellConfig.options.capture.directory);filename.text=suggestedName;Qt.callLater(()=>{filename.forceActiveFocus();filename.selectAll()})}
  onAccepted:{if(!filename.text.trim())return;const directory=folders.folder.toString().replace(/\/$/,'');ShellConfig.options.capture.lastSaveDirectory=directory;saveRequested(directory+'/'+encodeURIComponent(filename.text.trim()))}
  FolderListModel {id:folders;showDirs:true;showFiles:true;showDotAndDotDot:false;showDirsFirst:true;nameFilters:['*.png'];showHidden:false}
- background:CaptureGlass {radius:18;backdrop:root.glassBackdrop}
+ background:CaptureGlass {radius:18}
  header:Label {text:root.title;color:'white';font.pixelSize:18;font.bold:true;padding:18}
  contentItem:ColumnLayout {
   spacing:10

@@ -304,6 +304,7 @@ let
       cp -r ${../defaults} $out/quickintosh-defaults
       ${pkgs.python3}/bin/python3 ${./lickintosh/branding.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/i18n}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/island-dashboard/integrate.py} $out ${./lickintosh/island-dashboard}
       patchShebangs $out/tools $out/rosa/helpers
     '';
   };

@@ -121,19 +121,3 @@ for name, before, after in [
     text = path.read_text()
     assert before in text, name
     path.write_text(text.replace(before, after, 1))
-
-# Volume, battery, Wi-Fi and Bluetooth use this common popover.
-path = root / 'ui/topbar/statusarea/StatusSubMenuWindow.qml'
-text = path.read_text()
-text = text.replace('"quickshell:statusmenu"', '"quickintosh-status-popover"', 1)
-text = text.replace('                BoxGlass {', '                Rectangle {', 1)
-start = text.index('                    color:', text.index('id: menuContainer'))
-end = text.index('                    opacity:', start)
-text = text[:start] + '''                    color: Theme.plainSurfaces
-                        ? (Theme.isLight ? "#f6f6f7" : "#232325")
-                        : (Theme.isLight ? "#95ffffff" : "#a0202022")
-                    border.width: 1
-                    border.color: Theme.isLight ? "#24000000" : "#34ffffff"
-''' + text[end:]
-text = ''.join(line for line in text.splitlines(keepends=True) if 'GlassBackdrop { element: "menus"' not in line)
-path.write_text(text)

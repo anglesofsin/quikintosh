@@ -9,6 +9,7 @@ import Quickshell.Io
 import Quickshell.Widgets
 import qs.services
 import qs.components
+import qs.ui.widgets
 import qs.rosa.services
 import qs.ui.topbar.notch.dashboard
 import qs.ui.topbar.statusarea.notifcenter
@@ -20,7 +21,7 @@ PanelWindow {
     screen: output
     anchors.top: true
     margins.top: Math.max(0, capsuleTop)
-    implicitWidth: Math.min(output.width - 24, 1120)
+    implicitWidth: Math.min(output.width - 32, 1120)
     implicitHeight: 306
     exclusiveZone: -1
     color: 'transparent'
@@ -88,7 +89,7 @@ PanelWindow {
     Component.onCompleted: Qt.callLater(() => entered = true)
     signal pointerChanged(bool inside)
     property int page: 0
-    readonly property int bodyHeight: page === 1 ? 306 : 244
+    readonly property int bodyHeight: 236
     readonly property var notices: {
         const entries = []
         for (const list of [NotifService.appGroupsList, NotifService.systemGroupsList])
@@ -151,7 +152,7 @@ PanelWindow {
         width: panel.expandedBody ? parent.width : Math.min(parent.width, panel.capsuleWidth)
         height: panel.expandedBody ? panel.bodyHeight : panel.capsuleHeight
         radius: Math.min(30, height / 2)
-        color: "#f9000000"
+        color: "#ff000000"
         border.width: 1
         border.color: "#32ffffff"
         Behavior on width { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
@@ -181,7 +182,7 @@ PanelWindow {
                 RowLayout {
                     id: tabs
                     Repeater {
-                        model: [qsTr('Dashboard'), qsTr('Weather'), qsTr('Performance'), qsTr('Media'), qsTr('Notifications'), qsTr('Settings')]
+                        model: [qsTr('Dashboard'), qsTr('Weather'), qsTr('Performance'), qsTr('Media'), qsTr('Notifications'), qsTr('Camera'), qsTr('Settings')]
                         delegate: IslandButton {
                             required property string modelData
                             required property int index
@@ -212,7 +213,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 id: pageContent
-                sourceComponent: [overview, forecast, performance, media, notifications, preferences][panel.page]
+                sourceComponent: [overview, forecast, performance, media, notifications, cameraFull, preferences][panel.page]
                 NumberAnimation on opacity {
                     id: pageArrival
                     from: .35; to: 1
@@ -239,26 +240,74 @@ PanelWindow {
 
     Component { id: performance; PerformancePage {} }
 
+    function clockText(seconds) {
+        const value = Math.max(0, Math.floor(seconds))
+        return Math.floor(value / 60) + ":" + String(value % 60).padStart(2, "0")
+    }
+
+    component SectionCard: Rectangle {
+        radius: 14
+        color: "#151515"
+        border.color: "#24ffffff"
+    }
+
     Component {
         id: media
         RowLayout {
-            spacing: 20
-            MediaModule { Layout.fillWidth: true }
+            spacing: 22
+            ClippingRectangle {
+                Layout.preferredWidth: 116; Layout.preferredHeight: 116
+                radius: 16; color: "#202020"
+                Image {
+                    anchors.fill: parent
+                    source: MprisState.artUrl
+                    fillMode: Image.PreserveAspectCrop
+                    asynchronous: true
+                }
+                Text { anchors.centerIn: parent; visible: !MprisState.artUrl; text: "♫"; color: "#aaa"; font.pixelSize: 34 }
+            }
+            ColumnLayout {
+                Layout.preferredWidth: 210
+                spacing: 7
+                Text { Layout.fillWidth: true; text: MprisState.trackTitle || qsTr("Nothing playing"); color: "white"; font.pixelSize: 16; font.weight: Font.DemiBold; elide: Text.ElideRight }
+                Text { Layout.fillWidth: true; text: MprisState.trackArtist || MprisState.identity; color: "#a6a6ac"; font.pixelSize: 12; elide: Text.ElideRight }
+                Text { Layout.fillWidth: true; text: MprisState.trackAlbum; color: "#818188"; font.pixelSize: 11; elide: Text.ElideRight }
+                Item { Layout.fillHeight: true }
+            }
             ColumnLayout {
                 Layout.fillWidth: true
-                spacing: 12
-                Label { text: MprisState.trackTitle || qsTr("Nothing playing"); color: "white"; font.pixelSize: 17 }
+                spacing: 10
+                RowLayout {
+                    Layout.alignment: Qt.AlignHCenter
+                    spacing: 18
+                    IslandButton { text: "‹"; enabled: MprisState.canGoPrevious; onClicked: MprisState.previous() }
+                    IslandButton { text: MprisState.isPlaying ? "Ⅱ" : "▶"; enabled: MprisState.canTogglePlaying; onClicked: MprisState.togglePlaying() }
+                    IslandButton { text: "›"; enabled: MprisState.canGoNext; onClicked: MprisState.next() }
+                }
                 TahoeSlider {
                     Layout.fillWidth: true
                     enabled: MprisState.canSeek
-                    from: 0; to: Math.max(1, MprisState.length)
-                    value: MprisState.position
-                    fillColor: "#ebebef"
-                    onMoved: MprisState.seek(value)
+                    from: 0; to: Math.max(1, MprisState.length); value: MprisState.position
+                    fillColor: "#ededf2"; onMoved: MprisState.seek(value)
                     Accessible.name: qsTr("Playback position")
+                }
+                RowLayout {
+                    Text { text: panel.clockText(MprisState.position); color: "#99999f"; font.pixelSize: 11 }
+                    Item { Layout.fillWidth: true }
+                    Text { text: panel.clockText(MprisState.length); color: "#99999f"; font.pixelSize: 11 }
                 }
                 Component.onCompleted: MprisState.watchPosition(true)
                 Component.onDestruction: MprisState.watchPosition(false)
+            }
+            SectionCard {
+                Layout.preferredWidth: 190; Layout.fillHeight: true
+                ColumnLayout {
+                    anchors.fill: parent; anchors.margins: 15
+                    Text { text: qsTr("Now playing"); color: "#99999f"; font.pixelSize: 11 }
+                    Text { Layout.fillWidth: true; text: MprisState.identity || qsTr("No player"); color: "white"; elide: Text.ElideRight; font.pixelSize: 14 }
+                    Item { Layout.fillHeight: true }
+                    IslandButton { text: qsTr("Sound settings"); onClicked: SettingsLauncher.open("sound") }
+                }
             }
         }
     }
@@ -323,88 +372,110 @@ PanelWindow {
         }
     }
 
+    component ForecastCell: ColumnLayout {
+        required property string heading
+        required property int code
+        required property string temperature
+        property bool daytime: true
+        spacing: 7
+        Text { Layout.alignment: Qt.AlignHCenter; text: heading; color: "#b8b8c0"; font.pixelSize: 11 }
+        WeatherIconGlyph {
+            Layout.alignment: Qt.AlignHCenter
+            kind: WeatherState._kindFor(code, daytime)
+            size: 26
+        }
+        Text { Layout.alignment: Qt.AlignHCenter; text: temperature; color: "white"; font.pixelSize: 13; font.weight: Font.DemiBold }
+    }
+
     Component {
         id: forecast
-        ColumnLayout {
-            spacing: 12
-
-            RowLayout {
-                Layout.fillWidth: true
-                ColumnLayout {
-                    Text {
-                        visible: WeatherState.available && IslandConfig.s('dashboardWeatherLocation')
-                        text: WeatherState.city
-                        color: '#e8f2ff'
-                        font.pixelSize: 16
-                        font.weight: Font.DemiBold
-                    }
-                    Text {
-                        text: WeatherState.available ? Math.round(panel.selectedHour?.temp ?? WeatherState.tempC) + '°' : qsTr('Weather unavailable')
-                        color: 'white'
-                        font.pixelSize: WeatherState.available ? 56 : 22
-                    }
-                }
+        RowLayout {
+            spacing: 24
+            ColumnLayout {
+                Layout.preferredWidth: 190
+                spacing: 4
                 Text {
-                    Layout.alignment: Qt.AlignBottom
-                    visible: WeatherState.available
-                    text: panel.condition(panel.displayedCode)
-                    color: '#ecf3ff'
-                    font.pixelSize: 18
+                    Layout.fillWidth: true
+                    text: IslandConfig.s("dashboardWeatherLocation") ? WeatherState.city : qsTr("Weather")
+                    color: "#d0d0d6"; font.pixelSize: 12; elide: Text.ElideRight
                 }
-                Item { Layout.fillWidth: true }
+                RowLayout {
+                    WeatherIconGlyph { kind: WeatherState._kindFor(panel.displayedCode,panel.displayedDay); size: 48 }
+                    Text { text: WeatherState.available ? Math.round(panel.selectedHour?.temp ?? WeatherState.tempC)+"°" : "—°"; color: "white"; font.pixelSize: 44; font.weight: Font.Light }
+                }
+                Text { text: WeatherState.available ? panel.condition(panel.displayedCode) : qsTr("Weather unavailable"); color: "#c5c5cd"; font.pixelSize: 12 }
+                Text { text: qsTr("Feels like")+" "+Math.round(WeatherState.feelsLikeC)+"°"; visible: WeatherState.available; color: "#9d9da7"; font.pixelSize: 11 }
+                Text { text: Math.round(WeatherState.windSpeed)+" km/h · "+WeatherState.humidity+"%"; visible: WeatherState.available; color: "#9d9da7"; font.pixelSize: 11 }
             }
-            Flickable {
+            Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#25ffffff" }
+            ColumnLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 68
-                contentWidth: hours.implicitWidth
-                clip: true
-                Row {
-                    id: hours
-                    spacing: 8
+                Text { text: qsTr("Hourly forecast"); color: "#aaaab3"; font.pixelSize: 11 }
+                RowLayout {
+                    Layout.fillWidth: true
                     Repeater {
-                        model: WeatherState.hourly
-                        delegate: Rectangle {
+                        model: WeatherState.hourly.slice(0,6)
+                        delegate: ForecastCell {
                             required property var modelData
-                            width: 112; height: 66; radius: 13
-                            color: panel.selectedHour === modelData ? '#644c79b6' : '#3d12233c'
-                            TapHandler {
-                                onTapped: panel.selectedHour = panel.selectedHour === modelData ? null : modelData
-                            }
-                            Column {
-                                anchors.centerIn: parent
-                                spacing: 3
-                                Text { text: modelData.time.split('T')[1]; color: '#dbe8ff'; font.pixelSize: 12 }
-                                Text { text: modelData.temp + '°  ' + panel.condition(modelData.code); color: 'white'; font.pixelSize: 12 }
-                            }
+                            Layout.fillWidth: true
+                            heading: modelData.time.split("T")[1]
+                            code: modelData.code; daytime: modelData.isDay
+                            temperature: modelData.temp+"°"
+                            TapHandler { onTapped: panel.selectedHour=panel.selectedHour===modelData ? null:modelData }
                         }
                     }
                 }
             }
-            Flickable {
+            Rectangle { Layout.preferredWidth: 1; Layout.fillHeight: true; color: "#25ffffff" }
+            ColumnLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 68
-                contentWidth: days.implicitWidth
-                clip: true
-                Row {
-                    id: days
-                    spacing: 8
+                Text { text: qsTr("This week"); color: "#aaaab3"; font.pixelSize: 11 }
+                RowLayout {
+                    Layout.fillWidth: true
                     Repeater {
-                        model: WeatherState.forecast
-                        delegate: Rectangle {
+                        model: WeatherState.forecast.slice(0,7)
+                        delegate: ForecastCell {
                             required property var modelData
-                            width: 126; height: 66; radius: 13; color: '#3d12233c'
-                            Column {
-                                anchors.centerIn: parent
-                                spacing: 3
-                                Text { text: Qt.formatDate(new Date(modelData.date + 'T12:00:00'), 'ddd'); color: '#dbe8ff'; font.pixelSize: 12 }
-                                Text { text: panel.condition(modelData.code); color: 'white'; font.pixelSize: 12 }
-                                Text { text: modelData.tempMin + '° / ' + modelData.tempMax + '°'; color: 'white'; font.pixelSize: 12 }
-                            }
+                            Layout.fillWidth: true
+                            heading: Qt.formatDate(new Date(modelData.date+"T12:00:00"),"ddd")
+                            code: modelData.code
+                            temperature: modelData.tempMin+"° / "+modelData.tempMax+"°"
                         }
                     }
                 }
             }
-            Item { Layout.fillHeight: true }
+        }
+    }
+
+    Component {
+        id: cameraFull
+        RowLayout {
+            spacing: 18
+            SectionCard {
+                Layout.preferredWidth: 230; Layout.fillHeight: true
+                ColumnLayout {
+                    anchors.fill: parent; anchors.margins: 18
+                    Text { text: qsTr("Camera preview"); color: "white"; font.pixelSize: 17; font.weight: Font.DemiBold }
+                    Text { Layout.fillWidth: true; text: qsTr("See yourself in the island"); color: "#a0a0aa"; wrapMode: Text.WordWrap; font.pixelSize: 12 }
+                    Item { Layout.fillHeight: true }
+                    IslandSwitch {
+                        text: qsTr("Profile preview")
+                        checked: IslandConfig.s("dashboardCamera")
+                        onToggled: IslandConfig.setStyle("dashboardCamera",checked)
+                    }
+                }
+            }
+            Loader { Layout.fillWidth: true; Layout.fillHeight: true; sourceComponent: cameraPage }
+            SectionCard {
+                Layout.preferredWidth: 220; Layout.fillHeight: true
+                ColumnLayout {
+                    anchors.fill: parent; anchors.margins: 18
+                    Text { text: qsTr("Privacy"); color: "white"; font.pixelSize: 15 }
+                    Text { Layout.fillWidth: true; text: qsTr("Camera starts when you open the preview and stops when you leave this page."); color: "#a0a0aa"; wrapMode: Text.WordWrap; font.pixelSize: 12 }
+                    Item { Layout.fillHeight: true }
+                    IslandButton { text: qsTr("Privacy settings"); onClicked: SettingsLauncher.open("privacy-indicators") }
+                }
+            }
         }
     }
 
@@ -416,12 +487,12 @@ PanelWindow {
             IslandButton {
                 anchors.centerIn: parent
                 visible: !cameraTile.requested
-                text: qsTr('Camera')
+                text: qsTr('Open camera')
                 onClicked: cameraTile.requested = true
             }
             Loader {
                 anchors.centerIn: parent
-                width: 94; height: 110
+                width: Math.min(280,parent.width); height: Math.max(90,parent.height)
                 active: cameraTile.requested
                 sourceComponent: ColumnLayout {
                     MediaDevices { id: devices }

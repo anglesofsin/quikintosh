@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil,sys,json
 root=Path(sys.argv[1]);source=Path(__file__).parent
 out=root/'emoji';out.mkdir(exist_ok=True)
-for name in ['catalog.json','paste.py','SOURCES.md']:shutil.copyfile(source/name,out/name)
+for name in ['catalog.json','paste.py','placement.py','SOURCES.md']:shutil.copyfile(source/name,out/name)
 for name,destination in [('EmojiState.qml','services'),('EmojiPicker.qml','components')]:
  p=root/destination/name;shutil.copyfile(source/name,p)
  if name=='EmojiState.qml':p.write_text(p.read_text().replace('@PYTHON@',sys.argv[2]))

@@ -1,4 +1,5 @@
-import json,runpy,sys,tempfile,unittest
+import importlib.util,json,runpy,sys,tempfile,unittest
+from types import SimpleNamespace
 from pathlib import Path
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[1];SOURCE=ROOT/'modules/lickintosh/emoji'
@@ -25,4 +26,23 @@ class Emoji(unittest.TestCase):
   with patch.object(sys,'argv',['paste.py','❤️','0x1";os.exit()']),patch('subprocess.run') as run:
    with self.assertRaises(SystemExit):runpy.run_path(str(SOURCE/'paste.py'),run_name='__main__')
    self.assertEqual(run.call_count,1)
+class CaretPlacement(unittest.TestCase):
+ def test_accessibility_anchor_matches_focused_field_without_reading_text(self):
+  class Variant:
+   def __init__(self,signature,value):self.value=value
+  fake=SimpleNamespace(Gio=SimpleNamespace(),GLib=SimpleNamespace(Error=RuntimeError,Variant=Variant))
+  with patch.dict(sys.modules,{'gi':SimpleNamespace(repository=fake),'gi.repository':fake}):
+   spec=importlib.util.spec_from_file_location('emoji_placement',SOURCE/'placement.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+  module.connection=object();module.app_cache={':1.5':321};calls=[]
+  def call(bus,path,interface,method,parameters=None,timeout=25):
+   calls.append(method)
+   if method=='GetChildren':return ([(':1.5','/app')] if bus=='org.a11y.atspi.Registry' else [(':1.5','/field')],)
+   if method=='GetState':return ([1<<12 if path=='/field' else 0,0],)
+   if method=='Get':return (7,)
+   if method=='GetCharacterExtents':return ((300,400,1,22),)
+   raise AssertionError(method)
+  module.call=call
+  self.assertEqual(module.caret(321),{'x':300,'y':422,'height':22})
+  self.assertNotIn('GetText',calls)
+  self.assertIsNone(module.caret(999))
 if __name__=='__main__':unittest.main()

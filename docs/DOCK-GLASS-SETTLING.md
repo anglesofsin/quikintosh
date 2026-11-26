@@ -24,3 +24,22 @@ is scoped to workspace changes, not ordinary window movement. It can briefly
 freeze video content in the reflected window texture during the switch; it does
 not freeze the Dock animation or its geometry. The isolated fixture remains a
 lifecycle test; physical GPU/Zen visual verification is still required.
+
+Native compositor path: when the matching Hyprglass layer renderer is available,
+the Dock now disables its reconstructed screencopy backdrop and uses native
+contour glass on `quickshell:dock`. The compositor samples the actual scene,
+including workspace animation frames. The Python loader registers the layer
+also on first boot, after plugin loading; Lua registers it on config reload.
+The existing reconstruction remains a compatibility fallback. Native layer
+resampling runs at the compositor rate, without a 30 FPS backdrop cap.
+
+Fullscreen SDR stability: disable automatic HDR switching (`render.cm_auto_hdr=0`)
+and monitor content-type hints (`render.send_content_type=false`). These can
+change the entire output on fullscreen entry; this is a mitigation for the
+reported monitor-wide washed-out flash, not a confirmed hardware diagnosis.
+Do not change SDR brightness, saturation, or the user's sRGB output profile.
+
+An isolated native-layer fixture completed three fullscreen/workspace cycles
+without config errors and rendered a uniform Dock surface on the empty desktop.
+Physical monitor picture-mode changes cannot be established in the nested
+Wayland test; verify Discord fullscreen on the user's monitor after activation.

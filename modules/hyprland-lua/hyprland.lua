@@ -837,6 +837,8 @@ if shellActions["switcher-next"] then
         glass.layer("quickintosh-island-dashboard", { mask_mode="contour", mask_threshold=0.18 })
         glass.layer("quickintosh-sharing-panel", { mask_mode="contour", mask_threshold=0.18 })
         glass.layer("quickintosh-status-popover", { mask_mode="contour", mask_threshold=0.18 })
+        glass.layer("quickshell:dock", { preset="pomme", mask_mode="contour", mask_threshold=0.18, live_resample=true })
+        glass.config({layers={live_resample_fps=0}})
     end
 end
 
@@ -849,3 +851,7 @@ hl.layer_rule({name="lickintosh-quicklook-modal",match={namespace="^lickintosh-q
 
 -- Native pointer locator and persistent user customization.
 dofile(os.getenv("HOME").."/.config/hypr/cursor-locate.lua")
+
+-- Keep desktop SDR output stable when applications enter fullscreen: do not
+-- trigger monitor picture-mode switching from app content-type hints.
+hl.config({render={send_content_type=false,cm_auto_hdr=0}})

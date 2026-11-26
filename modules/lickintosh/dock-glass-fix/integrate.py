@@ -51,3 +51,15 @@ s=s.replace('    property int pending: 0', """    Connections {
     }
     property int pending: 0""",1)
 p.write_text(s)
+
+# Prefer the compositor's actual scene over reconstructed window screencopies.
+p=root/'tahoedock/TahoeDockSurface.qml';s=p.read_text()
+s=s.replace(' id:root',''' id:root
+ property bool nativeDockGlassAvailable:false
+ readonly property bool nativeDockGlass:nativeDockGlassAvailable && !Theme.plainSurfaces
+ Process{id:dockNativeProbe;running:true;command:['hyprctl','-j','hyprglass','status'];stdout:StdioCollector{onStreamFinished:{try{const status=JSON.parse(text);root.nativeDockGlassAvailable=status.versionCheck==='match' && status.features?.layers?.active===true}catch(_){root.nativeDockGlassAvailable=false}}}}
+''',1)
+s=s.replace('instantReveal:true;ready:!Theme.plainSurfaces && dockGlassPresence.present;', 'instantReveal:true;ready:!root.nativeDockGlass && !Theme.plainSurfaces && dockGlassPresence.present;',1)
+s=s.replace('TahoeGlass{anchors.fill:parent;backdrop:Theme.plainSurfaces ? null : dockGlass;cornerRadius:24}', 'TahoeGlass{anchors.fill:parent;visible:!root.nativeDockGlass;backdrop:Theme.plainSurfaces || root.nativeDockGlass ? null : dockGlass;cornerRadius:24}',1)
+s=s.replace("Theme.surfaceFor('dock') : '#10ffffff'", "Theme.surfaceFor('dock') : root.nativeDockGlass ? '#42ffffff':'#10ffffff'",1)
+p.write_text(s)

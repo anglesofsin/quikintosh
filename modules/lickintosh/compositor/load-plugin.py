@@ -5,6 +5,15 @@ import subprocess
 import sys
 
 
+def configure_layers(name):
+    # Also register after a first-boot plugin load, which follows Lua config.
+    if name == 'hyprglass':
+        subprocess.run(['hyprctl', 'eval',
+            'if hl.plugin.hyprglass then hl.plugin.hyprglass.layer("quickshell:dock", '
+            '{preset="pomme",mask_mode="contour",mask_threshold=0.18,live_resample=true}) end'],
+            capture_output=True, text=True, timeout=3)
+
+
 def main():
     name, library = sys.argv[1:]
     if not os.environ.get('HYPRLAND_INSTANCE_SIGNATURE'):
@@ -13,12 +22,15 @@ def main():
         ['hyprctl', 'plugins', 'list', '-j'], text=True, timeout=3
     ))
     if any(plugin.get('name') == name for plugin in plugins):
+        configure_layers(name)
         return
     result = subprocess.run(
         ['hyprctl', 'plugin', 'load', library], capture_output=True, text=True, timeout=8
     )
     if result.returncode or result.stdout.strip() != 'ok':
         print(f'Quickintosh: {name} unavailable on the running compositor.', file=sys.stderr)
+    else:
+        configure_layers(name)
 
 
 if __name__ == '__main__':

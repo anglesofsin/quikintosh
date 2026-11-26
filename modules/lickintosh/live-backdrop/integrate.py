@@ -3,8 +3,10 @@ import sys
 root=Path(sys.argv[1]);here=Path(__file__).parent
 p=root/'components/glass/AnimatedBackdrop.qml';p.write_text((here/'AnimatedBackdrop.qml').read_text())
 p=root/'components/glass/qmldir';p.write_text(p.read_text()+'\nAnimatedBackdrop AnimatedBackdrop.qml\n')
-p=root/'components/glass/GlassWallpaper.qml';s=p.read_text().replace('    property string preview:', '    property double videoPosition:0\n    property bool videoPlaying:false\n    property string preview:',1);p.write_text(s)
-p=root/'components/VideoWallpaper.qml';s=p.read_text().replace('        id: player','        id: player\n        onPositionChanged:if(root.source===ShellConfig.options.wallpaper.videoPath)GlassWallpaper.videoPosition=position\n        onPlaybackStateChanged:if(root.source===ShellConfig.options.wallpaper.videoPath)GlassWallpaper.videoPlaying=playbackState===MediaPlayer.PlayingState',1).replace('import qs.components.glass','import qs.components.glass\nimport qs.services',1);p.write_text(s)
+p=root/'components/glass/GlassWallpaper.qml';s=p.read_text().replace('    property string preview:', '    property var videoSinks:({})\n    function registerVideo(path,sink){const next=Object.assign({},videoSinks);next[path]=sink;videoSinks=next}\n    function unregisterVideo(path,sink){if(videoSinks[path]!==sink)return;const next=Object.assign({},videoSinks);delete next[path];videoSinks=next}\n    property double videoPosition:0\n    property bool videoPlaying:false\n    property string preview:',1);p.write_text(s)
+p=root/'components/VideoWallpaper.qml';s=p.read_text().replace('        id: player','        id: player\n        onPositionChanged:if(root.source===ShellConfig.options.wallpaper.videoPath)GlassWallpaper.videoPosition=position\n        onPlaybackStateChanged:if(root.source===ShellConfig.options.wallpaper.videoPath)GlassWallpaper.videoPlaying=playbackState===MediaPlayer.PlayingState',1).replace('import qs.components.glass','import qs.components.glass\nimport qs.services',1)
+s=s.replace('    onSourceChanged: {', '    property string registeredPath: \"\"\n    function registerSink(){if(!output)return;if(registeredPath)GlassWallpaper.unregisterVideo(registeredPath,output.videoSink);registeredPath=root.source;if(registeredPath)GlassWallpaper.registerVideo(registeredPath,output.videoSink)}\n    Component.onCompleted:registerSink()\n    onSourceChanged: {\n        registerSink()',1).replace('    Component.onDestruction: GlassWallpaper.videoUrl = \"\"', '    Component.onDestruction:{GlassWallpaper.unregisterVideo(registeredPath,output.videoSink);GlassWallpaper.videoUrl=\"\"}')
+p.write_text(s)
 p=root/'components/glass/LiquidGlassBackdrop.qml';s=p.read_text().replace('        WallpaperCrossfade {','''        readonly property string animatedPath:WallpaperSettings.videoFor(root.monitorName) || (GlassWallpaper.videoActive ? ShellConfig.options.wallpaper.videoPath:'')
         Loader {
             id:animatedBackground
@@ -28,3 +30,10 @@ p=root/'services/LayeredIcons.qml';s=p.read_text().replace(' property var origin
 ''',1)
 old="else if(data.type==='rendered'){const reverse=Object.assign({},root.origins);reverse['file://'+data.path]=data.key.split('|')[0];root.origins=reverse;const next=Object.assign({},root.files);next[data.key]=data.path;root.files=next;root.pending=Math.max(0,root.pending-1);root.lastRenderMs=data.ms}"
 assert old in s;s=s.replace(old,"else if(data.type==='rendered'){root.completed.push(data);Qt.callLater(root.flushCompleted)}");p.write_text(s)
+
+# A monitor query in flight must not swallow the final workspace change.
+p=root/'components/glass/GlassTracker.qml'
+s=p.read_text().replace('    Process {\n        id: monitorQuery', '    property bool monitorQueryAgain:false\n    Process {\n        id: monitorQuery',1)
+s=s.replace('        id: monitorQuery\n', '        id: monitorQuery\n        onExited:if(root.monitorQueryAgain){root.monitorQueryAgain=false;Qt.callLater(function(){monitorQuery.running=true})}\n',1)
+s=s.replace('if (!monitorQuery.running) monitorQuery.running = true','if (!monitorQuery.running) monitorQuery.running = true;else root.monitorQueryAgain=true',1)
+p.write_text(s)

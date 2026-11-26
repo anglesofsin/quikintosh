@@ -53,14 +53,13 @@ Scope {
   id:windowWatcher
   active:root.options.hoverToReveal
   sourceComponent:DockOcclusion {
+   // Repair missed/in-flight workspace events even while the surface is hidden.
+   property Timer visibilityInventory:Timer{interval:2000;repeat:true;running:true;onTriggered:GlassTracker.refreshMonitorSnapshot()}
    property bool subscribed:false
    Component.onCompleted:{subscribed=true;GlassTracker.inventoryUsers++;GlassTracker.refreshMonitorSnapshot();GlassTracker.refreshWindows()}
    Component.onDestruction:if(subscribed)GlassTracker.inventoryUsers--
    clients:GlassTracker.clientsSnapshot
-   monitors:GlassTracker.monitorSnapshots.map(m=>{
-    const live=Hyprland.monitors.values.find(item=>item.name===m.name)
-    return Object.assign({},m,{activeWorkspace:live?.activeWorkspace ? {id:live.activeWorkspace.id,name:live.activeWorkspace.name}:m.activeWorkspace})
-   })
+   monitors:GlassTracker.monitorSnapshots
    monitorName:dock.screen?.name || ''
    shellScale:Number(Quickshell.env('QT_SCALE_FACTOR') || 1)
    // Use resting bounds: hover magnification and the hide animation must not

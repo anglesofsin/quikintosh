@@ -5,7 +5,7 @@ let
   find = name: builtins.head (builtins.filter (p: p.name == name) config.environment.systemPackages);
   runtime = pkgs.buildEnv {
     name = "quickintosh-arch-runtime";
-    paths = [ (import ../modules/lickintosh/share-picker/cursor.nix { inherit pkgs; }) config.programs.hyprland.portalPackage config.system.build.appleEmoji config.system.build.quickintosh config.system.build.lickintosh
+    paths = [ (import ../modules/lickintosh/finder-portal/package.nix { inherit pkgs; }) (import ../modules/lickintosh/share-picker/cursor.nix { inherit pkgs; }) config.programs.hyprland.portalPackage config.system.build.appleEmoji config.system.build.quickintosh config.system.build.lickintosh
       config.system.build.riceShell (find "lickintosh-finder") (find "lickintosh-finder.desktop")
       (find "lickintosh-quicklook") (find "lickintosh-quicklook.desktop")
       (find "lickintosh-desktop-profile") (find "rice-file-manager")

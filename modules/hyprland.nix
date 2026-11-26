@@ -105,12 +105,15 @@ in
   services.upower.enable = lib.mkForce true;
 
   xdg.portal = {
+    extraPortals = [ (import ./lickintosh/finder-portal/package.nix { inherit pkgs; }) ];
     config = {
+      common."org.freedesktop.impl.portal.FileChooser" = [ "quickintosh-finder" "gtk" ];
       common.default = lib.mkForce [
         "hyprland"
         "gtk"
       ];
       "Hyprland" = {
+        "org.freedesktop.impl.portal.FileChooser" = [ "quickintosh-finder" "gtk" ];
         default = lib.mkDefault "hyprland;gtk";
       };
     };

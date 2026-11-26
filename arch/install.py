@@ -132,13 +132,18 @@ class Activation:
         if emoji_fonts.is_dir():
             self.put(self.home/'.config/fontconfig/conf.d/56-quickintosh-emoji.conf',
                      '<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><dir>'+str(emoji_fonts)+'</dir><alias binding="strong"><family>emoji</family><prefer><family>Apple Color Emoji</family></prefer></alias><match target="pattern"><test name="family" compare="eq"><string>Noto Color Emoji</string></test><edit name="family" mode="prepend" binding="strong"><string>Apple Color Emoji</string></edit></match></fontconfig>')
+        self.put(self.home/'.local/share/dbus-1/services/org.gnome.Nautilus.service',
+                 '[D-BUS Service]\nName=org.gnome.Nautilus\nExec='+str(localbin/'quickintosh-finder')+' --gapplication-service\n')
+        finder_portal=bundle/'runtime/share/xdg-desktop-portal/portals/quickintosh-finder.portal'
+        if finder_portal.is_file():
+            self.put(self.home/'.local/share/xdg-desktop-portal/portals/quickintosh-finder.portal',finder_portal.read_text())
         portal=bundle/'runtime/libexec/xdg-desktop-portal-hyprland'
         if not portal.exists():portal=bundle/'runtime/lib/xdg-desktop-portal-hyprland'
         self.put(self.home/'.config/systemd/user/quickintosh-portal-hyprland.service',
                  '[Unit]\nDescription=Quickintosh matched portal backend\n[Service]\nType=dbus\nBusName=org.freedesktop.impl.portal.desktop.hyprland\nExecStart='+str(portal)+'\n')
         active=self.state/'rice/active-shell'
         if not active.exists():self.put(active,'lickintosh\n')
-        self.put(self.home/'.config/xdg-desktop-portal/quickintosh-portals.conf','[preferred]\ndefault=hyprland;gtk;\norg.freedesktop.impl.portal.FileChooser=gtk;\n')
+        self.put(self.home/'.config/xdg-desktop-portal/quickintosh-portals.conf','[preferred]\ndefault=hyprland;gtk;\norg.freedesktop.impl.portal.FileChooser=quickintosh-finder;gtk;\n')
         self.put(self.home/'.local/share/wayland-sessions/quickintosh.desktop',
                  '[Desktop Entry]\nName=Quickintosh\nComment=Isolated Quickintosh desktop\nType=Application\nDesktopNames=Quickintosh;Hyprland\nExec='+shlex.quote(str(localbin/'quickintosh-session'))+'\n')
         self.data.update(bundle=str(generation/'bundle'),graphics=str(generation/'graphics') if graphics else '',

@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-VERSION=5
+VERSION=6
 HEX=re.compile(r'#[0-9a-fA-F]{6}$')
 COLOR=re.compile(r'#[0-9a-fA-F]{6}(?![0-9a-zA-Z])|#[0-9a-fA-F]{3}(?![0-9a-zA-Z])')
 STYLE=re.compile(r'((?:fill|stroke|stop-color|flood-color|color)\s*:\s*)(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})(?![0-9a-zA-Z])')
@@ -127,7 +127,9 @@ def prepare(home,theme_root,icon_root,mode,options,palette):
    name,folder=managed_slot(home/'.local/share/themes',previous.get('gtkTheme'))
    for version in ['gtk-3.0','gtk-4.0']:
     source=theme_root/'share/themes'/base_theme/version/'gtk.css'
-    write(folder/version/'gtk.css','@import url("'+str(source)+'");\n'+gtk_colors(colors,options.get('wallpaperGtk',False))+gtk_accent_overrides(source.read_text()))
+    overlay=gtk_colors(colors,options.get('wallpaperGtk',False))+gtk_accent_overrides(source.read_text())
+    if version=='gtk-3.0':overlay=re.sub(r':root\s*\{[^}]*\}','',overlay).replace(':focus-within',':focus')
+    write(folder/version/'gtk.css','@import url("'+str(source)+'");\n'+overlay)
    write(folder/'.quickintosh-generated.json',json.dumps({'signature':signature,'base':base_theme}))
    result['gtkTheme']=name
   result['gtkEnabled']=True

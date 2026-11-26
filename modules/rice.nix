@@ -143,6 +143,9 @@ let
       export GIO_EXTRA_MODULES="${pkgs.gvfs}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"
       export LD_PRELOAD="${finderThemeLive}/lib/theme-live.so''${LD_PRELOAD:+:$LD_PRELOAD}"
       export G_RESOURCE_OVERLAYS="/org/gnome/nautilus/ui=${finderUi}''${G_RESOURCE_OVERLAYS:+:$G_RESOURCE_OVERLAYS}"
+      if [[ "''${1:-}" == --gapplication-service ]]; then
+        exec nautilus "$@"
+      fi
       exec nautilus --new-window "$@"
     '';
   };

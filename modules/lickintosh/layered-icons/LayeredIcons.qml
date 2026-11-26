@@ -3,6 +3,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.services
+import "../layered-icons/IconAliases.js" as IconAliases
 Singleton {
  id:root
  property var bank:({})
@@ -25,10 +26,7 @@ Singleton {
  FileView{path:Quickshell.shellDir+'/layered-icons/bank.json';onLoaded:{try{root.bank=JSON.parse(text())}catch(e){root.lastError=String(e)}}}
  function normalize(name){return String(name || '').toLowerCase().replace(/\.(desktop|svg|png|ico|icns)$/,'').replace(/[ _]/g,'-')}
  function lookup(mode,source,name){
-  const table=bank[mode] || ({})
-  const base=String(source).split('/').pop().split('?')[0]
-  for(const key of [normalize(name),normalize(base)])if(table[key])return table[key]
-  return ''
+  return IconAliases.lookup(bank[mode] || ({}),source,name)
  }
  function resolve(source,name){
   if(!source && !name)return ''

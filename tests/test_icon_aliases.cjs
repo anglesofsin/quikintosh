@@ -1,0 +1,12 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const scope={};vm.createContext(scope);
+vm.runInContext(fs.readFileSync('modules/lickintosh/layered-icons/IconAliases.js','utf8').replace('.pragma library',''),scope);
+const bank={chromium:'chromium-tahoe',anydesk:'anydesk-tahoe',steam:'steam-tahoe','org.gnome.nautilus':'finder-tahoe',settings:'settings-tahoe'};
+assert.equal(scope.lookup(bank,'file:///icons/org.chromium.Chromium.png','org.chromium.Chromium'),'chromium-tahoe');
+assert.equal(scope.lookup(bank,'image://icon/chromium-browser',''),'chromium-tahoe');
+assert.equal(scope.lookup(bank,'image://icon/com.anydesk.Anydesk',''),'anydesk-tahoe');
+assert.equal(scope.lookup(bank,'','com.valvesoftware.Steam.desktop'),'steam-tahoe');
+assert.equal(scope.lookup(bank,'','org.gnome.Nautilus'),'finder-tahoe');
+assert.equal(scope.lookup(bank,'','com.random.Settings'),'');
+assert.equal(scope.lookup(bank,'','org.vinegarhq.Sober'),'');
+console.log('7 ICON_ALIAS_CASES_OK');

@@ -312,6 +312,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-review}/review.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/cursor}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock-glass-fix}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/desktop-files}/integrate.py $out ${quickLookPython}/bin/python3
       patchShebangs $out/tools $out/rosa/helpers
     '';
   };

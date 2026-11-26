@@ -2,7 +2,7 @@ from pathlib import Path
 import shutil,sys
 r=Path(sys.argv[1]);h=Path(__file__).parent
 out=r/'layered-icons';out.mkdir(exist_ok=True)
-for n in ['artwork.py','fast-renderer.py']:shutil.copyfile(h/n,out/n)
+for n in ['artwork.py','fast-renderer.py','IconAliases.js']:shutil.copyfile(h/n,out/n)
 s=(h/'LayeredIcons.qml').read_text()
 for a,b in zip(['@PYTHON@','@RSVG@'],sys.argv[2:4]):s=s.replace(a,b)
 (r/'services/LayeredIcons.qml').write_text(s)

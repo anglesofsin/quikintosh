@@ -39,7 +39,7 @@ class CaretPlacement(unittest.TestCase):
    if method=='GetChildren':return ([(':1.5','/app')] if bus=='org.a11y.atspi.Registry' else [(':1.5','/field')],)
    if method=='GetState':return ([1<<12 if path=='/field' else 0,0],)
    if method=='Get':return (7,)
-   if method=='GetCharacterExtents':return ((300,400,1,22),)
+   if method=='GetCharacterExtents':return (300,400,1,22)
    raise AssertionError(method)
   module.call=call
   self.assertEqual(module.caret(321),{'x':300,'y':422,'height':22})

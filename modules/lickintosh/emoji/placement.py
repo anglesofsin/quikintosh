@@ -27,7 +27,8 @@ def caret(pid):
     if states and states[0] & (1<<12):
      offset=call(bus,path,'org.freedesktop.DBus.Properties','Get',GLib.Variant('(ss)',('org.a11y.atspi.Text','CaretOffset')))[0]
      if hasattr(offset,'unpack'):offset=offset.unpack()
-     rect=call(bus,path,'org.a11y.atspi.Text','GetCharacterExtents',GLib.Variant('(iu)',(int(offset),0)))[0]
+     rect=call(bus,path,'org.a11y.atspi.Text','GetCharacterExtents',GLib.Variant('(iu)',(int(offset),0)))
+     if len(rect)==1:rect=rect[0]
      if len(rect)==4 and rect[0]>=0 and rect[1]>=0 and rect[3]>0:return {'x':rect[0],'y':rect[1]+rect[3],'height':rect[3]}
     children=call(bus,path,'org.a11y.atspi.Accessible','GetChildren')[0]
     queue.extend(p for b,p in children if b==bus and p!='/org/a11y/atspi/null')

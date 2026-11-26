@@ -26,6 +26,13 @@ class Install(unittest.TestCase):
   self.assertIn(str(a.root/'scripts/other.sh'),(a.root/'scripts/test.sh').read_text())
   self.assertNotIn('/run/current-system',(a.root/'scripts/test.sh').read_text())
   a.uninstall();self.assertEqual(old.read_text(),'existing\n');self.assertEqual(hypr.read_text(),'do not change')
+ def test_emoji_font_preference_roundtrip(self):
+  fonts=self.bundle/'runtime/share/fonts/truetype/apple-color-emoji';fonts.mkdir(parents=True)
+  (fonts/'AppleColorEmoji.ttf').write_bytes(b'font-fixture')
+  path=self.home/'.config/fontconfig/conf.d/56-quickintosh-emoji.conf';path.parent.mkdir(parents=True);path.write_text('<fontconfig/>')
+  install=mod.Activation(self.home);install.activate(self.bundle)
+  self.assertIn('Apple Color Emoji',path.read_text());self.assertIn(str(fonts),path.read_text())
+  install.uninstall();self.assertEqual(path.read_text(),'<fontconfig/>')
  def test_modified_file_not_deleted(self):
   a=mod.Activation(self.home);a.activate(self.bundle)
   file=self.home/'.local/bin/quickintosh';file.write_text('my edit')

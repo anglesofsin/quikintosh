@@ -128,6 +128,10 @@ class Activation:
                 if original in text:
                     text='\n'.join('Exec='+shlex.quote(str(localbin/command))+' %U' if line.startswith('Exec=') else line for line in text.splitlines())+'\n'
             self.put(self.home/'.local/share/applications'/file.name,text)
+        emoji_fonts=bundle/'runtime/share/fonts/truetype/apple-color-emoji'
+        if emoji_fonts.is_dir():
+            self.put(self.home/'.config/fontconfig/conf.d/56-quickintosh-emoji.conf',
+                     '<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><dir>'+str(emoji_fonts)+'</dir><alias binding="strong"><family>emoji</family><prefer><family>Apple Color Emoji</family></prefer></alias><match target="pattern"><test name="family" compare="eq"><string>Noto Color Emoji</string></test><edit name="family" mode="prepend" binding="strong"><string>Apple Color Emoji</string></edit></match></fontconfig>')
         portal=bundle/'runtime/libexec/xdg-desktop-portal-hyprland'
         if not portal.exists():portal=bundle/'runtime/lib/xdg-desktop-portal-hyprland'
         self.put(self.home/'.config/systemd/user/quickintosh-portal-hyprland.service',

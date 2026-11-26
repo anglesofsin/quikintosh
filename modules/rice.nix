@@ -41,6 +41,7 @@ let
         };
       };
   lickintoshQs = (caelestia-shell.inputs.quickshell.packages.${system}.default.override { withX11 = false; withI3 = false; }).withModules [ pkgs.qt6.qtimageformats caelestia-shell.inputs.m3shapes.packages.${system}.default ];
+  appleEmojiFont = import ./lickintosh/emoji/font.nix { inherit pkgs; };
   capturePython = pkgs.python3.withPackages (p: [ p.pillow ]);
   quickLookPython = pkgs.python3.withPackages (p: [ p.pillow p.pygobject3 ]);
   voicePython = pkgs.python3.withPackages (p: [ p.websockets ]);
@@ -306,6 +307,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/i18n}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/island-dashboard/integrate.py} $out ${./lickintosh/island-dashboard} ${./lickintosh/focus}
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-tahoe}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/emoji}/integrate.py $out ${pkgs.python3}/bin/python3
       patchShebangs $out/tools $out/rosa/helpers
     '';
   };
@@ -338,11 +340,11 @@ let
           ;;
       esac
       ${pkgs.python3}/bin/python3 ${../scripts/setup-defaults.py} ${lickintoshRoot}/quickintosh-defaults ${lickintoshRoot}/assets/wallpapers/daniel-leone.jpg
-      mkdir -p "$HOME/.config/lickintosh/core" "$HOME/.config/lickintosh/rosa"
+      mkdir -p "$HOME/.config/lickintosh/core" "$HOME/.config/lickintosh/rosa" "$HOME/.local/state/lickintosh/emoji"
       ${pkgs.python3}/bin/python3 ${./lickintosh/bootstrap.py} ${lickintoshRoot}/assets/wallpapers/daniel-leone.jpg
       export QML_IMPORT_PATH="${quickintoshRendering}/lib/qt-6/qml:${lib.makeSearchPath "lib/qt-6/qml" (with pkgs.qt6; [ qtgraphs qtquick3d qtquicktimeline qtmultimedia qt5compat qtsvg ])}:''${QML_IMPORT_PATH:-}"
       export QT_PLUGIN_PATH="${lib.makeSearchPath "lib/qt-6/plugins" (with pkgs.qt6; [ qtmultimedia qtimageformats ])}:''${QT_PLUGIN_PATH:-}"
-      export FONTCONFIG_FILE=${pkgs.makeFontsConf { fontDirectories = [ (lickintosh-src + "/assets/fonts") ./lickintosh/widget-review/fonts (pkgs.nerd-fonts.symbols-only + "/share/fonts") ]; }}
+      export FONTCONFIG_FILE=${pkgs.makeFontsConf { fontDirectories = [ (lickintosh-src + "/assets/fonts") ./lickintosh/widget-review/fonts appleEmojiFont (pkgs.nerd-fonts.symbols-only + "/share/fonts") ]; }}
       export GI_TYPELIB_PATH="${pkgs.glib.out}/lib/girepository-1.0:''${GI_TYPELIB_PATH:-}"
       export GIO_EXTRA_MODULES="${pkgs.gvfs}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"
       export XDG_DATA_DIRS="${lickintoshRoot}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
@@ -550,6 +552,12 @@ in
   system.build.noctaliaLegacy = noctaliaLegacyPackage;
   system.build.lickintosh = lickintoshPackage;
   system.build.quickintosh = quickintoshPackage;
+  system.build.appleEmoji = appleEmojiFont;
+  fonts.packages = [ appleEmojiFont ];
+  fonts.fontconfig.defaultFonts.emoji = lib.mkBefore [ "Apple Color Emoji" ];
+  fonts.fontconfig.localConf = ''
+    <match target="pattern"><test name="family" compare="eq"><string>Noto Color Emoji</string></test><edit name="family" mode="prepend" binding="strong"><string>Apple Color Emoji</string></edit></match>
+  '';
   system.build.rosa-islandd = rosaIslandd;
   system.build.eqsh = eqshPackage;
   security.pam.services.eqsh-lock = { };

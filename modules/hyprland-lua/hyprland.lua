@@ -839,5 +839,9 @@ if shellActions["switcher-next"] then
     end
 end
 
+-- Emoji chrome stays in the client render pass; native contour glass would
+-- also refract its dense colored glyphs. Compositor blur keeps text sharp.
+hl.layer_rule({name="quickintosh-emoji-picker",match={namespace="^quickintosh-emoji-picker$"},no_anim=true,blur=true,ignore_alpha=0.20})
+
 -- The transparent Quick Look click shield has no visible entrance/exit motion.
 hl.layer_rule({name="lickintosh-quicklook-modal",match={namespace="^lickintosh-quicklook-modal$"},no_anim=true})

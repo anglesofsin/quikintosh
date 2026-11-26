@@ -1,7 +1,10 @@
 # Finder file dialogs
 
 Quickintosh routes only `org.freedesktop.impl.portal.FileChooser` to Nautilus's
-native implementation using the `quickintosh-finder` portal descriptor. Open,
+native implementation using the `quickintosh-finder` portal descriptor. A small
+asynchronous delegate owns the backend name without starting Nautilus until
+a file request arrives. This avoids a circular dependency between the portal
+frontend and Finder during cold startup. Open,
 save, multiple selection and folder dialogs therefore belong to Finder and use
 its current Tahoe GTK4 material, SF fonts and wallpaper-derived icon/accent
 palette. GTK remains an available fallback; Hyprland remains the screen-capture
@@ -19,7 +22,10 @@ per-user routing and activation entries, using its normal backup/restore flow.
 A running portal frontend needs one restart to pick up changed routing. Do not
 restart it during an active screen-sharing session without user approval.
 
-Validation: native implementation exercised in a nested Wayland compositor with
+Validation: cold frontend startup with the delegate completed in 0.62 seconds
+on a private bus; frontend OpenFile/SaveFile requests reached the native chooser
+and cancelled successfully. Frontend OpenFile/SaveFile acceptance also returned
+the expected temporary-file URIs through the delegate. The native implementation was also exercised in a nested Wayland compositor with
 a private session bus. Open, save, multiple and directory requests opened and
 closed without returning file URIs on cancellation. Save accepted a temporary
 filename and returned its URI; Open accepted a temporary existing file and

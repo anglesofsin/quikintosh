@@ -134,6 +134,9 @@ class Activation:
                      '<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><dir>'+str(emoji_fonts)+'</dir><alias binding="strong"><family>emoji</family><prefer><family>Apple Color Emoji</family></prefer></alias><match target="pattern"><test name="family" compare="eq"><string>Noto Color Emoji</string></test><edit name="family" mode="prepend" binding="strong"><string>Apple Color Emoji</string></edit></match></fontconfig>')
         self.put(self.home/'.local/share/dbus-1/services/org.gnome.Nautilus.service',
                  '[D-BUS Service]\nName=org.gnome.Nautilus\nExec='+str(localbin/'quickintosh-finder')+' --gapplication-service\n')
+        finder_service=bundle/'runtime/share/dbus-1/services/org.quickintosh.FinderPortal.service'
+        if finder_service.exists():
+            self.put(self.home/'.local/share/dbus-1/services/org.quickintosh.FinderPortal.service',finder_service.read_text())
         finder_portal=bundle/'runtime/share/xdg-desktop-portal/portals/quickintosh-finder.portal'
         if finder_portal.is_file():
             self.put(self.home/'.local/share/xdg-desktop-portal/portals/quickintosh-finder.portal',finder_portal.read_text())

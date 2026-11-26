@@ -1167,3 +1167,6 @@ Upper Right|Canto superior direito
 Finder & GTK|Finder e GTK
 Wallpaper colors in Finder and GTK apps|Cores do wallpaper no Finder e apps GTK
 Wallpaper colors for folders and file icons|Cores do wallpaper em pastas e arquivos
+Video resolution|Resolução do vídeo
+Video frame rate|Taxa de quadros do vídeo
+Preparing optimized wallpaper…|Preparando wallpaper otimizado…

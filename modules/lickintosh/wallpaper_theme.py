@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-VERSION=4
+VERSION=5
 HEX=re.compile(r'#[0-9a-fA-F]{6}$')
 COLOR=re.compile(r'#[0-9a-fA-F]{6}(?![0-9a-zA-Z])|#[0-9a-fA-F]{3}(?![0-9a-zA-Z])')
 STYLE=re.compile(r'((?:fill|stroke|stop-color|flood-color|color)\s*:\s*)(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})(?![0-9a-zA-Z])')
@@ -45,12 +45,14 @@ def gtk_colors(c,full=True):
  'borders':'outline_variant','unfocused_borders':'outline_variant',
  }
  if not full:names={k:v for k,v in names.items() if k.startswith('accent') or 'selected' in k}
- return '\n/* Quickintosh wallpaper palette; Tahoe geometry remains unchanged. */\n'+''.join('@define-color '+key+' '+c[role]+';\n' for key,role in names.items())+'''
+ return '\n/* Quickintosh wallpaper palette; Tahoe geometry remains unchanged. */\n'+''.join('@define-color '+key+' '+('#ffffff' if key in ['accent_fg_color','selected_fg_color','theme_selected_fg_color','theme_unfocused_selected_fg_color'] else c[role])+';\n' for key,role in names.items())+'''
 selection { background-color: @accent_bg_color; color: @accent_fg_color; }
 :root { --accent-bg-color: @accent_bg_color; --accent-color: @accent_color; --accent-fg-color: @accent_fg_color; }
 window.nautilus-window .navigation-sidebar row:selected,
 window.nautilus-window .navigation-sidebar row:selected label,
-window.nautilus-window .navigation-sidebar row:selected image { color: @accent_color; }
+window.nautilus-window .navigation-sidebar row:selected image { color: #ffffff; }
+window.nautilus-window .nautilus-grid-view child:selected label,
+window.nautilus-window .nautilus-list-view row:selected label { color: #ffffff; }
 window.nautilus-window .nautilus-grid-view child:selected:focus,
 window.nautilus-window .nautilus-grid-view child:selected:focus-within,
 window.nautilus-window .nautilus-grid-view child:selected > * { outline-color: @accent_color; }

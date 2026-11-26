@@ -67,3 +67,11 @@ atomic stylesheet replacement, without restarting the process.
 
 The native selection/loading status remains available as a compact rounded,
 inset capsule instead of the prior square strip.
+
+Palette synchronization: observe Matugen's published palette file as well as
+wallpaper settings. A debounced profile refresh updates Finder/GTK even when the
+palette is produced by another integration, without triggering another Matugen
+run. Coalesce changes while a profile process is active. The installed shell
+must be restarted after profile-wrapper updates so its pinned runtime PATH no
+longer invokes the previous generation. Selected Finder labels/icons and GTK
+selection foregrounds use white rather than the accent itself.

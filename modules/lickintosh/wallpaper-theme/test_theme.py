@@ -21,6 +21,13 @@ class ThemeTests(unittest.TestCase):
  def test_hardcoded_accent_overrides(self):
   text='row:selected { color: #0088FF; padding: 12px; } button { background: alpha(#0088ff,.2); }'
   css=m.gtk_accent_overrides(text);self.assertNotIn('#0088',css);self.assertIn('@accent_bg_color',css);self.assertNotIn('padding',css)
+ def test_palette_change_and_white_selection(self):
+  keys=['primary','on_primary','surface','on_surface','surface_container','surface_container_low','surface_container_high','surface_container_highest','outline_variant']
+  c={key:'#d2c797' for key in keys};css=m.gtk_colors(c,False)
+  self.assertIn('@define-color accent_color #d2c797;',css)
+  self.assertIn('@define-color accent_fg_color #ffffff;',css)
+  self.assertIn('image { color: #ffffff; }',css)
+  self.assertNotIn('#ffb1c6',css)
  def test_invalid_palette_falls_back(self):
   with tempfile.TemporaryDirectory() as temp:
    r=m.prepare(temp,temp,temp,'dark',{'wallpaperGtk':True,'wallpaperFileIcons':True},{'dark':{'primary':'bad'}});self.assertFalse(r['gtkEnabled']);self.assertFalse(r['iconsEnabled'])

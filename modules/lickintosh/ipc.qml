@@ -29,6 +29,7 @@
         function wallpaper(): void { SettingsLauncher.open("WallpaperPage") }
         function theme(): void { ShellConfig.options.appearance.mode = Theme.isDark ? "light" : "dark" }
         function nightlight(): void { NightShift.toggle() }
+        function widgetGallery(zone: string): void { WidgetState.galleryZone = ["desktop", "notifCenter"].includes(zone) ? zone : "" }
         function widgets(): void { WidgetState.galleryZone = WidgetState.galleryZone === "desktop" ? "" : "desktop" }
         function dnd(): void { NotifService.dndEnabled = !NotifService.dndEnabled }
         function ai(): void { appRoot.aiOpened = !appRoot.aiOpened }

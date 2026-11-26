@@ -55,6 +55,7 @@ Singleton {
     function copyColor(){send({action:"text",text:pixelHex})}
     function pickColor(){send({action:"colorResult"});opened=false}
     function mosaic(id,box,block,effect){send({action:"mosaic",id:id,box:box,block:block,effect:effect || "mosaic"})}
+    function finishRaw(kind,box,target){quietClipboardUntil=Date.now()+1500;opened=false;busy=true;send({action:"finishRaw",kind:kind,box:[box.x,box.y,box.w,box.h],width:box.w,height:box.h,target:target || "",config:config()})}
     function finish(kind,path,width,height,target){quietClipboardUntil=Date.now()+1500;opened=false;busy=true;send({action:"finish",kind:kind,path:path,width:width,height:height,target:target || "",config:config()})}
     function unpin(id) {const p=pins.find(p=>p.id===id);if(p)send({action:"unpin",path:p.path});pins=pins.filter(p=>p.id!==id)}
     Process {

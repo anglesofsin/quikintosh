@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Effects
+import QtQuick.Shapes
 import Quickshell
 import Quickshell.Wayland
 import qs.services
@@ -37,8 +38,20 @@ Scope {
    scale:.96+.04*win.progress
    transformOrigin:above ? Item.BottomLeft:Item.TopLeft
    readonly property color fill:Theme.plainSurfaces ? '#292b2e':'#b8202427'
-   Rectangle{width:15;height:15;rotation:45;x:Math.max(22,Math.min(card.width-38,EmojiState.pointer.x-card.x-7));y:card.above ? card.height-8:-7;color:card.fill;radius:3}
-   Rectangle{anchors.fill:parent;radius:18;color:card.fill;border.width:1;border.color:'#35ffffff'}
+   // One filled outline: an alpha-blended triangle over the body creates a
+   // dark diamond and a visible seam. Keep the arrow in the same path instead.
+   readonly property real arrowX:Math.max(24,Math.min(width-24,EmojiState.pointer.x-x))
+   readonly property string outline:{
+    const w=width,h=height,r=18,t=arrowX
+    const top=above ? '' : ' H'+(t-9)+' L'+t+' -10 L'+(t+9)+' 0'
+    const bottom=above ? ' H'+(t+9)+' L'+t+' '+(h+10)+' L'+(t-9)+' '+h:''
+    return 'M18 0'+top+' H'+(w-r)+' Q'+w+' 0 '+w+' 18 V'+(h-r)+' Q'+w+' '+h+' '+(w-r)+' '+h+bottom+' H18 Q0 '+h+' 0 '+(h-r)+' V18 Q0 0 18 0 Z'
+   }
+   Shape {
+    anchors.fill:parent
+    preferredRendererType:Shape.CurveRenderer
+    ShapePath{fillColor:card.fill;strokeColor:'#35ffffff';strokeWidth:1;PathSvg{path:card.outline}}
+   }
    MouseArea{anchors.fill:parent}
    ColumnLayout {
     anchors.fill:parent;anchors.margins:12;spacing:8

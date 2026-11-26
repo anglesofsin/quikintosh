@@ -76,4 +76,43 @@ class CaptureTests(unittest.TestCase):
     worker.command(dict(action='finish',kind='copy',path=str(source),config={'autoSave':True,'directory':str(Path(directory)/'Desktop')}))
     notify.assert_not_called();self.assertEqual(emit.call_count,1)
     self.assertEqual(emit.call_args.args,('complete',));self.assertTrue(Path(emit.call_args.kwargs['saved']).is_file())
+ def test_raw_export_crops_exact_pixels_and_preserves_png(self):
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);worker=Worker(root);worker.session='fast';worker.frame=Image.new('RGB',(120,80),'blue');worker.frame.putpixel((20,10),(255,0,0));source=root/'frame.png';worker.frame.save(source);worker.meta={'factor':2,'path':str(source)}
+   with patch('backend.copy_png'),patch('backend.emit') as emit:
+    worker.command(dict(action='finishRaw',kind='save',box=[10,5,30,20],width=30,height=20,config={'directory':str(root/'saved')}))
+   with Image.open(emit.call_args.kwargs['saved']) as result:
+    self.assertEqual(result.size,(60,40));self.assertEqual(result.getpixel((0,0)),(255,0,0))
+ def test_full_frame_export_reuses_source_and_validates_bounds(self):
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);worker=Worker(root);worker.session='fast';worker.frame=Image.new('RGB',(120,80),'blue');source=root/'frame.png';worker.frame.save(source);worker.meta={'factor':1,'path':str(source)}
+   with patch('backend.copy_png') as copy,patch('backend.emit'):
+    worker.command(dict(action='finishRaw',kind='copy',box=[0,0,120,80],config={}))
+    self.assertEqual(Path(copy.call_args.args[0]),source)
+   for box in [[0,0,-1,2],[0,0,float('nan'),2],[130,0,20,20]]:
+    with self.assertRaises(ValueError):worker.command(dict(action='finishRaw',box=box))
+ def test_fullscreen_reuses_grim_png_without_enumerating_windows(self):
+  import json
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);worker=Worker(root)
+   def read(command):
+    if command[1]=='monitors':return json.dumps([dict(name='test',width=800,height=600,scale=1,x=0,y=0,focused=True)])
+    if command[1]=='cursorpos':return json.dumps(dict(x=20,y=20))
+    raise AssertionError('Full-display capture should not enumerate clients')
+   def capture(command,**kwargs):Image.new('RGB',(800,600),'blue').save(command[-1])
+   with patch('backend.output',side_effect=read),patch('backend.run',side_effect=capture),patch('backend.copy_png') as copy,patch('backend.emit') as emit:
+    worker.capture(dict(mode='fullscreen',config={'directory':str(root/'saved'),'autoSave':True}))
+   self.assertIsNone(worker.frame)
+   self.assertEqual(emit.call_args.kwargs['action'],'fullscreen')
+   self.assertEqual(Path(emit.call_args.kwargs['saved']).read_bytes(),Path(copy.call_args.args[0]).read_bytes())
+ def test_annotated_bmp_is_encoded_as_lossless_png_in_worker(self):
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);worker=Worker(root);worker.session='annotated'
+   bitmap=root/'export.bmp';image=Image.new('RGB',(60,40),'blue');image.putpixel((20,10),(255,0,0));image.save(bitmap)
+   with patch('backend.copy_png') as copy,patch('backend.emit') as emit:
+    worker.command(dict(action='finish',kind='save',path=str(bitmap),config={'directory':str(root/'saved')}))
+   self.assertFalse(bitmap.exists())
+   self.assertEqual(Path(copy.call_args.args[0]).suffix,'.png')
+   with Image.open(emit.call_args.kwargs['saved']) as result:
+    self.assertEqual(result.format,'PNG');self.assertEqual(result.size,(60,40));self.assertEqual(result.getpixel((20,10)),(255,0,0))
 if __name__=='__main__':unittest.main()

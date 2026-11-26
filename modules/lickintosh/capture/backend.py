@@ -1,4 +1,5 @@
 """Private stdio capture worker. Native Quickshell owns selection and annotation."""
+import shutil
 import json,os,sys,subprocess,tempfile,time,uuid,signal,ctypes,threading,re,colorsys,urllib.parse,urllib.request,math
 from pathlib import Path
 from datetime import datetime
@@ -33,8 +34,9 @@ def copy_data(path=None,text=None):
     else:
         _clipboard=subprocess.Popen(args,stdin=subprocess.PIPE,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         _clipboard.stdin.write(text.encode());_clipboard.stdin.close()
-    time.sleep(.06)
-    if _clipboard.poll() not in (None,0):raise RuntimeError('Clipboard provider failed')
+    try:status=_clipboard.wait(timeout=.005)
+    except subprocess.TimeoutExpired:status=None
+    if status not in (None,0):raise RuntimeError('Clipboard provider failed')
     if previous and previous.poll() is None:
         previous.terminate()
         try:previous.wait(timeout=1)
@@ -62,7 +64,9 @@ def save_png(source,config,mode,target=None):
     target.parent.mkdir(parents=True,exist_ok=True)
     temp=target.with_name('.'+target.name+'.'+uuid.uuid4().hex+'.tmp')
     try:
-        temp.write_bytes(Path(source).read_bytes());temp.chmod(0o600);temp.replace(target)
+        with os.fdopen(os.open(temp,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600),'wb') as dest,Path(source).open('rb') as src:
+            shutil.copyfileobj(src,dest,length=1024*1024)
+        temp.replace(target)
     finally:temp.unlink(missing_ok=True)
     return str(target)
 
@@ -83,7 +87,15 @@ class Worker:
             if int(m.get('transform',0))%2:w,h=h,w
             return w/m.get('scale',1),h/m.get('scale',1)
         monitor=next((m for m in monitors if m['x']<=cursor['x']<m['x']+logical(m)[0] and m['y']<=cursor['y']<m['y']+logical(m)[1]),next((m for m in monitors if m.get('focused')),monitors[0]))
-        self.session=uuid.uuid4().hex;path=self.root/(self.session+'.png');run(['grim','-o',monitor['name'],str(path)],stderr=subprocess.PIPE)
+        self.session=uuid.uuid4().hex;path=self.root/(self.session+'.png');run(['grim','-l','1','-o',monitor['name'],str(path)],stderr=subprocess.PIPE)
+        config=request.get('config',{});mode=request.get('mode','region')
+        if mode=='fullscreen':
+            # Full-display saves already have a complete PNG. Do not decode it
+            # into RGB, enumerate windows, then render/encode the same pixels.
+            self.frame=None;self.meta=None
+            copy_png(path);saved=save_png(path,config,'fullscreen') if config.get('autoSave',True) else ''
+            emit('complete',action='fullscreen',saved=saved,flash=config.get('feedback','notification')!='off',monitor=monitor['name'])
+            return
         with Image.open(path) as raw:self.frame=raw.convert('RGB')
         w,h=logical(monitor);ui_scale=interface_scale();w/=ui_scale;h/=ui_scale;factor=self.frame.width/w
         def workspace_identity(workspace):
@@ -106,10 +118,7 @@ class Worker:
         config=request.get('config',{});mode=request.get('mode','region')
         if mode=='recordFull':
             self.start_record([0,0,w,h],config);return
-        if mode=='fullscreen':
-            copy_png(path);saved=save_png(path,config,'fullscreen') if config.get('autoSave',True) else ''
-            emit('complete',action='fullscreen',saved=saved,flash=config.get('feedback','notification')!='off',monitor=monitor['name'])
-        else:emit('prepared',mode=mode,**self.meta)
+        emit('prepared',mode=mode,**self.meta)
     def edit_image(self,request):
         from PIL import ImageOps
         source=request['path'];source=urllib.parse.unquote(urllib.parse.urlsplit(source).path) if str(source).startswith('file:') else source
@@ -155,8 +164,28 @@ class Worker:
             else:image=image.resize((max(1,w//block),max(1,h//block)),Image.Resampling.BOX).resize((w,h),Image.Resampling.NEAREST)
             path=self.root/(self.session+'-mosaic-'+str(int(r['id']))+'.png');image.save(path);emit('mosaic',id=r['id'],path=str(path),box=box);return
         if action=='record':self.start_record(r['box'],r.get('config',{}));return
+        if action=='finishRaw':
+            if self.frame is None or not self.meta:raise ValueError('No capture is available')
+            box=[float(v) for v in r['box']]
+            if len(box)!=4 or not all(math.isfinite(v) for v in box) or box[2]<=0 or box[3]<=0:raise ValueError('Invalid capture region')
+            factor=float(self.meta['factor'])
+            x=max(0,round(box[0]*factor));y=max(0,round(box[1]*factor))
+            right=min(self.frame.width,round((box[0]+box[2])*factor));bottom=min(self.frame.height,round((box[1]+box[3])*factor))
+            if right<=x or bottom<=y:raise ValueError('Empty capture region')
+            if (x,y,right,bottom)==(0,0,self.frame.width,self.frame.height):source=self.owned(self.meta['path'])
+            else:
+                source=self.root/(self.session+'-export.png')
+                self.frame.crop((x,y,right,bottom)).save(source,format='PNG',compress_level=1)
+            self.command(dict(r,action='finish',path=str(source)))
+            return
         if action=='finish':
             source=self.owned(r['path']);kind=r.get('kind','copy');config=r.get('config',{});saved=''
+            if source.suffix.lower()=='.bmp':
+                # Qt writes the uncompressed grab quickly. Encode the final
+                # lossless PNG here, outside the shell's GUI/render thread.
+                encoded=self.root/(self.session+'-annotated.png')
+                with Image.open(source) as image:image.save(encoded,format='PNG',compress_level=1)
+                source.unlink();source=encoded
             if kind=='qr':
                 result=subprocess.run(['zbarimg','--quiet','--raw',str(source)],capture_output=True,text=True,timeout=10)
                 if result.returncode:emit('result',title='QR / barcode',text='No readable QR code or barcode found.');return

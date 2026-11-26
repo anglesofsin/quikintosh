@@ -155,7 +155,7 @@ ColumnLayout {
  }
  SettingsCard{title:I18n.tr('Finder & GTK')
   SettingsRow{label:'Wallpaper colors in Finder and GTK apps';kind:'switch';checked:root.options.wallpaperGtk;onToggled:value=>root.options.wallpaperGtk=value}
-  SettingsRow{label:'Wallpaper colors for folders and file icons';kind:'switch';checked:root.options.wallpaperFileIcons;separator:false;onToggled:value=>root.options.wallpaperFileIcons=value}
+  SettingsRow{label:'Wallpaper colors for folders and file icons';kind:'switch';checked:root.options.wallpaperFileIcons || WidgetState.widgetStyle==='tinted';available:WidgetState.widgetStyle!=='tinted';separator:false;onToggled:value=>root.options.wallpaperFileIcons=value}
  }
  Card{
   SettingsRow{label:'Liquid Glass';kind:'choice';choices:['Clear','Tinted'];selection:Theme.glassValue('*','tintAlpha')>.45 ? 1:0;separator:false;onPicked:index=>Theme.setGlassParam('*','tintAlpha',index===1 ? .62:.12)}

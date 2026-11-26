@@ -8,7 +8,7 @@ Scope {
  readonly property string wallpaper:ShellConfig.options.wallpaper.path
  readonly property string mode:Theme.isLight ? 'light' : 'dark'
  readonly property bool wallpaperGtk:ShellConfig.options.appearance.wallpaperGtk
- readonly property bool wallpaperFileIcons:ShellConfig.options.appearance.wallpaperFileIcons
+ readonly property bool wallpaperFileIcons:ShellConfig.options.appearance.wallpaperFileIcons || WidgetState.widgetStyle==='tinted'
  onWallpaperGtkChanged:delay.restart()
  onWallpaperFileIconsChanged:delay.restart()
  property bool pending:false

@@ -10,7 +10,7 @@ s=s.replace(anchor,anchor+"\n        const wallpaperIcon=WallpaperFiles.resolve(
 anchor='    function resolve(source) {';assert anchor in s
 s=s.replace(anchor,anchor+"\n        const wallpaperIcon=WallpaperFiles.forSource(source)\n        if(wallpaperIcon)return wallpaperIcon",1);p.write_text(s)
 p=root/'services/LayeredIcons.qml';s=p.read_text();anchor="  let path=String(source || '')";assert anchor in s
-s=s.replace(anchor,anchor+"\n  if(path.indexOf('/icons/Quickintosh-Wallpaper-')>=0)return source",1);p.write_text(s)
+s=s.replace(anchor,anchor+"\n  if(path.indexOf('/icons/Quickintosh-Wallpaper-')>=0)return source\n  const wallpaperFile=WallpaperFiles.forSource(source) || WallpaperFiles.resolve(String(name || ''))\n  if(wallpaperFile)return wallpaperFile",1);p.write_text(s)
 
 for p in root.rglob('*.qml'):
  if p.is_symlink():continue

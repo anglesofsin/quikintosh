@@ -36,3 +36,12 @@ was exercised directly and selected the generated regular folder SVG; a rendered
 preview retained its original lit gradient. Desktop profile IPC now discovers the
 standard session D-Bus address if absent from its launch environment, so theme
 changes reach running GTK applications as well as configuration files.
+
+Tinted style integration: selecting the existing global Tinted icon/widget style
+also enables the shared wallpaper-colored file-icon overlay. Previously that
+style went through the shell's app-tile material renderer while GTK stayed on
+its original blue folder theme. File icons now use the same recolored original
+artwork in both locations, bypassing the dark app-container shader. The separate
+GTK interface-color switch remains independent. Outside Tinted, the explicit
+file-icon switch retains its existing opt-in behavior. WallpaperTheming watches
+the effective choice so changing style applies/restores GTK's icon theme.

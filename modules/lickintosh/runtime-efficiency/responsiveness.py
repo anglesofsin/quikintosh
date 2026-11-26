@@ -39,7 +39,8 @@ s=s.replace('    property bool gateEnabled:', """    property bool preload:false
         if(active && prewarming)GlassPrewarm.remove(root)
     }
     onPresentationActiveChanged:syncPresentation()
-    Binding{target:root.win;property:"visible";value:true;when:root.preload && (root.prewarming || root.retained) && root.win!==null}
+    // Keep the prepared QML/scene graph, not a mapped full-screen transparent surface.
+    Binding{target:root.win;property:"visible";value:true;when:root.preload && root.prewarming && root.win!==null}
     property Item warmItem:null
     Binding{target:root.warmItem;property:"visible";value:true;when:root.prewarming && root.warmItem!==null}
     Binding{target:root.warmItem;property:"opacity";value:1;when:root.prewarming && root.warmItem!==null}

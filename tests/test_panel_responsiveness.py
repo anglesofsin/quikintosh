@@ -90,7 +90,7 @@ Scope{
    for(let p of panels){const w=p.testWindow;if(!w || !w.testBackdrop){fail('window not prepared');return}
     const b=w.testBackdrop;if(!b.retained || !b.captureSettled){fail('backdrop not ready '+b.retained+' '+b.captureSettled);return}
     if(b.prewarming){fail('preparation not finished');return}
-    if(w.visible && w.contentItem.opacity!==0){fail('hidden surface not transparent');return}
+    if(w.visible){fail('closed prepared surface remains mapped');return}
     if(!w.mask || (w.mask.width>0 && w.mask.height>0)){fail('hidden surface has input area');return}
     if(w.WlrLayershell.keyboardFocus!==WlrKeyboardFocus.None){fail('hidden surface holds keyboard');return}
    }
@@ -105,6 +105,8 @@ Scope{
    if(now-openedAt>400){if(!first){fail('no first frame');return}p.opened=false;openedAt=now;phase=3}
   }else if(phase===3 && now-openedAt>500){
    if(!b.retained || !b.captureSettled){fail('scene discarded on close');return}
+   if(b.prewarming)return
+   if(w.visible){fail('closed surface still mapped after animation '+JSON.stringify({active:b.presentationActive,warming:b.prewarming,retained:b.retained,opened:p.opened,win:b.win===w}));return}
    if(++opens<2){phase=1;return}opens=0;index++;if(index===panels.length){console.log('PANELS_REOPEN_READY_OK','MAX_FRAME',maxFrame);Qt.quit()}else phase=1
   }
  }}

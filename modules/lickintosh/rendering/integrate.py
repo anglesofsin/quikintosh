@@ -119,7 +119,8 @@ last=s.rfind('    }\n}');assert last>0;s=s[:last]+'        }\n'+s[last:]
 write(p,s)
 p='components/glass/GlassPrewarm.qml';s=(root/p).read_text().replace('if(!item || !item.preload','if(!RenderingState.prewarm || !item || !item.preload',1)
 s=s.replace(' Connections{target:GlassTracker;', ' Connections{target:RenderingState;function onPrewarmChanged(){if(RenderingState.prewarm)root.requestAll();else{root.queue=[];root.finish()}}}\n Connections{target:GlassTracker;',1);write(p,s)
-edit('components/glass/GlassBackdrop.qml','(root.prewarming || root.retained)','(root.prewarming || (RenderingState.prewarm && root.retained))')
+# Prepared scenes persist through FramePacer; closed surfaces must remain unmapped.
+assert 'when:root.preload && root.prewarming && root.win!==null' in (root/'components/glass/GlassBackdrop.qml').read_text()
 # Keep glass alive for the actual exit animation, including custom motion speed.
 p='tahoedock/TahoeDockSurface.qml';s=(root/p).read_text()
 s=s.replace('Presence{id:dockGlassPresence;wanted:dock.shown;exitDuration:160}', 'Presence{id:dockGlassPresence;wanted:dock.shown || dockSlideX.running || dockSlideY.running;exitDuration:0}')

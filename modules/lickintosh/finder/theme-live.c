@@ -39,13 +39,14 @@ __attribute__((constructor)) static void initialize(void) {
     char exe[4096]; ssize_t length=readlink("/proc/self/exe",exe,sizeof(exe)-1);
     if(length<0)return;
     exe[length]='\0';
-    if(!strstr(exe,"nautilus") && !g_getenv("QUICKINTOSH_THEME_LIVE_TEST"))return;
+    if(!strstr(exe,"/.nautilus-wrapped") && !g_getenv("QUICKINTOSH_THEME_LIVE_TEST"))return;
     /* Do not propagate this GTK4-only provider into applications Finder opens. */
     const char *preload=g_getenv("LD_PRELOAD");
     if(preload){
         char **parts=g_strsplit(preload,":",-1);GString *kept=g_string_new(NULL);
         for(guint i=0;parts[i];i++)if(!strstr(parts[i],"quickintosh-finder-theme-live")){
-            if(kept->len)g_string_append_c(kept,':');g_string_append(kept,parts[i]);
+            if(kept->len)g_string_append_c(kept,':');
+            g_string_append(kept,parts[i]);
         }
         if(kept->len)g_setenv("LD_PRELOAD",kept->str,TRUE);else g_unsetenv("LD_PRELOAD");
         g_string_free(kept,TRUE);g_strfreev(parts);

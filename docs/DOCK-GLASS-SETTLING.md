@@ -53,3 +53,16 @@ Neutral material follow-up: lower the client black overlay from 19% to 3%,
 remove the preset's extra black tint and contrast boost, and lower only the
 Dock's contour threshold to 0.015 so the lighter surface still defines a complete
 pane. The native path has no external client shadow to include in this contour.
+
+Stationary window live glass: disable `windows.background_cache`, keep
+`windows.live_resample` enabled and its FPS limit at zero. This ensures every
+rendered window frame samples the current background instead of retaining the
+sample until a move/resize. This trades cached blur reuse during redraws for
+reliable live content; it does not enable a forced continuous render loop.
+Applied through both the first-boot loader and Lua reload configuration.
+
+Validation: a stationary transparent window over an animated background in the
+isolated compositor produced 159 fresh glass samples and zero cache hits;
+center-region pixel differences across four captures were 158, 196 and 182
+(summed mean RGB absolute differences), confirming background updates without
+moving the foreground window. This checks correctness, not physical GPU FPS.

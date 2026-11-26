@@ -6,7 +6,7 @@ os.environ.setdefault('XDG_RUNTIME_DIR','/run/user/'+str(os.getuid()))
 if (Path(os.environ['XDG_RUNTIME_DIR'])/'bus').exists():os.environ.setdefault('DBUS_SESSION_BUS_ADDRESS','unix:path='+os.environ['XDG_RUNTIME_DIR']+'/bus')
 HOME=Path.home(); CONFIG=HOME/'.config'; STATE=HOME/'.local/state/lickintosh/desktop-profile'
 STATE.mkdir(parents=True,exist_ok=True)
-FILES=['gtk-3.0/settings.ini','gtk-3.0/gtk.css','gtk-4.0/settings.ini','gtk-4.0/gtk.css','mimeapps.list','gtk-3.0/bookmarks','fontconfig/conf.d/60-quickintosh-fonts.conf','kitty/quickintosh-fonts.conf','kitty/kitty.conf','Code/User/settings.json','Code - Insiders/User/settings.json','VSCodium/User/settings.json','Cursor/User/settings.json','Antigravity/User/settings.json','zed/settings.json']
+FILES=['gtk-3.0/settings.ini','gtk-3.0/gtk.css','gtk-4.0/settings.ini','gtk-4.0/quickintosh-live.css','gtk-4.0/gtk.css','mimeapps.list','gtk-3.0/bookmarks','fontconfig/conf.d/60-quickintosh-fonts.conf','kitty/quickintosh-fonts.conf','kitty/kitty.conf','Code/User/settings.json','Code - Insiders/User/settings.json','VSCodium/User/settings.json','Cursor/User/settings.json','Antigravity/User/settings.json','zed/settings.json']
 # Include generated application colors so leaving this rice restores previous app themes.
 try:
  import tomllib
@@ -101,6 +101,13 @@ def apply(theme_root,icon_root,color):
   stylesheet='@import url("'+str(css)+'");\n'
   if version=='gtk-4.0':stylesheet+=(Path(__file__).with_name('finder-glass.css')).read_text()
   write(CONFIG/version/'gtk.css',stylesheet.encode())
+  if version=='gtk-4.0':
+   live=themed['css']
+   if themed['gtkEnabled']:
+    from wallpaper_theme import gtk_accent_overrides
+    live+=gtk_accent_overrides((Path(theme_root)/'share/themes'/('MacTahoe-'+color.title())/version/'gtk.css').read_text())
+   live+=(Path(__file__).with_name('finder-glass.css')).read_text()
+   write(CONFIG/version/'quickintosh-live.css',live.encode())
  for schema,key,value in [('org.gnome.desktop.interface','font-name','SF Pro Text 10'),('org.gnome.desktop.interface','document-font-name','SF Pro Text 10'),('org.gnome.desktop.interface','monospace-font-name','SF Mono 10'),('org.gnome.desktop.interface','gtk-theme',theme),('org.gnome.desktop.interface','icon-theme',icons),('org.gnome.desktop.interface','color-scheme','prefer-light' if color=='light' else 'prefer-dark'),('org.gnome.desktop.wm.preferences','button-layout','close,minimize,maximize:')]:run('gsettings','set',schema,key,value)
  from font_preferences import apply as apply_fonts
  apply_fonts(HOME,write)

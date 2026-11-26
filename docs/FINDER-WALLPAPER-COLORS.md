@@ -54,3 +54,16 @@ declarations with the palette's accent. Preserve other properties and base
 resources. The full GTK switch still controls surface/background colors.
 Validation: generated GTK 4 stylesheet loaded through GtkCssProvider with zero
 parsing messages; targeted accent replacement tests pass.
+
+Finder live provider: the Finder wrapper loads a small GTK4 CSS provider that
+watches the profile's `quickintosh-live.css` via a directory GFileMonitor (atomic
+writes included), coalescing refreshes for 80ms. User-priority CSS includes the
+current accent variables and Finder material, so existing windows update after
+palette changes instead of retaining their initially imported CSS. Provider
+installation is restricted to Nautilus and its preload is removed from child
+application environments. A one-time Finder restart is required to load it.
+A nested GTK window changed its computed foreground from red to green after an
+atomic stylesheet replacement, without restarting the process.
+
+The native selection/loading status remains available as a compact rounded,
+inset capsule instead of the prior square strip.

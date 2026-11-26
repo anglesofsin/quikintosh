@@ -127,6 +127,13 @@ let
     gresource extract ${pkgs.nautilus}/bin/.nautilus-wrapped /org/gnome/nautilus/ui/nautilus-history-controls.ui > history-original.ui
     python3 ${./lickintosh/finder/overlay.py} window-original.ui $out/nautilus-window.ui history-original.ui $out/nautilus-history-controls.ui
   '';
+  finderThemeLive = pkgs.stdenv.mkDerivation {
+    pname = "quickintosh-finder-theme-live"; version = "1";
+    src = ./lickintosh/finder;
+    nativeBuildInputs = [ pkgs.pkg-config ]; buildInputs = [ pkgs.gtk4 ];
+    buildPhase = ''$CC -shared -fPIC -O2 -Wall -Wextra theme-live.c -o theme-live.so $(pkg-config --cflags --libs gtk4)'';
+    installPhase = ''install -Dm755 theme-live.so $out/lib/theme-live.so'';
+  };
   finder = pkgs.writeShellApplication {
     name = "lickintosh-finder";
     runtimeInputs = [ pkgs.nautilus pkgs.gsettings-desktop-schemas pkgs.glib ];
@@ -134,6 +141,7 @@ let
       export XDG_DATA_DIRS="${tahoeGtk}/share:${tahoeIcons}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
       export GI_TYPELIB_PATH="${pkgs.glib.out}/lib/girepository-1.0:''${GI_TYPELIB_PATH:-}"
       export GIO_EXTRA_MODULES="${pkgs.gvfs}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"
+      export LD_PRELOAD="${finderThemeLive}/lib/theme-live.so''${LD_PRELOAD:+:$LD_PRELOAD}"
       export G_RESOURCE_OVERLAYS="/org/gnome/nautilus/ui=${finderUi}''${G_RESOURCE_OVERLAYS:+:$G_RESOURCE_OVERLAYS}"
       exec nautilus --new-window "$@"
     '';

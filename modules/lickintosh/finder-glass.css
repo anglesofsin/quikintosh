@@ -129,17 +129,17 @@ window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation butt
 window.nautilus-window .content-pane headerbar .lickintosh-glass-navigation button:hover:not(:disabled) {
   background-color: alpha(@window_fg_color, 0.08);
 }
-/* Selection/loading information remains native, with a neutral status-line look. */
+/* Compact status capsule, inset from the content edge. */
 window.nautilus-window .floating-bar,
 window.nautilus-window .floating-bar:backdrop {
-  padding: 4px 10px;
-  min-height: 20px;
-  margin: 0;
-  border: none;
-  border-radius: 0;
-  background: alpha(@view_bg_color, 0.96);
-  color: alpha(@window_fg_color, 0.72);
-  box-shadow: none;
+  padding: 5px 12px;
+  min-height: 22px;
+  margin: 10px;
+  border: 1px solid alpha(@window_fg_color, 0.12);
+  border-radius: 15px;
+  background: alpha(@view_bg_color, 0.82);
+  color: alpha(@window_fg_color, 0.82);
+  box-shadow: 0 2px 7px alpha(black, 0.12);
   font-size: 11px;
   font-weight: normal;
 }

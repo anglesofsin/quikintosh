@@ -730,6 +730,14 @@ local floatingMemory = rememberFloating.install(hl, {
     end,
     load = function(profile) return rememberFloating.read(workspaceStateDir .. "/floating-apps-" .. profile) end,
     save = function(profile, values) rememberFloating.write(workspaceStateDir .. "/floating-apps-" .. profile, values) end,
+    -- Runtime inheritance also covers windows spawned from scratchpads; it
+    -- never writes a special-workspace default into persistent preferences.
+    inheritEligible = function(w)
+        local ws = w.workspace
+        return ws and readWorkspaceMode(ws) ~= "canvas" and not hasWindowTag(w, canvasManagedTag)
+            and w.class ~= "org.quickintosh.Finder.FileChooser"
+            and not (w.class == "org.gnome.Nautilus" and (w.title or ""):match("^Finder — "))
+    end,
     eligible = function(w)
         local ws = w.workspace
         return w.class ~= "org.quickintosh.Finder.FileChooser" and not (w.class == "org.gnome.Nautilus" and (w.title or ""):match("^Finder — ")) and ws and not ws.special and readWorkspaceMode(ws) ~= "canvas"

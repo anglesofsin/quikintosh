@@ -63,8 +63,27 @@ function M.install(api, options)
         values[class] = {width = width, height = height}
         options.save(profile, values)
     end
+    function controller.inherit(w)
+        if not w or not w.address or w.floating or not options.inheritEligible or not options.inheritEligible(w) then return false end
+        local class = classOf(w)
+        local generic = not class or class:lower() == "electron" or class:lower() == "org.quickshell"
+        for _, other in ipairs(api.get_windows()) do
+            local sameProcess = w.pid and w.pid > 0 and other.pid == w.pid
+            local sameClass = not generic and classOf(other) == class
+            if other.address ~= w.address and other.floating and other.fullscreen == 0
+                and options.inheritEligible(other) and (sameProcess or sameClass) then
+                restoring[w.address] = true
+                api.dispatch(api.dsp.window.float({action = "enable", window = "address:" .. w.address}))
+                restoring[w.address] = nil
+                snapshot(w)
+                return true
+            end
+        end
+        return false
+    end
     function controller.open(w)
         snapshot(w)
+        if controller.inherit(w) then return end
         if not w or not w.address or not options.eligible(w) then return end
         local class, values = classOf(w), preferences()
         if class and values[class] then

@@ -70,6 +70,7 @@ with (STATE/'apply.lock').open('w') as lock:
  command=[sys.executable,str(SOURCE/'Scripts/python/src/theming/template-processor.py'),str(image),'--scheme-type',method,'--config',str(config),'--default-mode',mode,'-o',str(STATE/'palette.json')]
  with (STATE/'apply.log').open('w') as log:
   result=subprocess.run(command,stdout=log,stderr=log,timeout=180)
+ if result.returncode==0:subprocess.run(['lickintosh-desktop-profile','mode',mode],check=True)
  status={'success':result.returncode==0,'signature':signature,'wallpaper':str(image),'mode':mode,'method':method,'templates':list(valid),'skipped':skipped,'updated':time.time()}
  statusfile.write_text(json.dumps(status,indent=2));print(json.dumps(status))
  raise SystemExit(result.returncode)

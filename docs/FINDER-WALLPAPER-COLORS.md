@@ -1,0 +1,29 @@
+# Finder, GTK and wallpaper colors
+
+Appearance → Finder & GTK has two independent switches, both off by default:
+wallpaper colors in Finder/GTK applications, and wallpaper colors for folders and
+compatible file icons. Both use the existing Matugen light/dark palette. GTK
+keeps the Tahoe layout and glass sidebar; an overlay changes its named colors.
+The icon overlay inherits the selected MacTahoe theme and recolors only blue/cyan
+material in existing SVG places/MIME artwork, retaining paper, gradients, glyphs,
+other color badges and explicitly named alternative folder colors. Application
+logos and thumbnail contents are unchanged. Finder and the desktop use the same
+generated sources. Turning the switches off restores the original Tahoe themes.
+
+Generated themes alternate between two managed names to notify toolkit caches;
+unchanged palettes reuse cached output. The current palette manifest updates the
+shell icon resolver without generating work per frame. No source artwork in the
+Nix store is edited. Missing or invalid palettes fall back to the original theme.
+
+SF Pro Text is the interface default for GTK/Qt and proportional font fallback;
+SF Mono is the monospace and terminal/editor default. SF Pro Display/Rounded
+remain available for specialized interface typography; emoji and symbol fonts
+are preserved. Fonts are installed system-wide from the existing bundled files.
+Apps that implement their own typography or webpage CSS can override system
+fonts; this does not rewrite website content.
+
+Validation: opt-in/off, light/dark, unchanged-cache, invalid-palette and color
+preservation tests; real installed artwork generated 208 compatible icon names
+in approximately one second in a temporary home. Editor JSONC font changes
+preserve comments and unrelated preferences. Runtime checks are recorded below
+when activation completes.

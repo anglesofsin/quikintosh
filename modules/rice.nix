@@ -85,6 +85,8 @@ let
   desktopProfileSource = pkgs.runCommand "quickintosh-desktop-profile-source" {} ''
     mkdir -p $out/quicklook
     cp ${./lickintosh/desktop-profile.py} $out/desktop-profile.py
+    cp ${./lickintosh/wallpaper_theme.py} $out/wallpaper_theme.py
+    cp ${./lickintosh/font_preferences.py} $out/font_preferences.py
     cp ${./lickintosh/finder-glass.css} $out/finder-glass.css
     cp ${./lickintosh/quicklook/mime_types.py} $out/quicklook/mime_types.py
   '';
@@ -313,6 +315,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/cursor}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock-glass-fix}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/desktop-files}/integrate.py $out ${quickLookPython}/bin/python3
+      ${pkgs.python3}/bin/python3 ${./lickintosh/wallpaper-theme}/integrate.py $out
       patchShebangs $out/tools $out/rosa/helpers
     '';
   };
@@ -558,7 +561,12 @@ in
   system.build.lickintosh = lickintoshPackage;
   system.build.quickintosh = quickintoshPackage;
   system.build.appleEmoji = appleEmojiFont;
-  fonts.packages = [ appleEmojiFont ];
+  fonts.packages = [ appleEmojiFont (pkgs.runCommand "quickintosh-sf-fonts" {} ''
+    mkdir -p $out/share/fonts/opentype
+    for family in SFM SFPD SFPT SFPR; do
+      ln -s ${lickintosh-src}/assets/fonts/$family $out/share/fonts/opentype/$family
+    done
+  '') ];
   fonts.fontconfig.defaultFonts.emoji = lib.mkBefore [ "Apple Color Emoji" ];
   fonts.fontconfig.localConf = ''
     <match target="pattern"><test name="family" compare="eq"><string>Noto Color Emoji</string></test><edit name="family" mode="prepend" binding="strong"><string>Apple Color Emoji</string></edit></match>

@@ -4,7 +4,7 @@ from pathlib import Path
 from quicklook.mime_types import supported_mimes,DESKTOP_ID
 HOME=Path.home(); CONFIG=HOME/'.config'; STATE=HOME/'.local/state/lickintosh/desktop-profile'
 STATE.mkdir(parents=True,exist_ok=True)
-FILES=['gtk-3.0/settings.ini','gtk-3.0/gtk.css','gtk-4.0/settings.ini','gtk-4.0/gtk.css','mimeapps.list','gtk-3.0/bookmarks']
+FILES=['gtk-3.0/settings.ini','gtk-3.0/gtk.css','gtk-4.0/settings.ini','gtk-4.0/gtk.css','mimeapps.list','gtk-3.0/bookmarks','fontconfig/conf.d/60-quickintosh-fonts.conf','kitty/quickintosh-fonts.conf','kitty/kitty.conf','Code/User/settings.json','Code - Insiders/User/settings.json','VSCodium/User/settings.json','Cursor/User/settings.json','Antigravity/User/settings.json','zed/settings.json']
 # Include generated application colors so leaving this rice restores previous app themes.
 try:
  import tomllib
@@ -15,7 +15,7 @@ try:
 except (OSError,ValueError,KeyError):pass
 FILES=list(dict.fromkeys(FILES+['qt5ct/qt5ct.conf','qt6ct/qt6ct.conf','kdeglobals']))
 NAUTILUS_KEYS=[('org.gnome.nautilus.preferences',k) for k in ['default-folder-viewer','show-image-thumbnails']]+[('org.gnome.nautilus.icon-view','default-zoom-level')]
-KEYS=NAUTILUS_KEYS+[('org.gnome.desktop.interface',k) for k in ['gtk-theme','icon-theme','color-scheme']]+[('org.gnome.desktop.wm.preferences','button-layout')]+[('org.nemo.window-state',k) for k in ['start-with-menu-bar','start-with-status-bar','start-with-sidebar']]
+KEYS=NAUTILUS_KEYS+[('org.gnome.desktop.interface',k) for k in ['gtk-theme','icon-theme','color-scheme','font-name','document-font-name','monospace-font-name']]+[('org.gnome.desktop.wm.preferences','button-layout')]+[('org.nemo.window-state',k) for k in ['start-with-menu-bar','start-with-status-bar','start-with-sidebar']]
 def run(*args):
  try:
   return subprocess.run(args,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,timeout=3)
@@ -25,6 +25,7 @@ def run(*args):
   print('Quickintosh profile: '+str(args[0])+' unavailable; continuing with file settings.',file=sys.stderr)
   return subprocess.CompletedProcess(args,124,stdout='',stderr=str(error))
 def write(path,data):
+ if path.is_file() and not path.is_symlink() and path.read_bytes()==data:return
  path.parent.mkdir(parents=True,exist_ok=True);tmp=path.with_name(path.name+'.rice-tmp');tmp.write_bytes(data);tmp.replace(path)
 def capture():
  files={}
@@ -71,7 +72,13 @@ def mode():
  try:return 'light' if json.loads((CONFIG/'lickintosh/shell-config.json').read_text()).get('appearance',{}).get('mode')=='light' else 'dark'
  except (OSError,ValueError):return 'dark'
 def apply(theme_root,icon_root,color):
- theme='MacTahoe-Light' if color=='light' else 'MacTahoe-Dark';icons='MacTahoe-light' if color=='light' else 'MacTahoe-dark'
+ from wallpaper_theme import prepare
+ try:options=json.loads((CONFIG/'lickintosh/shell-config.json').read_text()).get('appearance',{})
+ except (OSError,ValueError):options={}
+ try:palette=json.loads((HOME/'.local/state/lickintosh/theming/palette.json').read_text())
+ except (OSError,ValueError):palette={}
+ themed=prepare(HOME,theme_root,icon_root,color,options,palette)
+ theme=themed['gtkTheme'];icons=themed['iconTheme']
  # Availability does not select the theme in any other rice.
  for source,dest in [(Path(theme_root)/'share/themes',HOME/'.local/share/themes'),(Path(icon_root)/'share/icons',HOME/'.local/share/icons')]:
   dest.mkdir(parents=True,exist_ok=True)
@@ -82,20 +89,34 @@ def apply(theme_root,icon_root,color):
  for version in ['gtk-3.0','gtk-4.0']:
   c=ini(CONFIG/version/'settings.ini')
   if not c.has_section('Settings'):c.add_section('Settings')
-  for key,value in {'gtk-theme-name':theme,'gtk-icon-theme-name':icons,'gtk-application-prefer-dark-theme':str(color!='light').lower(),'gtk-decoration-layout':'close,minimize,maximize:'}.items():c['Settings'][key]=value
+  for key,value in {'gtk-theme-name':theme,'gtk-icon-theme-name':icons,'gtk-application-prefer-dark-theme':str(color!='light').lower(),'gtk-decoration-layout':'close,minimize,maximize:','gtk-font-name':'SF Pro Text 10'}.items():c['Settings'][key]=value
   if version=='gtk-4.0':c['Settings'].pop('gtk-application-prefer-dark-theme',None)
   saveini(CONFIG/version/'settings.ini',c)
-  css=Path(theme_root)/'share/themes'/theme/version/'gtk.css'
+  css=(HOME/'.local/share/themes'/theme/version/'gtk.css') if themed['gtkEnabled'] else Path(theme_root)/'share/themes'/theme/version/'gtk.css'
   stylesheet='@import url("'+str(css)+'");\n'
   if version=='gtk-4.0':stylesheet+=(Path(__file__).with_name('finder-glass.css')).read_text()
   write(CONFIG/version/'gtk.css',stylesheet.encode())
- for schema,key,value in [('org.gnome.desktop.interface','gtk-theme',theme),('org.gnome.desktop.interface','icon-theme',icons),('org.gnome.desktop.interface','color-scheme','prefer-light' if color=='light' else 'prefer-dark'),('org.gnome.desktop.wm.preferences','button-layout','close,minimize,maximize:')]:run('gsettings','set',schema,key,value)
+ for schema,key,value in [('org.gnome.desktop.interface','font-name','SF Pro Text 10'),('org.gnome.desktop.interface','document-font-name','SF Pro Text 10'),('org.gnome.desktop.interface','monospace-font-name','SF Mono 10'),('org.gnome.desktop.interface','gtk-theme',theme),('org.gnome.desktop.interface','icon-theme',icons),('org.gnome.desktop.interface','color-scheme','prefer-light' if color=='light' else 'prefer-dark'),('org.gnome.desktop.wm.preferences','button-layout','close,minimize,maximize:')]:run('gsettings','set',schema,key,value)
+ from font_preferences import apply as apply_fonts
+ apply_fonts(HOME,write)
+ fontconf=CONFIG/'fontconfig/conf.d/60-quickintosh-fonts.conf'
+ write(fontconf,b'<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><alias><family>sans-serif</family><prefer><family>SF Pro Text</family></prefer></alias><alias><family>monospace</family><prefer><family>SF Mono</family></prefer></alias></fontconfig>')
+ write(CONFIG/'kitty/quickintosh-fonts.conf',b'font_family SF Mono\nbold_font auto\nitalic_font auto\nbold_italic_font auto\n')
+ kitty=CONFIG/'kitty/kitty.conf'
+ if kitty.exists():
+  content=kitty.read_text();line='include quickintosh-fonts.conf'
+  if line not in content:write(kitty,(content.rstrip()+'\n'+line+'\n').encode())
  for app in ['qt5ct/qt5ct.conf','qt6ct/qt6ct.conf','kdeglobals']:
   path=CONFIG/app
   if not path.exists():continue
   c=ini(path);section='Icons' if app=='kdeglobals' else 'Appearance'
   if not c.has_section(section):c.add_section(section)
-  c[section]['Theme' if app=='kdeglobals' else 'icon_theme']=icons;saveini(path,c)
+  c[section]['Theme' if app=='kdeglobals' else 'icon_theme']=icons
+  font_section='General' if app=='kdeglobals' else 'Fonts'
+  if not c.has_section(font_section):c.add_section(font_section)
+  for key,family in ([('font','SF Pro Text'),('menuFont','SF Pro Text'),('toolBarFont','SF Pro Text'),('fixed','SF Mono')] if app=='kdeglobals' else [('general','SF Pro Text'),('fixed','SF Mono')]):
+   c[font_section][key]=family+',10,-1,5,400,0,0,0,0,0'
+  saveini(path,c)
  # Keep a separate Nautilus preference set while this rice is selected.
  if action=='enter':
   try:

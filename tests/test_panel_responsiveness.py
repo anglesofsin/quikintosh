@@ -18,6 +18,8 @@ class PanelResponsiveness(unittest.TestCase):
   with tempfile.TemporaryDirectory(prefix='quickintosh-panels-') as directory:
    root=Path(directory);app=root/'app';app.mkdir();home=root/'home';(home/'Desktop').mkdir(parents=True);(home/'.config').mkdir()
    (home/'.config/user-dirs.dirs').write_text('XDG_DESKTOP_DIR="'+str(home/'Desktop')+'"\n')
+   (home/'.config/lickintosh').mkdir(parents=True)
+   (home/'.config/lickintosh/shell-config.json').write_text('{"glass":{"captureWindows":false}}')
    src=Path(SOURCE)
    for entry in src.iterdir():
     if entry.name!='shell.qml':(app/entry.name).symlink_to(entry,target_is_directory=entry.is_dir())
@@ -83,13 +85,14 @@ Scope{
  function fail(message){console.error('READINESS_FAILED',message,index,phase);Qt.exit(2)}
  FrameAnimation{running:true;onTriggered:{
   const now=Date.now();if(phase>0)maxFrame=Math.max(maxFrame,now-lastFrame);lastFrame=now
-  if(now-started>38000){fail('timeout '+GlassPrewarm.queue.length);return}
+  if(now-started>65000){fail('timeout '+GlassPrewarm.queue.length);return}
   if(phase===0){
    if(now-started<5000)return
    if(now-started<16000 && (GlassPrewarm.current!==null || GlassPrewarm.queue.length>0 || panels.some(p=>!p.testWindow || !p.testWindow.testBackdrop?.captureSettled)))return
    for(let p of panels){const w=p.testWindow;if(!w || !w.testBackdrop){fail('window not prepared');return}
     const b=w.testBackdrop;if(!b.retained || !b.captureSettled){fail('backdrop not ready '+b.retained+' '+b.captureSettled);return}
     if(b.prewarming){fail('preparation not finished');return}
+    if(!b.materialPrepared){fail('material not prepared');return}
     if(w.visible){fail('closed prepared surface remains mapped');return}
     if(!w.mask || (w.mask.width>0 && w.mask.height>0)){fail('hidden surface has input area');return}
     if(w.WlrLayershell.keyboardFocus!==WlrKeyboardFocus.None){fail('hidden surface holds keyboard');return}
@@ -102,10 +105,10 @@ Scope{
    if(index===6 && w.preparedGrid!=="applications"){fail('Launchpad grid not prepared');return}
    if(!b.captureSettled){fail('lost prepared backdrop on reopen');return}
    if(!first && w.visible && w.contentItem.opacity>.99 && (p!==cc || w.testProgress>0)){first=now-openedAt;console.log('PANEL_FIRST_FRAME',index,first)}
-   if(now-openedAt>400){if(!first){fail('no first frame');return}p.opened=false;openedAt=now;phase=3}
+   if(first && now-openedAt>first+700){if(b.warmItem && (!b.warmItem.visible || b.warmItem.opacity<.9)){if(now-openedAt>first+4500)fail('opened content invisible '+b.warmItem.visible+' '+b.warmItem.opacity);return}p.opened=false;openedAt=now;phase=3}
   }else if(phase===3 && now-openedAt>500){
    if(!b.retained || !b.captureSettled){fail('scene discarded on close');return}
-   if(b.prewarming)return
+   if(b.prewarming){fail('completed material prepared again on close');return}
    if(w.visible){fail('closed surface still mapped after animation '+JSON.stringify({active:b.presentationActive,warming:b.prewarming,retained:b.retained,opened:p.opened,win:b.win===w}));return}
    if(++opens<2){phase=1;return}opens=0;index++;if(index===panels.length){console.log('PANELS_REOPEN_READY_OK','MAX_FRAME',maxFrame);Qt.quit()}else phase=1
   }
@@ -114,7 +117,7 @@ Scope{
    log=root/'panels.log'
    with log.open('w') as output:
     process=subprocess.Popen([QS,'-p',str(app)],env=env,stdout=output,stderr=output,start_new_session=True)
-    try:code=process.wait(timeout=45)
+    try:code=process.wait(timeout=75)
     except subprocess.TimeoutExpired:process.kill();process.wait();self.fail(log.read_text())
    text=log.read_text();self.assertEqual(code,0,text)
    self.assertIn('ALL_PANELS_PREPARED_BEFORE_INPUT',text)

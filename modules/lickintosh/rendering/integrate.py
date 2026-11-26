@@ -120,7 +120,7 @@ write(p,s)
 p='components/glass/GlassPrewarm.qml';s=(root/p).read_text().replace('if(!item || !item.preload','if(!RenderingState.prewarm || !item || !item.preload',1)
 s=s.replace(' Connections{target:GlassTracker;', ' Connections{target:RenderingState;function onPrewarmChanged(){if(RenderingState.prewarm)root.requestAll();else{root.queue=[];root.finish()}}}\n Connections{target:GlassTracker;',1);write(p,s)
 # Prepared scenes persist through FramePacer; closed surfaces must remain unmapped.
-assert 'when:root.preload && root.prewarming && root.win!==null' in (root/'components/glass/GlassBackdrop.qml').read_text()
+assert 'value:root.prewarming || root.presentationActive;when:root.preload && root.win!==null' in (root/'components/glass/GlassBackdrop.qml').read_text()
 # Keep glass alive for the actual exit animation, including custom motion speed.
 p='tahoedock/TahoeDockSurface.qml';s=(root/p).read_text()
 s=s.replace('Presence{id:dockGlassPresence;wanted:dock.shown;exitDuration:160}', 'Presence{id:dockGlassPresence;wanted:dock.shown || dockSlideX.running || dockSlideY.running;exitDuration:0}')
@@ -174,3 +174,8 @@ for p in root.rglob('*.qml'):
   if re.search(r'\bloops\s*:\s*Animation\.Infinite',top) and not re.search(r'\bpaused\s*:',top):inserts.append(start)
  for pos in reversed(inserts):s=s[:pos]+'\n paused:running && !RenderPolicy.RenderingState.ambientAnimations\n'+s[pos:]
  if s!=original:write(str(p.relative_to(root)),add_import(s))
+
+# Read-only lifecycle diagnostics for panel regressions.
+p='components/glass/GlassRegistry.qml';s=(root/p).read_text().replace('import Quickshell','import Quickshell\nimport Quickshell.Io',1)
+s=s.replace('    property var entries: []',"""    IpcHandler{target:'panels';function state():string{return JSON.stringify(root.entries.map(e=>({element:e.backdrop.element,visible:e.win.visible,opacity:e.win.contentItem.opacity,active:e.backdrop.presentationActive,prewarming:e.backdrop.prewarming,revealed:e.backdrop.revealed,ready:e.backdrop.ready,settled:e.backdrop.captureSettled,itemVisible:e.backdrop.warmItem?.visible,itemOpacity:e.backdrop.warmItem?.opacity})))}}
+    property var entries: []""",1);write(p,s)

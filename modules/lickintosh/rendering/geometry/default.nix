@@ -14,5 +14,10 @@ compiler.mkDerivation {
    $CXX -std=c++${if modern then "26" else "23"} -shared -fPIC -O2 $(pkg-config --cflags hyprland) geometry.cpp -o quickintosh-geometry.so
    ${lib.optionalString modern "$CXX -std=c++26 -shared -fPIC -O2 $(pkg-config --cflags hyprland) protocol-guard.cpp -ldl -o quickintosh-capture-guard.so"}
  '';
+ doCheck = true;
+ checkPhase = ''
+   $CXX -std=c++23 focus-restore-policy-test.cpp -o focus-policy-test
+   ./focus-policy-test
+ '';
  installPhase = ''mkdir -p $out/lib; cp quickintosh-geometry.so $out/lib/; ${lib.optionalString modern "cp quickintosh-capture-guard.so $out/lib/"}'';
 }

@@ -7,6 +7,14 @@ Singleton {
  id:root
  readonly property int height:ShellConfig.options.wallpaper.videoHeight
  readonly property int fps:ShellConfig.options.wallpaper.videoFps
+ property bool measuring:false
+ property var probes:({})
+ property real guiLast:0
+ property real guiMaxGap:0
+ function addProbe(path,probe){const next=Object.assign({},probes);next[path]=probe;probes=next}
+ function removeProbe(path,probe){if(probes[path]!==probe)return;const next=Object.assign({},probes);delete next[path];probes=next}
+ Timer{interval:20;running:root.measuring;repeat:true;onTriggered:{const now=Date.now();if(root.guiLast)root.guiMaxGap=Math.max(root.guiMaxGap,now-root.guiLast);root.guiLast=now}}
+ IpcHandler{target:'wallpaperVideo';function monitor(value:bool):void{root.guiLast=0;root.guiMaxGap=0;root.measuring=value}function state():string{return JSON.stringify({measuring:root.measuring,guiMaxGapMs:root.guiMaxGap,busy:root.busy,error:root.error,streams:Object.keys(root.probes).map(path=>({path:path,frames:root.probes[path]?.statistics()}))})}}
  property var files:({})
  property var pending:({})
  property var failures:({})

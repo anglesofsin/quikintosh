@@ -1,5 +1,6 @@
 // Compatibility guard for Hyprland 0.57's legacy toplevel exporter. Closing a
 // window can race capture and leave the client's new frame ID unallocated.
+#include "focus-restore-policy.hpp"
 #include <hyprland/src/plugins/PluginAPI.hpp>
 #include <hyprland/src/protocols/ToplevelExport.hpp>
 #include <hyprland/src/protocols/ForeignToplevelWlr.hpp>
@@ -9,6 +10,7 @@
 #include <hyprland/src/desktop/state/ViewState.hpp>
 #include <hyprland/src/desktop/rule/windowRule/WindowRuleApplicator.hpp>
 #include <hyprland/src/event/EventBus.hpp>
+#include <hyprland/src/managers/input/InputManager.hpp>
 #include <hyprland/src/protocols/LayerShell.hpp>
 #include <algorithm>
 #include <cxxabi.h>
@@ -32,6 +34,19 @@ namespace {
 using Capture = void (*)(const std::_Any_data&, CHyprlandToplevelExportManagerV1*&&,
                          uint32_t&&, int32_t&&, wl_resource*&&);
 CFunctionHook* hook = nullptr;
+CFunctionHook* restoreFocusHook = nullptr;
+using RestoreFocus = bool (*)(CInputManager*, PHLMONITOR);
+// Layer unmapping must never activate the last window on a hidden workspace.
+// Explicit workspace/window dispatches continue through the normal focus path.
+bool restoreVisibleFocus(CInputManager* input, PHLMONITOR monitor) {
+    const auto window = Desktop::focusState()->window();
+    if (shouldRefocusPointer(bool(monitor), !input->m_exclusiveKeyboardLSes.empty(), bool(window),
+                            window && bool(window->m_workspace), window && window->m_workspace && window->m_workspace->visible())) {
+        input->refocus();
+        return true;
+    }
+    return reinterpret_cast<RestoreFocus>(restoreFocusHook->m_original)(input, monitor);
+}
 CHyprSignalListener focusListener;
 std::vector<SP<CHyprlandToplevelExportFrameV1>> rejected;
 
@@ -114,6 +129,10 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
         throw std::runtime_error("Quickintosh capture guard: callback lifetime unavailable");
     hook = HyprlandAPI::createFunctionHook(handle, target, reinterpret_cast<void*>(&capture));
     if (!hook || !hook->hook()) throw std::runtime_error("Quickintosh capture guard: hook failed");
+    const auto restoreFunctions = HyprlandAPI::findFunctionsByName(handle, "refocusLastWindow");
+    if (restoreFunctions.size() != 1) { hook->unhook(); throw std::runtime_error("Quickintosh focus guard: restore boundary unavailable"); }
+    restoreFocusHook = HyprlandAPI::createFunctionHook(handle, restoreFunctions[0].address, reinterpret_cast<void*>(&restoreVisibleFocus));
+    if (!restoreFocusHook || !restoreFocusHook->hook()) { hook->unhook(); throw std::runtime_error("Quickintosh focus guard: hook failed"); }
     focusListener = Event::bus()->m_events.window.open.listen([](PHLWINDOW window) {
         if (!window || window->m_ruleApplicator->noFocus().valueOrDefault() ||
             window->m_ruleApplicator->static_.noInitialFocus.value_or(false)) return;
@@ -129,6 +148,8 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE handle) {
 }
 APICALL EXPORT void PLUGIN_EXIT() {
     focusListener.reset();
+    if (restoreFocusHook) restoreFocusHook->unhook();
+    restoreFocusHook = nullptr;
     if (hook) hook->unhook();
     hook = nullptr;
     // Failed resources remain inert until the owning client destroys them.

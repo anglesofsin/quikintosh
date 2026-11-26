@@ -30,6 +30,7 @@ s=s.replace('captureWindows: root.ready && ShellConfig.options.glass.captureWind
 s=s.replace('    property bool gateEnabled:', """    property bool preload:false
     property bool preloadReady:true
     onPreloadReadyChanged:if(preloadReady && preload)GlassPrewarm.enqueue(root)
+    property bool materialPrepared:false
     property bool prewarming:false
     property bool presentationActive:root.win!==null && root.win.visible
     property bool warmupHeld:false
@@ -40,9 +41,10 @@ s=s.replace('    property bool gateEnabled:', """    property bool preload:false
     }
     onPresentationActiveChanged:syncPresentation()
     // Keep the prepared QML/scene graph, not a mapped full-screen transparent surface.
-    Binding{target:root.win;property:"visible";value:true;when:root.preload && root.prewarming && root.win!==null}
+    Binding{target:root.win;property:"visible";value:root.prewarming || root.presentationActive;when:root.preload && root.win!==null}
     property Item warmItem:null
-    Binding{target:root.warmItem;property:"visible";value:true;when:root.prewarming && root.warmItem!==null}
+    // Child visibility follows its parent; restoring an inherited false value
+    // after warm-up would pin the panel content invisible.
     Binding{target:root.warmItem;property:"opacity";value:1;when:root.prewarming && root.warmItem!==null}
     function prepareMaterial(done){
         if(!warmItem || warmItem.width<=0 || warmItem.height<=0){done();return}

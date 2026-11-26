@@ -1,0 +1,48 @@
+--- a/src/Contour.hpp
++++ b/src/Contour.hpp
+@@ -164,7 +164,7 @@
+     // The layer's content changed. Now: mark it dirty, the caller damages the layer.
+     // Deferred: too soon after the last build, owed at deferredAt().
+     enum class EInvalidation { None, Now, Deferred };
+-    [[nodiscard]] EInvalidation invalidate(std::chrono::steady_clock::time_point now) noexcept;
++    [[nodiscard]] EInvalidation invalidate(std::chrono::steady_clock::time_point now, std::chrono::milliseconds interval = MIN_REBUILD_INTERVAL) noexcept;
+     [[nodiscard]] std::optional<std::chrono::steady_clock::time_point> deferredAt() const noexcept { return m_deferredAt; }
+     // Applies an owed invalidation once its time came: Now when it became dirty, Deferred
+     // while it still is not due, None when nothing was owed.
+--- a/src/Contour.cpp
++++ b/src/Contour.cpp
+@@ -93,7 +93,7 @@
+     release();
+ }
+ 
+-CField::EInvalidation CField::invalidate(std::chrono::steady_clock::time_point now) noexcept {
++CField::EInvalidation CField::invalidate(std::chrono::steady_clock::time_point now, std::chrono::milliseconds interval) noexcept {
+     if (!m_requested)
+         return EInvalidation::None;
+ 
+@@ -107,8 +107,8 @@
+         return EInvalidation::None;
+     }
+ 
+-    if (now - m_lastBuild < MIN_REBUILD_INTERVAL) {
+-        m_deferredAt = m_lastBuild + MIN_REBUILD_INTERVAL;
++    if (now - m_lastBuild < interval) {
++        m_deferredAt = m_lastBuild + interval;
+         return EInvalidation::Deferred;
+     }
+ 
+--- a/src/GlassLayerSurface.cpp
++++ b/src/GlassLayerSurface.cpp
+@@ -291,7 +291,11 @@
+ }
+ 
+ void CGlassLayerSurface::markContourContentChanged() {
+-    switch (m_contour.invalidate(std::chrono::steady_clock::now())) {
++    // The dock slides its content inside a stationary layer window. Its contour
++    // must follow the current buffer, rather than a held 30 Hz silhouette.
++    const auto layer = m_layerSurface.lock();
++    const auto interval = layer && layer->m_namespace == "quickshell:dock" ? std::chrono::milliseconds{0} : Contour::MIN_REBUILD_INTERVAL;
++    switch (m_contour.invalidate(std::chrono::steady_clock::now(), interval)) {
+         case Contour::CField::EInvalidation::Now:
+             // the field is rebuilt from a frame that redraws the whole layer
+             damageSampleRegion();

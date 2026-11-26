@@ -12,9 +12,9 @@ Singleton {
  property real started:0
  property int activePanels:0
  onActivePanelsChanged:if(activePanels===0)pump.restart()
- function enqueue(item){if(!item || !item.preload || !item.preloadReady || item.presentationActive || queue.indexOf(item)>=0 || current===item)return;queue=queue.concat([item]);pump.start()}
+ function enqueue(item){if(!item || !item.preload || !item.preloadReady || item.presentationActive || item.materialPrepared || queue.indexOf(item)>=0 || current===item)return;queue=queue.concat([item]);pump.start()}
  function remove(item){queue=queue.filter(entry=>entry!==item);if(current===item)finish()}
- function finish(){const item=current;current=null;if(item)item.prewarming=false;frames=0;rendering=false;pump.restart()}
+ function finish(){const item=current;current=null;if(item){if(item.captureSettled)item.materialPrepared=true;item.prewarming=false;}frames=0;rendering=false;pump.restart()}
  function requestAll(){for(const e of GlassRegistry.entries)enqueue(e.backdrop)}
  Timer{id:events;interval:250;onTriggered:root.requestAll()}
  function invalidate(){events.restart()}
@@ -28,7 +28,7 @@ Singleton {
  FrameAnimation{running:root.current!==null;onTriggered:{
   const item=root.current
   if(!item || item.presentationActive || root.activePanels>0 || GlassTracker.captureBlocked){root.finish();return}
-  if(item.captureSettled && !root.rendering){if(++root.frames>=3 && Date.now()-root.started>=120){root.rendering=true;item.prepareMaterial(()=>{if(root.current===item)root.finish()})}}
+  if(item.captureSettled && !root.rendering){if(++root.frames>=3 && Date.now()-root.started>=120){root.rendering=true;item.prepareMaterial(()=>{item.materialPrepared=true;if(root.current===item)root.finish()})}}
   if(Date.now()-root.started>900)root.finish()
  }}
  Connections{target:GlassTracker;function onTransitionEpochChanged(){root.invalidate()}function onCaptureBlockedChanged(){if(!GlassTracker.captureBlocked)root.invalidate()}}

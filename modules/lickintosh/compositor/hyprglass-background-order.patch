@@ -1,0 +1,50 @@
+--- a/src/BackgroundDamageObserver.cpp
++++ b/src/BackgroundDamageObserver.cpp
+@@ -9,6 +9,7 @@
+ #include <hyprland/src/desktop/view/window/Window.hpp>
+ #include <hyprland/src/event/EventBus.hpp>
+ #include <hyprland/src/protocols/XDGShell.hpp>
++#include <hyprland/src/protocols/LayerShell.hpp>
+ #include <hyprland/src/protocols/core/Compositor.hpp>
+ #include <hyprland/src/protocols/core/Subcompositor.hpp>
+ #include <hyprland/src/protocols/types/SurfaceRole.hpp>
+@@ -206,6 +206,10 @@
+         const auto viewWindow = CWindow::fromView(view); // non-null only for a window root
+         // Resolved once, shared with the window loop's self-exclusion below.
+         const auto committingWindow = ownerWindow(viewWindow, resource);
++        const auto committingLayer = CLayerSurface::fromView(view);
++        // Top/overlay content is composited after regular windows; it cannot
++        // change a window's background sample.
++        const bool layerAboveWindows = committingLayer && committingLayer->m_layer >= ZWLR_LAYER_SHELL_V1_LAYER_TOP;
+         if (!passesVisibilityGate(view, committingWindow))
+             return;
+ 
+@@ -231,6 +235,9 @@
+         for (const auto& [_, state] : g_pGlobalState->layerSurfaces) {
+             const auto layer = state->getLayerSurface();
+             if (!layer || !layer->mapped())
++                continue;
++
++            if (committingLayer && committingLayer->m_layer > layer->m_layer)
+                 continue;
+ 
+             if (!state->liveResampleEnabled())
+@@ -272,7 +279,7 @@
+ 
+         // Single global switch: unlike layers, windows have no per-namespace
+         // live-resample override to fall back on.
+-        if (windowsWantLive) {
++        if (windowsWantLive && !layerAboveWindows) {
+             for (const auto& decorationRef : g_pGlobalState->decorations) {
+                 auto* decoration = decorationRef.get();
+                 if (!decoration)
+@@ -282,7 +289,8 @@
+                 // Null (destroyed) or the committing surface's own tree: a
+                 // window's popups/subsurfaces are its own content, not its
+                 // background, regardless of tree depth.
+-                if (!window || window == committingWindow)
++                if (!window || window == committingWindow || !window->mapped() || window->isHidden() ||
++                    (window->m_workspace && !window->m_workspace->visible()))
+                     continue;
+ 
+                 const auto paddedBox = WindowGeometry::computePaddedGlobalBox(window, GlassRenderer::SAMPLE_PADDING_PX);

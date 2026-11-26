@@ -17,6 +17,7 @@ Scope{id:root
  property bool retained:true
  property bool opened:false
  property bool closing:false
+ readonly property bool presentationActive:opened || closing
  property var win:host
  QtObject{id:host;property bool visible:root.opened || root.closing}
  '''+binding+'''

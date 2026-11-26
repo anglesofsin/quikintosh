@@ -826,6 +826,14 @@ if activeShell == "noctalia" or activeShell == "noctalia-legacy" then
     require("noctalia").apply_theme()
 end
 
+-- These panels already animate in QML before unmapping. Avoid a second
+-- compositor animation and a redundant full-screen exit snapshot.
+hl.layer_rule({
+    name = "quickintosh-panel-owned-animation",
+    match = { namespace = "^quickshell:(applemenu|globalmenu|statusmenu|cc|notifcenter|spotlight)$" },
+    no_anim = true,
+})
+
 -- Capture/pinned-image overlays manage their own animation and image geometry.
 hl.layer_rule({
     name = "no-anim-lickintosh-capture",
@@ -853,7 +861,7 @@ if shellActions["switcher-next"] then
         glass.layer("quickintosh-status-popover", { mask_mode="contour", mask_threshold=0.18 })
         glass.preset("quickintosh-dock", {inherits="pomme",blur_strength=0.65,bevel_strength=0.18,specular_strength=0.22,dark={brightness=1.0,contrast=1.0,tint_color=0x00000000},light={brightness=1.0,contrast=1.0,tint_color=0x00000000}})
         glass.layer("quickshell:dock", { preset="quickintosh-dock", mask_mode="contour", mask_threshold=0.015, live_resample=true })
-        glass.config({layers={live_resample_fps=0},windows={background_cache=false,live_resample=true,live_resample_fps=0}})
+        glass.config({layers={live_resample_fps=0},windows={background_cache=true,live_resample=true,live_resample_fps=0}})
     end
 end
 

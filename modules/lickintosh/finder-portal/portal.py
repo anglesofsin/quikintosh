@@ -9,7 +9,13 @@ REQUEST = Gio.DBusNodeInfo.new_for_xml('<node><interface name="org.freedesktop.i
 
 
 def method(bus, sender, path, interface, name, parameters, invocation):
-    handle = parameters.get_child_value(0).get_string()
+    values = list(parameters.unpack())
+    handle = values[0]
+    # Dedicated portal title identifies the dialog even if GTK restores the
+    # application id while associating an external application's parent.
+    values[3] = 'Finder — ' + (values[3] or 'Files')
+    options = {key: parameters.get_child_value(4).lookup_value(key, None) for key in values[4]}
+    parameters = GLib.Variant('(osssa{sv})', (*values[:4], options))
     cancel = Gio.Cancellable()
     request_id = 0
 

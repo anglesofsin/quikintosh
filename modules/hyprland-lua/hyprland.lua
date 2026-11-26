@@ -372,6 +372,7 @@ hl.window_rule({
     float = true,
 })
 
+hl.window_rule({name="quickintosh-finder-portal-dialog",match={class="^org[.]gnome[.]Nautilus$",title="^Finder — .*"},float=true,center=true,focus_on_activate=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
 hl.window_rule({name="quickintosh-finder-file-chooser",match={class="^org[.]quickintosh[.]Finder[.]FileChooser$"},float=true,center=true,focus_on_activate=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
 
 hl.window_rule({
@@ -646,7 +647,7 @@ local function applyWindowMode(w, ws)
     local addr = w and w.address
     if not addr or not ws or (not ws.id and not ws.special) then return end
 
-    if w.class == "org.quickintosh.Finder.FileChooser" then return end
+    if w.class == "org.quickintosh.Finder.FileChooser" or (w.class == "org.gnome.Nautilus" and (w.title or ""):match("^Finder — ")) then return end
     local mode = readWorkspaceMode(ws)
     if mode == "canvas" then
         if w.floating or w.fullscreen ~= 0 then return end
@@ -731,7 +732,7 @@ local floatingMemory = rememberFloating.install(hl, {
     save = function(profile, values) rememberFloating.write(workspaceStateDir .. "/floating-apps-" .. profile, values) end,
     eligible = function(w)
         local ws = w.workspace
-        return w.class ~= "org.quickintosh.Finder.FileChooser" and ws and not ws.special and readWorkspaceMode(ws) ~= "canvas"
+        return w.class ~= "org.quickintosh.Finder.FileChooser" and not (w.class == "org.gnome.Nautilus" and (w.title or ""):match("^Finder — ")) and ws and not ws.special and readWorkspaceMode(ws) ~= "canvas"
             and not hasWindowTag(w, canvasManagedTag) and w.fullscreen == 0
     end,
 })

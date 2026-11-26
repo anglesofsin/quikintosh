@@ -64,3 +64,11 @@ wait for the CSS/display timer. A stress test delaying CSS installation by five
 seconds reproduced the old tiled `org.gnome.Nautilus` chooser; the early observer
 kept three consecutive cold SaveFile requests floating with the dedicated id.
 The test used Discord-style blob titles and external Wayland parent handles.
+
+External parent association can restore GTK's ordinary app id in the live
+Discord session. The delegate therefore also prefixes only portal dialog titles
+with `Finder — `; an explicit class-and-title rule floats those windows, and
+workspace layout learning excludes them. Ordinary Finder window titles remain
+unchanged. Validation deliberately delayed presentation setup until after map:
+three cold Discord-style SaveFile requests with the ordinary Nautilus app id
+were floating through this rule.

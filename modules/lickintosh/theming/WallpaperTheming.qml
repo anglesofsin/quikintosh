@@ -14,7 +14,7 @@ Scope {
  // Palette output can also change through other Matugen integrations. Follow
  // the published palette, not just the wallpaper setting that initiated it.
  property bool profilePending:false
- FileView{path:Quickshell.env('HOME')+'/.local/state/lickintosh/theming/palette.json';watchChanges:true;onFileChanged:profileDelay.restart();onLoaded:profileDelay.restart()}
+ FileView{path:Quickshell.env('HOME')+'/.local/state/lickintosh/theming/palette.json';preload:true;watchChanges:true;onFileChanged:reload();onLoaded:profileDelay.restart()}
  Timer{id:profileDelay;interval:140;onTriggered:{if(!root.enabled)return;if(profile.running){root.profilePending=true;return}profile.command=['lickintosh-desktop-profile','mode',root.mode];profile.running=true}}
  Process{id:profile;onExited:{if(root.profilePending){root.profilePending=false;profileDelay.restart()}}}
  property bool pending:false

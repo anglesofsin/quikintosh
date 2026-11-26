@@ -19,6 +19,13 @@ reset()
 for i=1,30 do move(i%2*2)end
 assert(#commands==0,'sensor jitter triggered locator')
 reset()
+for i=1,20 do move(i%2*20)end
+assert(#commands==0,'slow reversals triggered locator')
+reset()
+move(0);move(1000);move(0)
+assert(#commands==0,'monitor warp triggered locator')
+reset()
+for _=1,11 do move(0)end
 for _,x in ipairs({0,80,-80,80,-80,80})do move(x)end
 assert(commands[#commands]:match(' 78$'),'rapid reversals did not enlarge pointer')
 local renewals=settle.renewals

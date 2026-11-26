@@ -2,9 +2,12 @@
 
 HyprGlass now subscribes to a layer root again when the layer is mapped. Its
 view association can become available after `view.create`. The subscription is
-deduplicated by the existing observer. This lets animated wallpaper commits
-invalidate the dock's cached backdrop without mouse movement or window damage.
-No polling render loop or forced global frame-rate increase is introduced.
+deduplicated by the existing observer. This repairs missed layer subscriptions, but subscription alone does not cover
+every video presentation path. The dock now also resamples on each real monitor
+frame when its namespace has live resampling enabled. That bypass applies only
+to `quickshell:dock`; other layers retain background caching. It does not schedule
+frames or introduce a polling render loop. Disabling live resampling for the dock
+retains the normal cache policy.
 
 The island clears media enlargement, manual expansion, pin and voice peek when
 opening its shelf or collapsing after pointer departure. A cover remains active

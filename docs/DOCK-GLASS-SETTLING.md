@@ -15,3 +15,12 @@ window-to-empty-workspace cycles completed without QML errors. The simplified
 fixture did not reproduce the user's wallpaper/glass appearance faithfully, so
 this is a lifecycle check, not proof of visual equivalence with the reported
 Zen scenario. Verify the actual Zen-to-empty-desktop transition after activation.
+
+Follow-up for a flash during the transition: retain a window's last complete
+capture texture during workspace switches, while continuing frame-synchronized
+positioning and clipping. Do not restart the screencopy stream on its intentional
+pause; resume and request a fresh frame after the workspace interval. This hold
+is scoped to workspace changes, not ordinary window movement. It can briefly
+freeze video content in the reflected window texture during the switch; it does
+not freeze the Dock animation or its geometry. The isolated fixture remains a
+lifecycle test; physical GPU/Zen visual verification is still required.

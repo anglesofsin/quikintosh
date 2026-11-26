@@ -165,3 +165,14 @@ text=text.replace('''                        Layout.fillWidth: true
 p.write_text(text)
 # A page-owned timer cancels the queued refresh when navigation destroys it.
 p=root/'settingsapp/SettingsContent.qml';text=p.read_text().replace("onPageIdChanged:{selectedApp='';selectedPermissionApp='';Qt.callLater(root.refresh)}","onPageIdChanged:{selectedApp='';selectedPermissionApp='';pageRefresh.restart()}\n Timer{id:pageRefresh;interval:0;onTriggered:root.refresh()}");p.write_text(text)
+
+# Keep widget customization in its dedicated page instead of duplicating an
+# entire second form inside Desktop & Dock.
+p=root/'ui/settings/pages/DockPage.qml';text=p.read_text()
+sections=[e for e in blocks(text) if e[2]=='ContentSection' and e[3]=='ContentPage']
+for a,b,kind,parent in sorted(sections,reverse=True):
+ if re.search(r'title:\s*I18n.tr\("Widgets"\)',text[a:b][:100]):
+  text=text[:a]+'''SettingsCard{title:I18n.tr("Widgets")
+   SettingsRow{label:I18n.tr("Desktop Widgets");kind:'navigate';onActivated:SettingsLauncher.open('widgets');separator:false}
+  }'''+text[b:]
+p.write_text(text)

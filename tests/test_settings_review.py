@@ -32,8 +32,8 @@ class SettingsReview(unittest.TestCase):
         before = (self.source / 'ui/settings/pages/DockPage.qml').read_text()
         after = (self.root / 'ui/settings/pages/DockPage.qml').read_text()
         pattern = r'(?:ShellConfig\.options\.[\w.]+|WidgetState\.[\w.]+)'
-        self.assertEqual(collections.Counter(re.findall(pattern, before)),
-                         collections.Counter(re.findall(pattern, after)))
+        self.assertEqual(collections.Counter(v for v in re.findall(pattern, before) if not v.startswith('WidgetState.')),
+                         collections.Counter(v for v in re.findall(pattern, after) if not v.startswith('WidgetState.')))
         for name in ['Size & Magnification', 'Folders & Trash', 'Recent Applications']:
             self.assertIn(name, after)
 

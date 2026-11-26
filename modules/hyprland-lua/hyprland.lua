@@ -1,10 +1,10 @@
 -- Quickintosh entrypoint: packaged together with modules/infinite-desktop.
 -- Arch installs this at ~/.config/quickintosh/hypr/hyprland.lua and rewrites helper paths.
-hl.env("XCURSOR_THEME", "Bibata-Modern-Classic")
+hl.env("XCURSOR_THEME", "MacTahoe-cursors")
 hl.env("XCURSOR_SIZE", "24")
-hl.env("HYPRCURSOR_THEME", "Bibata-Modern-Classic")
+hl.env("HYPRCURSOR_THEME", "MacTahoe-cursors")
 hl.env("HYPRCURSOR_SIZE", "24")
-hl.env("QT_CURSOR_THEME", "Bibata-Modern-Classic")
+hl.env("QT_CURSOR_THEME", "MacTahoe-cursors")
 hl.env("QT_CURSOR_SIZE", "24")
 
 -- O modulo 'json' nao vem no ambiente Lua do Hyprland por padrao. Este
@@ -438,6 +438,7 @@ hl.window_rule({
 
 -- Preview pixels stay opaque; HyprGlass draws behind the translucent chrome.
 if shellActions["switcher-next"] then
+    hl.window_rule({name="quickintosh-share-picker",match={title="^Quickintosh Screen Sharing$"},float=true,center=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
     hl.window_rule({name="lickintosh-settings",match={class="^org[.]lickintosh[.]Settings$"},float=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
     hl.window_rule({name="lickintosh-quick-look",match={title="^(Lickintosh|Quickintosh) Quick Look.*"},float=true,center=true,stay_focused=true,focus_on_activate=true,no_anim=false,animation="popin 88%",opacity="1.0 1.0",tag="+hyprglass_enabled"})
 end
@@ -799,7 +800,7 @@ if activeShell == "noctalia" or activeShell == "noctalia-legacy" then
 end
 
 hl.on("hyprland.start", function()
-    hl.exec_cmd("hyprctl setcursor Bibata-Modern-Classic 24")
+    hl.exec_cmd("hyprctl setcursor MacTahoe-cursors 24")
     hl.exec_cmd("/run/current-system/sw/bin/rice-shell start")
     hl.exec_cmd("touch /tmp/borders-off-global")
     hl.exec_cmd("kdeconnect-indicator")

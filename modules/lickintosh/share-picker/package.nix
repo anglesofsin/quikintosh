@@ -1,8 +1,14 @@
-{ pkgs, portal }:
+{ pkgs, portal, quickshell }:
 let
-  theme = pkgs.runCommand "quickintosh-share-picker-theme" {} ''
-    install -Dm644 ${./hyprtoolkit.conf} "$out/hypr/hyprtoolkit.conf"
-  '';
+  pickerPython = pkgs.python3.withPackages (p: [ p.pillow ]);
+  picker = pkgs.writeShellApplication {
+    name = "quickintosh-share-picker";
+    runtimeInputs = [ pkgs.grim pkgs.slurp pkgs.hyprland pkgs.python3 ];
+    text = ''
+      export QI_SHARE_QS=${quickshell}/bin/qs
+      exec ${pickerPython}/bin/python3 ${./.}/picker.py "$@"
+    '';
+  };
   styled = pkgs.runCommand "quickintosh-hyprland-portal" {
     version = pkgs.lib.getVersion portal;
     meta = portal.meta or {};
@@ -18,7 +24,7 @@ let
 #!${pkgs.runtimeShell}
 state_dir="\''${RICE_SHELL_STATE_DIR:-\''${XDG_STATE_HOME:-\$HOME/.local/state}/nixos-rice}"
 if [ "\$(cat "\$state_dir/active-shell" 2>/dev/null)" = lickintosh ]; then
-  export XDG_CONFIG_HOME='${theme}'
+  exec ${picker}/bin/quickintosh-share-picker "\$@"
 fi
 exec "$out/bin/.quickintosh-share-picker" "\$@"
 SCRIPT

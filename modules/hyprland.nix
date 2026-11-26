@@ -1,5 +1,6 @@
 {
   config,
+  caelestia-shell,
   lib,
   pkgs,
   ...
@@ -64,11 +65,12 @@ in
 {
   programs.hyprland = {
     enable = true;
-    portalPackage = import ./lickintosh/share-picker/package.nix { inherit pkgs; portal = pkgs.xdg-desktop-portal-hyprland; };
+    portalPackage = import ./lickintosh/share-picker/package.nix { inherit pkgs; portal = pkgs.xdg-desktop-portal-hyprland; quickshell = (caelestia-shell.inputs.quickshell.packages.${pkgs.stdenv.hostPlatform.system}.default.override { withX11 = false; withI3 = false; }).withModules [ pkgs.qt6.qtimageformats caelestia-shell.inputs.m3shapes.packages.${pkgs.stdenv.hostPlatform.system}.default ]; };
     xwayland.enable = true;
   };
 
   environment.systemPackages = with pkgs; [
+    (import ./lickintosh/share-picker/cursor.nix { inherit pkgs; })
     unzip
     ffmpeg
     zenity
@@ -137,6 +139,10 @@ in
   };
 
   environment.sessionVariables = {
+    XCURSOR_THEME = "MacTahoe-cursors";
+    XCURSOR_SIZE = "24";
+    HYPRCURSOR_THEME = "MacTahoe-cursors";
+    HYPRCURSOR_SIZE = "24";
     NIXOS_OZONE_WL = "1";
     QT_QPA_PLATFORM = "wayland;xcb";
     QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";

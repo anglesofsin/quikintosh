@@ -48,3 +48,8 @@ Dock material refinement: remove the white client wash (26% white), replacing
 it with a restrained 19% black contour surface. Use a Dock-only Pomme-derived
 preset with a smaller blur radius, neutral tint, restored contrast, and a weaker
 bevel/specular rim. Window and other panel glass presets are unchanged.
+
+Neutral material follow-up: lower the client black overlay from 19% to 3%,
+remove the preset's extra black tint and contrast boost, and lower only the
+Dock's contour threshold to 0.015 so the lighter surface still defines a complete
+pane. The native path has no external client shadow to include in this contour.

@@ -61,5 +61,5 @@ s=s.replace(' id:root',''' id:root
 ''',1)
 s=s.replace('instantReveal:true;ready:!Theme.plainSurfaces && dockGlassPresence.present;', 'instantReveal:true;ready:!root.nativeDockGlass && !Theme.plainSurfaces && dockGlassPresence.present;',1)
 s=s.replace('TahoeGlass{anchors.fill:parent;backdrop:Theme.plainSurfaces ? null : dockGlass;cornerRadius:24}', 'TahoeGlass{anchors.fill:parent;visible:!root.nativeDockGlass;backdrop:Theme.plainSurfaces || root.nativeDockGlass ? null : dockGlass;cornerRadius:24}',1)
-s=s.replace("Theme.surfaceFor('dock') : '#10ffffff'", "Theme.surfaceFor('dock') : root.nativeDockGlass ? '#30000000':'#10ffffff'",1)
+s=s.replace("Theme.surfaceFor('dock') : '#10ffffff'", "Theme.surfaceFor('dock') : root.nativeDockGlass ? '#08000000':'#10ffffff'",1)
 p.write_text(s)

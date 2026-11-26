@@ -372,6 +372,8 @@ hl.window_rule({
     float = true,
 })
 
+hl.window_rule({name="quickintosh-finder-file-chooser",match={class="^org[.]quickintosh[.]Finder[.]FileChooser$"},float=true,center=true,focus_on_activate=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
+
 hl.window_rule({
     name = "float-xdg-portal",
     match = { class = "xdg-desktop-portal-gtk" },
@@ -644,6 +646,7 @@ local function applyWindowMode(w, ws)
     local addr = w and w.address
     if not addr or not ws or (not ws.id and not ws.special) then return end
 
+    if w.class == "org.quickintosh.Finder.FileChooser" then return end
     local mode = readWorkspaceMode(ws)
     if mode == "canvas" then
         if w.floating or w.fullscreen ~= 0 then return end
@@ -728,7 +731,7 @@ local floatingMemory = rememberFloating.install(hl, {
     save = function(profile, values) rememberFloating.write(workspaceStateDir .. "/floating-apps-" .. profile, values) end,
     eligible = function(w)
         local ws = w.workspace
-        return ws and not ws.special and readWorkspaceMode(ws) ~= "canvas"
+        return w.class ~= "org.quickintosh.Finder.FileChooser" and ws and not ws.special and readWorkspaceMode(ws) ~= "canvas"
             and not hasWindowTag(w, canvasManagedTag) and w.fullscreen == 0
     end,
 })

@@ -10,7 +10,7 @@ import qs.services
 import qs.components.glass
 Scope {
  id:root
- function hiddenApp(value){return /kde.?connect/i.test(String(value || ''))}
+ function hiddenApp(value){return /kde.?connect|org\.quickintosh\.Finder\.FileChooser/i.test(String(value || ''))}
  function blocked(key){return options.recentAppBlacklist.some(item=>String(item.key || item).toLowerCase()===String(key).toLowerCase())}
  function removeRecent(key,name,permanent){if(permanent && !blocked(key))options.recentAppBlacklist=options.recentAppBlacklist.concat([{key:key,name:name || key}]);recentApps=recentApps.filter(app=>app.key!==key);send({action:'forget',key:key})}
  function focusWindow(address){send({action:'focusWindow',address:address})}

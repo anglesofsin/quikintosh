@@ -9,5 +9,12 @@ class PickerProtocol(unittest.TestCase):
  def test_window_handle_is_portal_handle(self):self.assertEqual(picker.selection({'kind':'window','key':'42'},self.groups()),'[SELECTION]/window:42')
  def test_unknown_source_is_rejected(self):self.assertEqual(picker.selection({'kind':'window','key':'43'},self.groups()),'')
  def test_region_relative_to_negative_monitor(self):self.assertEqual(picker.selection({'kind':'region','key':'-1800,20,100,80','remember':True},self.groups()),'[SELECTION]r/region:HDMI-1@120,20,100,80')
+ def test_decimal_window_address(self):
+  w=picker.sources({'XDPH_WINDOW_SHARING_LIST':'7[HC>]app[HT>]Title[HE>]2748[HA>]'})[1][0]
+  self.assertEqual(w['address'],'0xabc');self.assertEqual(w['key'],'7');self.assertEqual(w['app'],'app')
+ def test_multiple_workspaces_and_unicode(self):
+  groups=picker.sources({'XDPH_WORKSPACE_SHARING_LIST_V3':'9[HN>]2:é[HM>]1:6:HDMI-1[HE>]12[HN>]1:2[HM>]0:[HE>]'})
+  self.assertEqual([x['key'] for x in groups[2]],['9','12'])
+  self.assertEqual(picker.selection({'kind':'workspace-id','key':'12'},groups),'[SELECTION]/workspace-id:12')
  def test_cancel_emits_nothing(self):self.assertEqual(picker.selection({},self.groups()),'')
 if __name__=='__main__':unittest.main()

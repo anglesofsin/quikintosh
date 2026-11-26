@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtMultimedia
 import Quickshell
 import qs.services
+import qs.components
 import Quickshell.Io
 FloatingWindow {
  id:window
@@ -41,6 +42,7 @@ FloatingWindow {
  readonly property string kind:info.kind || ''
  readonly property bool raster:['image','pdf'].includes(kind)
  Shortcut{sequences:['Escape','Space'];enabled:QuickLookState.opened;context:Qt.ApplicationShortcut;onActivated:window.closePreview()}
+ function actionIcon(label){return ({'✂':'scissors','×':'x','⛶':'maximize','‹':'chevron-left','›':'chevron-right','✎':'edit-3','↶':'rotate-ccw','▦':'grid','↗':'external-link','⋯':'more-horizontal','−':'minus','+':'plus','Ⅱ':'pause','▶':'play','󰖁':'volume-x','󰕾':'volume-2'})[label] || ''}
  function closePreview(){QuickLookState.close()}
  function timeText(ms){const s=Math.floor(ms/1000);return (s>=3600 ? Math.floor(s/3600)+':':'')+String(Math.floor(s/60)%60).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
  function sizeText(n){return n>1048576 ? (n/1048576).toFixed(1)+' MB':n>1024 ? (n/1024).toFixed(1)+' KB':n+' B'}
@@ -80,9 +82,9 @@ FloatingWindow {
 onDoubleClicked:window.fullscreen=!window.fullscreen}
     Row{id:leftActions;anchors.left:parent.left;anchors.leftMargin:14;anchors.verticalCenter:parent.verticalCenter;spacing:7
      Action{label:'×';tip:'Close';onTriggered:window.closePreview()}
-     Action{label:'⛶';tip:'Full Screen';onTriggered:window.fullscreen=!window.fullscreen}
-     Action{label:'‹';tip:'Previous file';enabled:QuickLookState.context==='finder' || QuickLookState.index>0;onTriggered:QuickLookState.navigate(4)}
-     Action{label:'›';tip:'Next file';enabled:QuickLookState.context==='finder' || QuickLookState.index<QuickLookState.paths.length-1;onTriggered:QuickLookState.navigate(5)}
+     Action{visible:window.width>=660;label:'⛶';tip:'Full Screen';onTriggered:window.fullscreen=!window.fullscreen}
+     Action{visible:window.width>=620 && QuickLookState.paths.length>1;label:'‹';tip:'Previous file';enabled:QuickLookState.context==='finder' || QuickLookState.index>0;onTriggered:QuickLookState.navigate(4)}
+     Action{visible:window.width>=620 && QuickLookState.paths.length>1;label:'›';tip:'Next file';enabled:QuickLookState.context==='finder' || QuickLookState.index<QuickLookState.paths.length-1;onTriggered:QuickLookState.navigate(5)}
     }
     Text{textFormat:Text.PlainText;id:fileTitle;anchors.verticalCenter:parent.verticalCenter;anchors.left:leftActions.right;anchors.right:rightActions.left;anchors.margins:12;text:window.info.name || 'Quick Look';elide:Text.ElideMiddle;horizontalAlignment:Text.AlignHCenter;color:window.foreground;font.family:'SF Pro Display';font.pixelSize:13;font.weight:Font.DemiBold
      Item{id:titleDrag; width:1;height:1
@@ -92,11 +94,11 @@ onDoubleClicked:window.fullscreen=!window.fullscreen}
      MouseArea{id:titleMouse;anchors.fill:parent;drag.target:titleDrag;drag.threshold:8;cursorShape:Qt.OpenHandCursor}
     }
     Row{id:rightActions;anchors.right:parent.right;anchors.rightMargin:12;anchors.verticalCenter:parent.verticalCenter;spacing:7
-     Action{label:'✎';tip:'Markup a copy';visible:window.raster;onTriggered:{const file=window.info.preview || window.info.url;QuickLookState.close();CaptureState.editFile(file)}}
-     Action{label:'✂';tip:'Trim';visible:['audio','video'].includes(window.kind);onTriggered:trimPopup.open()}
-     Action{label:'↶';tip:'Rotate preview';visible:window.raster;onTriggered:window.angle-=90}
-     Action{label:'▦';tip:'Index Sheet';visible:QuickLookState.paths.length>1;onTriggered:window.indexSheet=!window.indexSheet}
-     Action{label:'↗';tip:'Show in Finder';onTriggered:{if(window.info.path)Quickshell.execDetached(['lickintosh-finder','--select',window.info.path])}}
+     Action{label:'✎';tip:'Markup a copy';visible:window.raster && window.width>=720;onTriggered:{const file=window.info.preview || window.info.url;QuickLookState.close();CaptureState.editFile(file)}}
+     Action{label:'✂';tip:'Trim';visible:['audio','video'].includes(window.kind) && window.width>=660;onTriggered:trimPopup.open()}
+     Action{label:'↶';tip:'Rotate preview';visible:window.raster && window.width>=760;onTriggered:window.angle-=90}
+     Action{label:'▦';tip:'Index Sheet';visible:QuickLookState.paths.length>1 && window.width>=820;onTriggered:window.indexSheet=!window.indexSheet}
+     Action{visible:window.width>=860;label:'↗';tip:'Show in Finder';onTriggered:{if(window.info.path)Quickshell.execDetached(['lickintosh-finder','--select',window.info.path])}}
      Action{label:'⋯';tip:'More actions';onTriggered:shareMenu.open()}
      Action{label:window.info.application ? 'Open with '+window.info.application:'Open';wide:true;tip:'Open in default app';onTriggered:QuickLookState.openDefault()}
     }
@@ -157,7 +159,7 @@ videoOutput:video
  }
  Component{id:mediaPreview
   Item{
-   Text{textFormat:Text.PlainText;visible:window.kind==='audio';anchors.centerIn:parent;text:'♫';color:'#b9cfff';font.pixelSize:120}
+   CFVI{visible:window.kind==='audio';anchors.centerIn:parent;size:88;icon:Quickshell.shellPath('quicklook/icons/music.svg');color:window.secondary}
    RowLayout{anchors{bottom:parent.bottom;left:parent.left;right:parent.right}
 height:42;spacing:10
     Action{label:player.playbackState===MediaPlayer.PlayingState ? 'Ⅱ':'▶';tip:'Play/Pause';onTriggered:player.playbackState===MediaPlayer.PlayingState ? player.pause():player.play()}
@@ -182,6 +184,11 @@ height:42;spacing:10
  Menu{
   id:shareMenu;parent:keys;x:Math.max(8,window.width-width-12);y:49
   background:Rectangle{radius:15;color:'#e6282a32'}
+  MenuItem{text:'Rotate preview';visible:window.raster;onTriggered:window.angle-=90}
+  MenuItem{text:'Markup a copy';visible:window.raster;onTriggered:{const file=window.info.preview || window.info.url;QuickLookState.close();CaptureState.editFile(file)}}
+  MenuItem{text:'Trim…';visible:['audio','video'].includes(window.kind);onTriggered:trimPopup.open()}
+  MenuItem{text:'Index Sheet';visible:QuickLookState.paths.length>1;onTriggered:window.indexSheet=!window.indexSheet}
+  MenuItem{text:'Full Screen';onTriggered:window.fullscreen=!window.fullscreen}
   MenuItem{text:'Open with another app…';onTriggered:QuickLookState.send({action:'chooseApp',path:window.info.path})}
   MenuItem{text:'Show in Finder';onTriggered:Quickshell.execDetached(['lickintosh-finder','--select',window.info.path])}
   MenuItem{text:'Copy file location';onTriggered:Quickshell.execDetached(['wl-copy','--',window.info.path])}
@@ -214,11 +221,15 @@ height:42;spacing:10
   handle:Rectangle{x:control.leftPadding+control.visualPosition*(control.availableWidth-width);y:(control.height-height)/2;width:control.pressed ? 12:10;height:width;radius:width/2;color:window.foreground;border.width:1;border.color:Theme.isLight ? '#20000000':'#30ffffff'}
  }
  component Action:Rectangle{
+  id:action
   property string label:'';property string tip:'';property bool wide:false
+  readonly property string symbol:window.actionIcon(label)
   signal triggered()
-  width:wide ? Math.max(90,actionLabel.implicitWidth+22):29;height:29;radius:wide ? 14:14;color:mouse.containsMouse ? '#32ffffff':'#12ffffff';opacity:enabled ? 1:.35
-  Text{textFormat:Text.PlainText;id:actionLabel;anchors.centerIn:parent;text:parent.label;color:window.foreground;font.family:parent.label==='󰖁' || parent.label==='󰕾' ? 'Symbols Nerd Font':'SF Pro Text';font.pixelSize:parent.wide ? 11:18}
-  MouseArea{id:mouse;anchors.fill:parent;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;onClicked:parent.triggered()}
+  width:wide ? Math.min(168,Math.max(82,actionLabel.implicitWidth+24)):30;height:30;radius:15
+  color:mouse.pressed ? '#42ffffff':mouse.containsMouse ? '#28ffffff':'transparent';opacity:enabled ? 1:.35
+  Text{id:actionLabel;visible:action.wide || !action.symbol;textFormat:Text.PlainText;anchors.fill:parent;anchors.margins:action.wide ? 10:0;text:action.label;color:window.foreground;font.family:'SF Pro Text';font.pixelSize:action.wide ? 12:18;font.weight:Font.DemiBold;elide:Text.ElideRight;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
+  CFVI{visible:!action.wide && !!action.symbol;anchors.centerIn:parent;size:17;icon:action.symbol ? Quickshell.shellPath('quicklook/icons/'+action.symbol+'.svg'):'';color:window.foreground}
+  MouseArea{id:mouse;anchors.fill:parent;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;onClicked:action.triggered()}
   ToolTip.visible:mouse.containsMouse && tip!=='';ToolTip.delay:800;ToolTip.text:tip
  }
 }

@@ -57,6 +57,7 @@ PanelWindow {
         id: control
         implicitHeight: 30
         implicitWidth: Math.max(30, label.implicitWidth + 24)
+        property string symbol: ({"‹":"skip-back","›":"skip-forward","Ⅱ":"pause","▶":"play"})[text] || ""
         padding: 8
         background: Rectangle {
             radius: height / 2
@@ -65,7 +66,8 @@ PanelWindow {
         }
         contentItem: Text {
             id: label
-            text: control.text
+            text: control.symbol ? "" : control.text
+            CFVI { anchors.centerIn: parent; visible:!!control.symbol; size:17; icon: control.symbol ? Quickshell.shellPath("quicklook/icons/"+control.symbol+".svg") : ""; color:control.enabled ? "white":"#77777c" }
             color: control.enabled ? "#f5f5f7" : "#77777c"
             font.family: sfText.name
             font.pixelSize: 12

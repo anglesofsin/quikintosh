@@ -36,3 +36,24 @@ installer tests and five palette/material tests also passed.
 Implementation reference: GNOME's portal delegates its file chooser requests to
 Nautilus at `/org/freedesktop/portal/desktop`:
 https://gitlab.gnome.org/GNOME/xdg-desktop-portal-gnome/-/blob/main/src/filechooser.c
+
+Native file chooser windows identify as `org.quickintosh.Finder.FileChooser`.
+The Finder presentation hook sets this only for `NautilusFileChooser` during
+realize/map; ordinary Finder windows keep their original identity. Hyprland
+floats and centers these dialogs and excludes them from learned app layout
+preferences. Dialogs do not create a separate Dock app entry. Nested-compositor
+validation confirmed floating OpenFile, SaveFile, multiple and directory dialogs.
+
+The screen-sharing picker uses a fixed-cell GridView rather than unconstrained
+Repeater items in a GridLayout. Native toplevel captures provide window previews;
+window addresses are normalized independently from the portal's selection handle.
+Workspace choices retain the backend tracker id. An unavailable preview does not
+prevent choosing a valid source. Region selection stays a separate slurp step.
+The four tabs were visually checked in a private nested compositor. Seven source
+protocol tests cover Unicode/byte lengths, window identities, workspace ids,
+negative monitor coordinates, invalid choices and cancellation.
+
+Quick Look toolbar icons reuse the rice's vector artwork with a consistent
+stroke weight (Feather MIT license included with the assets). Narrow windows put
+additional actions in the More menu. The interface was rendered at 880×650 and
+520×450 in the isolated compositor; the 12 backend tests passed.

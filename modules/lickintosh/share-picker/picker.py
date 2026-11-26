@@ -1,7 +1,6 @@
 """Portal protocol adapter. Never infer a source from the selected UI label."""
 import json, os, re, subprocess, sys, tempfile
 from pathlib import Path
-from PIL import Image
 
 def run(args, timeout=3):
     try:
@@ -26,7 +25,9 @@ def sources(env):
         except (ValueError,IndexError,UnicodeError):break
     pattern=r'(\d+)\[HC>\](.*?)\[HT>\](.*?)\[HE>\](.*?)\[HA>\]'
     for ident,app,title,address in re.findall(pattern,env.get('XDPH_WINDOW_SHARING_LIST',''),re.S):
-        windows.append(dict(kind='window',key=ident,title=title or app,subtitle=app,address=address,preview=''))
+        try:address=hex(int(address,16 if address.startswith('0x') else 10))
+        except ValueError:address=''
+        windows.append(dict(kind='window',key=ident,title=title or app,subtitle=app,app=app,address=address,preview=''))
     data=env.get('XDPH_WORKSPACE_SHARING_LIST_V3','').encode();pos=0
     while pos<len(data):
         try:
@@ -79,15 +80,12 @@ def main():
             run(['grim','-s','0.35','-o',m['key'],str(path)],2)
             if path.exists():
                 m['preview']=path.as_uri()
-                with Image.open(path) as im:
-                    for j,item in enumerate(groups[1]):
-                        client=next((c for c in clients if c.get('address')==item['address'] and c.get('mapped') and not c.get('hidden') and c.get('workspace',{}).get('id')==info.get('activeWorkspace',{}).get('id')),None)
-                        if not client:continue
-                        x,y=client['at'];w,h=client['size']
-                        if not (m['x']<=x<m['x']+m['w'] and m['y']<=y<m['y']+m['h']):continue
-                        sx=im.width/m['w'];sy=im.height/m['h'];crop=root/f'window-{j}.png'
-                        im.crop((max(0,int((x-m['x'])*sx)),max(0,int((y-m['y'])*sy)),min(im.width,int((x+w-m['x'])*sx)),min(im.height,int((y+h-m['y'])*sy)))).save(crop)
-                        item['preview']=crop.as_uri()
+                for item in groups[2]:
+                    if item['title']==str(info.get('activeWorkspace',{}).get('name','')):
+                        item['preview']=m['preview']
+        for item in groups[2]:
+            members=[c for c in clients if str(c.get('workspace',{}).get('name',''))==item['title'] and c.get('mapped')]
+            item['subtitle']=' · '.join(dict.fromkeys(c.get('class','') for c in members)) or item.get('subtitle','')
         config=root/'sources.json';config.write_text(json.dumps(dict(groups=groups,remember='--allow-token' in sys.argv,portuguese=os.environ.get('LANG','').startswith('pt'))))
         env=dict(os.environ,QI_SHARE_DATA=str(config),QI_SHARE_RESPONSE=str(response),QT_QUICK_CONTROLS_STYLE='Basic')
         subprocess.run([os.environ['QI_SHARE_QS'],'-p',str(Path(__file__).with_name('picker.qml'))],env=env,stdout=sys.stderr)

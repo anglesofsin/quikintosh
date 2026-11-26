@@ -7,5 +7,7 @@ pkgs.runCommand "quickintosh-mactahoe-cursors" {
 } ''
   mkdir -p $out/share/icons/MacTahoe-cursors $out/share/licenses/mactahoe-cursors
   cp -r $src/cursors/dist/. $out/share/icons/MacTahoe-cursors/
+  mkdir -p $out/share/icons/MacTahoe-dark-cursors
+  cp -r $src/cursors/dist-dark/. $out/share/icons/MacTahoe-dark-cursors/
   cp $src/cursors/LICENSE $out/share/licenses/mactahoe-cursors/LICENSE
 ''

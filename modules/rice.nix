@@ -310,6 +310,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/emoji}/integrate.py $out ${quickLookPython}/bin/python3
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-organization}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-review}/review.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/cursor}/integrate.py $out
       patchShebangs $out/tools $out/rosa/helpers
     '';
   };

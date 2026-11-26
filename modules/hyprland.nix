@@ -140,9 +140,9 @@ in
 
   environment.sessionVariables = {
     XCURSOR_THEME = "MacTahoe-cursors";
-    XCURSOR_SIZE = "24";
+    XCURSOR_SIZE = "31";
     HYPRCURSOR_THEME = "MacTahoe-cursors";
-    HYPRCURSOR_SIZE = "24";
+    HYPRCURSOR_SIZE = "31";
     NIXOS_OZONE_WL = "1";
     QT_QPA_PLATFORM = "wayland;xcb";
     QT_WAYLAND_DISABLE_WINDOWDECORATION = "1";

@@ -1,11 +1,11 @@
 -- Quickintosh entrypoint: packaged together with modules/infinite-desktop.
 -- Arch installs this at ~/.config/quickintosh/hypr/hyprland.lua and rewrites helper paths.
 hl.env("XCURSOR_THEME", "MacTahoe-cursors")
-hl.env("XCURSOR_SIZE", "24")
+hl.env("XCURSOR_SIZE", "31")
 hl.env("HYPRCURSOR_THEME", "MacTahoe-cursors")
-hl.env("HYPRCURSOR_SIZE", "24")
+hl.env("HYPRCURSOR_SIZE", "31")
 hl.env("QT_CURSOR_THEME", "MacTahoe-cursors")
-hl.env("QT_CURSOR_SIZE", "24")
+hl.env("QT_CURSOR_SIZE", "31")
 
 -- O modulo 'json' nao vem no ambiente Lua do Hyprland por padrao. Este
 -- require precisa ser tolerante: um erro aqui aborta o config INTEIRO e o
@@ -800,7 +800,7 @@ if activeShell == "noctalia" or activeShell == "noctalia-legacy" then
 end
 
 hl.on("hyprland.start", function()
-    hl.exec_cmd("hyprctl setcursor MacTahoe-cursors 24")
+    hl.exec_cmd("hyprctl setcursor MacTahoe-cursors 31")
     hl.exec_cmd("/run/current-system/sw/bin/rice-shell start")
     hl.exec_cmd("touch /tmp/borders-off-global")
     hl.exec_cmd("kdeconnect-indicator")
@@ -846,3 +846,6 @@ hl.layer_rule({name="quickintosh-emoji-picker",match={namespace="^quickintosh-em
 
 -- The transparent Quick Look click shield has no visible entrance/exit motion.
 hl.layer_rule({name="lickintosh-quicklook-modal",match={namespace="^lickintosh-quicklook-modal$"},no_anim=true})
+
+-- Native pointer locator and persistent user customization.
+dofile(os.getenv("HOME").."/.config/hypr/cursor-locate.lua")

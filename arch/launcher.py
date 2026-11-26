@@ -28,9 +28,9 @@ def environment(bundle):
     env['NIXOS_OZONE_WL']='1'
     env['MOZ_ENABLE_WAYLAND']='1'
     env['XCURSOR_THEME']='MacTahoe-cursors'
-    env['XCURSOR_SIZE']='24'
+    env['XCURSOR_SIZE']='31'
     env['HYPRCURSOR_THEME']='MacTahoe-cursors'
-    env['HYPRCURSOR_SIZE']='24'
+    env['HYPRCURSOR_SIZE']='31'
     env['XCURSOR_PATH']=str(bundle/'runtime/share/icons')+':'+str(HOME/'.icons')+':/usr/share/icons'
     return env
 

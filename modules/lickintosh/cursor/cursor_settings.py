@@ -40,7 +40,7 @@ def apply(values):
         if not (dest/'index.theme').exists():
             tint(source,dest/'cursors',color);(dest/'index.theme').write_text('[Icon Theme]\nName='+name+'\n')
         theme=name
-    opts=dict(size=size,theme=theme,shake=bool(get('shake',True)),scale=max(1.5,min(4,float(get('scale',2.5)))),sensitivity=max(.5,min(2,float(get('sensitivity',1)))))
+    opts=dict(size=size,theme=theme,shake=bool(get('shake',True)),scale=max(1.5,min(8,float(get('scale',4)))),sensitivity=max(.5,min(2,float(get('sensitivity',1)))),speed=max(.3,min(5,float(get('speed',1.7)))),timeout=max(200,min(3000,int(get('timeout',900)))))
     lua='{'+','.join(k+'='+('true' if v is True else 'false' if v is False else json.dumps(v)) for k,v in opts.items())+'}'
     path=Path.home()/'.config/quickintosh/cursor.lua';path.parent.mkdir(parents=True,exist_ok=True)
     content='return '+lua+'\n'

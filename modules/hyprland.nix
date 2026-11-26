@@ -21,6 +21,7 @@ let
     };
 
   hypr-canvas = pkgs.callPackage ./hypr-canvas.nix {};
+  cursorLocator = pkgs.callPackage ./lickintosh/cursor/plugin.nix {};
 
   hyprland-config = pkgs.stdenv.mkDerivation {
     name = "hyprland-config";
@@ -40,6 +41,7 @@ for p in Path(sys.argv[1]).rglob('*'):
 PYPORTABLE
       substituteInPlace $out/hyprland.lua \
         --replace-fail "@HYPR_CANVAS_PLUGIN@" "${hypr-canvas}/lib/hyprland/hypr-canvas.so"
+      substituteInPlace $out/cursor-locate.lua --replace-fail "@CURSOR_LOCATOR_PLUGIN@" "${cursorLocator}/lib/dynamic-cursors.so"
     '';
   };
   infinite-desktop-scripts = pkgs.stdenv.mkDerivation {

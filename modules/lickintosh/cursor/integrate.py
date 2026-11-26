@@ -14,7 +14,9 @@ p=root/'settingsapp/SettingsContent.qml';s=p.read_text();needle="   }else if(pag
     ]))
     result.push(card('Locate Pointer',[
      toggle('Shake Mouse Pointer to Locate',cv('shake',true),'input',{key:'qi-cursor:shake'}),
-     row('Enlargement','slider',{action:'input',key:'qi-cursor:scale',number:cv('scale',2.5),minimum:1.5,maximum:4,step:.1,value:Number(cv('scale',2.5)).toFixed(1)+'×'}),
+     row('Maximum Enlargement','slider',{action:'input',key:'qi-cursor:scale',number:cv('scale',4),minimum:1.5,maximum:8,step:.1,value:Number(cv('scale',4)).toFixed(1)+'×'}),
+     row('Growth Speed','slider',{action:'input',key:'qi-cursor:speed',number:cv('speed',1.7),minimum:.3,maximum:5,step:.1,value:Number(cv('speed',1.7)).toFixed(1)}),
+     row('Hold Duration','slider',{action:'input',key:'qi-cursor:timeout',number:cv('timeout',900),minimum:200,maximum:3000,step:50,value:cv('timeout',900)+' ms'}),
      row('Shake Sensitivity','slider',{action:'input',key:'qi-cursor:sensitivity',number:cv('sensitivity',1),minimum:.5,maximum:2,step:.1,value:Number(cv('sensitivity',1)).toFixed(1)})
     ]))
 ''';assert needle in s;s=s.replace(needle,replacement,1)
@@ -22,5 +24,5 @@ s=s.replace("  if(name==='input'){", "  if(name==='cursor-theme'){SettingsPrefer
 
 p=root/'assets/i18n/pt_BR.json'
 import json
-data=json.loads(p.read_text());data.update({'Pointer':'Ponteiro','Pointer Size':'Tamanho do ponteiro','Cursor Theme':'Tema do cursor','Pointer Color':'Cor do ponteiro','Locate Pointer':'Localizar ponteiro','Shake Mouse Pointer to Locate':'Aumentar o ponteiro ao balançar o mouse','Enlargement':'Ampliação','Shake Sensitivity':'Sensibilidade do movimento','Custom Color':'Cor personalizada','Original':'Original'})
+data=json.loads(p.read_text());data.update({'Pointer':'Ponteiro','Pointer Size':'Tamanho do ponteiro','Cursor Theme':'Tema do cursor','Pointer Color':'Cor do ponteiro','Locate Pointer':'Localizar ponteiro','Shake Mouse Pointer to Locate':'Aumentar o ponteiro ao balançar o mouse','Maximum Enlargement':'Ampliação máxima','Growth Speed':'Velocidade de crescimento','Hold Duration':'Tempo de permanência','Shake Sensitivity':'Sensibilidade do movimento','Custom Color':'Cor personalizada','Original':'Original'})
 p.write_text(json.dumps(data,ensure_ascii=False,indent=1)+'\n')

@@ -112,7 +112,7 @@ s=s.replace('    id: appRoot','    id: appRoot\n    FloatingMusic {}\n    Floati
 p.write_text(s)
 
 # Visual shape/material controls precede the advanced schema rows in Settings.
-p=root/'ui/settings/pages/RosaPage.qml';s=p.read_text().replace('import qs.settingsapp','import qs.settingsapp\nimport "../../../island-shelf"',1)
+p=root/'ui/settings/pages/RosaPage.qml';s=p.read_text().replace('import QtQuick','import "../../../island-shelf"\nimport QtQuick',1)
 s=s.replace('    property bool weatherLocationRevealed:false','    property bool weatherLocationRevealed:false\n    ContentSection{ShelfAppearance{Layout.fillWidth:true;settingsPage:true}}',1)
 s=s.replace('model: group.modelData.names.filter(name=>name!=="eatPopups")', 'model: group.modelData.names.filter(name=>name!=="eatPopups" && !["surfaceMode","externalSurfaceMode","shelfMaterial","shelfWidth","shelfHeight","shelfSlot1","shelfSlot2","shelfSlot3","shelfSlot4","shelfWeight1","shelfWeight2","shelfWeight3","shelfWeight4"].includes(name))')
 s=s.replace('    ContentSection {\n        title: I18n.tr("Dashboard")', '    ContentSection {\n        title: I18n.tr("Dashboard")\n        TahoeButton{text:I18n.tr("Customize shelf…");onClicked:Quickshell.execDetached(["quickintosh","ipc","call","shelf","open","8"])}',1)

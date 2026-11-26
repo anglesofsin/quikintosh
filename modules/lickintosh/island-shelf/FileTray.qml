@@ -33,7 +33,8 @@ Item {
      }
      MouseArea{id:mouse;anchors.fill:parent;acceptedButtons:Qt.LeftButton|Qt.RightButton;onClicked:e=>{root.choose(modelData.path,!!(e.modifiers&Qt.ControlModifier));if(e.button===Qt.RightButton)menu.popup()};onDoubleClicked:Quickshell.execDetached(['xdg-open',modelData.path]);drag.target:dragItem;drag.threshold:10}
      Item{id:dragItem;width:1;height:1;Drag.active:mouse.drag.active;Drag.dragType:Drag.Automatic;Drag.supportedActions:Qt.CopyAction;Drag.proposedAction:Qt.CopyAction;Drag.mimeData:({'text/uri-list':modelData.uri+'\r\n'});Drag.imageSource:modelData.preview || '';Drag.imageSourceSize:Qt.size(80,80);Drag.onDragFinished:{x=0;y=0}}
-     Menu{id:menu
+     Menu{id:menu;property bool holding:false;onVisibleChanged:{if(holding!==visible){holding=visible;ShelfState.interaction(holding)}}
+      Component.onDestruction:if(holding)ShelfState.interaction(false)
       MenuItem{text:qsTr('Quick Look');onTriggered:QuickLookState.show([modelData.path],0,'external')}
       MenuItem{text:qsTr('Show in Finder');onTriggered:Quickshell.execDetached(['quickintosh-finder','--select',modelData.path])}
       MenuItem{text:qsTr('Convert to PNG');onTriggered:ShelfState.send({action:'convert',format:'png',paths:root.selected})}

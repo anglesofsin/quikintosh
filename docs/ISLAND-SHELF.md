@@ -1,7 +1,7 @@
 # Island shelf
 
 Right-click the island to open its shelf. Home combines the chosen modules;
-Widgets configures up to four positions and widths. Arrange on shelf exposes drag
+Widgets opens a visual editor with a catalogue, four selectable positions, width presets, ordering controls and an Appearance tab. The editor stays open until Done or Escape; ordinary shelf pages still collapse after leaving. Menus and sliders temporarily suspend collapse. Settings → Dynamic Island starts with illustrated Dynamic Island/Notch choices, materials and dimensions. Arrange on shelf exposes drag
 handles and width handles; Done leaves edit mode. Files accepts local file drops.
 Removing files from the tray only removes references, never originals. ZIP and
 converted static images are new uniquely named files in Downloads. Pinned
@@ -45,3 +45,9 @@ The tray stores references under `~/.local/state/quickintosh/island-shelf` with 
 private directory and atomic writes. Clipboard reads the existing Spotlight store.
 
 See [research and parity ledger](research/DROPPY-2026-11-26.md) for platform limits.
+
+Animated wallpaper palettes use the first decoded video/GIF frame, cached by file
+path, modification time and size. Wallpaper Options includes playback enable,
+pause on battery and pause in fullscreen, plus Restore playback defaults. Defaults
+retain playback enabled, pause on battery disabled and pause in fullscreen enabled.
+No frame-rate limit or resolution reduction is added by default.

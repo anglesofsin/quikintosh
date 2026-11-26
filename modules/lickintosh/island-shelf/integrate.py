@@ -7,13 +7,14 @@ shutil.copytree(source,root/'island-shelf',ignore=shutil.ignore_patterns('test_*
 for p in (root/'island-shelf').rglob('*'):p.chmod(0o755 if p.is_dir() else 0o644)
 p=root/'island-shelf/ShelfState.qml';(root/'services/ShelfState.qml').write_text(p.read_text().replace('@PYTHON@',sys.argv[2]));p.unlink()
 p=root/'services/qmldir';p.write_text(p.read_text()+'\nsingleton ShelfState ShelfState.qml\n')
-(root/'island-shelf/qmldir').write_text('\n'.join(name+' '+name+'.qml' for name in ['ShelfButton','ShelfHome','FileTray','ClipboardShelf','LyricsShelf','AudioShelf','WidgetLibrary','ActivitiesShelf','FloatingMusic','ShelfChoice','ShelfSlider','StayAwakeShelf','NotificationShelf','FloatingTray'])+'\n')
+(root/'island-shelf/qmldir').write_text('\n'.join(name+' '+name+'.qml' for name in ['ShelfButton','ShelfHome','FileTray','ClipboardShelf','LyricsShelf','AudioShelf','WidgetLibrary','ActivitiesShelf','FloatingMusic','ShelfChoice','ShelfSlider','StayAwakeShelf','NotificationShelf','FloatingTray','ShelfAppearance'])+'\n')
 base=root/'rosa'
 p=base/'services/IslandConfig.qml';s=p.read_text();spec={
  'floatingPlayerSize':dict(type='pick',def_='player',values=['mini','player','expanded']),
  'surfaceMode':dict(type='pick',def_='island',values=['island','notch']),
  'externalSurfaceMode':dict(type='pick',def_='island',values=['island','notch']),
  'shelfMaterial':dict(type='pick',def_='black',values=['black','glass','dynamic']),
+ 'shelfWidgetCards':dict(type='bool',def_=True),
  'shelfExpandedTabs':dict(type='bool',def_=False),
  'shelfAnimationMs':dict(type='int',def_=220,min=0,max=600),
  'shelfWidth':dict(type='int',def_=1000,min=600,max=1400),
@@ -32,20 +33,25 @@ for key,value in spec.items():
 s=s.replace('        enabled:     {', '        '+('\n        '.join(lines))+'\n        enabled:     {',1)
 s=s.replace('readonly property var groups: [','readonly property var groups: [\n        {key:"shelf",names:'+json.dumps(list(spec))+'},',1)
 p.write_text(s)
-labels={'floatingPlayerSize':'Floating player size','surfaceMode':'Display shape','externalSurfaceMode':'External display shape','shelfMaterial':'Expanded shelf material','shelfExpandedTabs':'Show expanded navigation tabs','shelfAnimationMs':'Shelf animation duration (ms)','shelfWidth':'Expanded shelf width','shelfHeight':'Expanded shelf height','shelfOpenOnHover':'Open shelf on hover','shelfHoverDelay':'Hover delay (ms)','shelfCollapseDelay':'Collapse delay (ms)','shelfLyricsBlank':'Keep lyrics blank when unavailable'}
+labels={'shelfWidgetCards':'Widget cards','floatingPlayerSize':'Floating player size','surfaceMode':'Display shape','externalSurfaceMode':'External display shape','shelfMaterial':'Expanded shelf material','shelfExpandedTabs':'Show expanded navigation tabs','shelfAnimationMs':'Shelf animation duration (ms)','shelfWidth':'Expanded shelf width','shelfHeight':'Expanded shelf height','shelfOpenOnHover':'Open shelf on hover','shelfHoverDelay':'Hover delay (ms)','shelfCollapseDelay':'Collapse delay (ms)','shelfLyricsBlank':'Keep lyrics blank when unavailable'}
 for i in range(1,5):labels['shelfSlot'+str(i)]=f'Shelf widget {i}';labels['shelfWeight'+str(i)]=f'Widget {i} width'
-p=base/'lang/en.json';d=json.loads(p.read_text());d['isle.sec.shelf']='Shelf and display style';d.update({'isle.o.'+k:v for k,v in labels.items()});d.update({'isle.v.'+x:x.title() for x in ['island','notch','calendar','notes','performance','files','none','black','glass','dynamic','weather','focus','media']});p.write_text(json.dumps(d,ensure_ascii=False,indent=2))
+p=base/'lang/en.json';d=json.loads(p.read_text());d['isle.sec.shelf']='Shelf behavior and motion';d.update({'isle.o.'+k:v for k,v in labels.items()});d.update({'isle.v.'+x:x.title() for x in ['island','notch','calendar','notes','performance','files','none','black','glass','dynamic','weather','focus','media']});p.write_text(json.dumps(d,ensure_ascii=False,indent=2))
 p=base/'overlays/IslandDashboard.qml';s=p.read_text().replace('import qs.services','import "../../island-shelf"\nimport qs.services',1)
 s=s.replace('implicitWidth: Math.min(output.width - 32, 1120)','implicitWidth: Math.min(output.width - 32, IslandConfig.s("shelfWidth"))')
 s=s.replace('        Layout.maximumWidth: parent ? parent.width : implicitWidth','')
 s=s.replace('ShellMotion.fade()', 'SettingsPreferences.accessibility.reduceMotion ? 0:IslandConfig.s("shelfAnimationMs")')
-s=s.replace('implicitHeight: 306','implicitHeight: IslandConfig.s("shelfHeight")+20')
-s=s.replace('readonly property int bodyHeight: 236','readonly property int bodyHeight: IslandConfig.s("shelfHeight")')
+s=s.replace('implicitHeight: 306','implicitHeight: bodyHeight+20')
+s=s.replace('readonly property int bodyHeight: 236','readonly property int bodyHeight: panel.page===8 ? Math.min(output.height-80,560):IslandConfig.s("shelfHeight")')
 s=s.replace('property real capsuleTop: 3', 'readonly property bool attachedNotch:(output.name===Quickshell.screens[0]?.name ? IslandConfig.s("surfaceMode"):IslandConfig.s("externalSurfaceMode"))==="notch"\n    property real capsuleTop: 3')
 s=s.replace('        HoverHandler { id: dashboardHover;', '        Rectangle{visible:panel.attachedNotch;anchors.top:parent.top;width:parent.width;height:30;color:body.color}\n        HoverHandler { id: dashboardHover;')
 s=s.replace('mask: Region { item: body; radius: 30 }', 'mask: Region { item: body; radius: panel.attachedNotch ? 0:30 }')
 s=s.replace('            Rectangle{anchors.fill:parent;', '            Rectangle{anchors.fill:parent;')
 s=s.replace('property int page: 0','property var hub:null\n    property int page: 0')
+s=s.replace('    property int page: 0', '    property int page: 0\n    readonly property bool editorActive:page===8 && expanded && visible\n    onEditorActiveChanged:ShelfState.setEditor(output.name,editorActive)\n    Component.onDestruction:ShelfState.setEditor(output.name,false)\n')
+s=s.replace('running: panel.expanded && panel.entered', 'running: panel.expanded && panel.entered && !ShelfState.holdOpen')
+s=s.replace('if (!monitor || !panel.expanded) return', 'if (!monitor || !panel.expanded || ShelfState.holdOpen) return')
+s=s.replace('onActivated: panel.dismissed()', 'onActivated: {ShelfState.editing=false;panel.dismissed()}')
+
 s=s.replace("qsTr('Camera')]", "qsTr('Camera'),qsTr('Files'),qsTr('Clipboard'),qsTr('Widgets'),qsTr('Lyrics'),qsTr('Audio'),qsTr('Activities'),qsTr('Stay Awake')]")
 s=s.replace('width: Math.max(1050,pageFrame.width)','width: panel.page===0 || panel.page>=6 ? pageFrame.width:Math.max(1050,pageFrame.width)')
 s=s.replace('[overview, forecast, performance, media, notifications, cameraFull]', '[overview, forecast, performance, media, notifications, cameraFull, tray, clipboard, library, lyrics, audioApps, activities, awake]')
@@ -71,7 +77,7 @@ pos=s.index('    Component {id:overview;')
 body_end=s.rfind('    }',0,pos)
 s=s[:body_end]+'''        RowLayout {
             anchors.bottom:parent.bottom;anchors.bottomMargin:12;anchors.horizontalCenter:parent.horizontalCenter;spacing:5
-            ShelfButton{visible:ShelfState.editing;text:qsTr("Done");onClicked:ShelfState.editing=false}
+            ShelfButton{visible:ShelfState.editing;text:qsTr("Done");icon:"notch/check.svg";onClicked:ShelfState.editing=false}
             ShelfButton{text:qsTr("Home");icon:"notch/home.svg";selected:panel.page===0;onClicked:panel.selectPage(0)}
             ShelfButton{text:qsTr("Files")+(ShelfState.items.length ? " · "+ShelfState.items.length:"");icon:"notch/inbox.svg";selected:panel.page===6;onClicked:panel.selectPage(6)}
             ShelfButton{text:qsTr("Widgets");icon:"notch/grid.svg";selected:panel.page===8;onClicked:panel.selectPage(8)}
@@ -87,13 +93,15 @@ p=base/'overlays/IslandWindow.qml';s=p.read_text().replace('    readonly propert
 s=s.replace('active: win.visible && IslandConfig.s("dashboardEnabled") && (win.dashboardRequested || dashboardClose.running)', 'active: IslandConfig.s("dashboardEnabled") && !IslandBus.locked')
 s=s.replace('            output: win.modelData','            output: win.modelData\n            hub:win.hub\n            visible:win.visible && (win.dashboardRequested || dashboardClose.running)',1)
 s=s.replace('id: dashboardClose; interval: 250', 'id: dashboardClose; interval: NativeSettings.SettingsPreferences.accessibility.reduceMotion ? 1:IslandConfig.s("shelfAnimationMs")+50')
-s=s.replace('        interval: 180','        interval: IslandConfig.s("shelfCollapseDelay")',1)
+s=s.replace('if (win.pointerIn || win.dashboardPointerInside) return;', 'if (win.pointerIn || win.dashboardPointerInside || NativeSettings.ShelfState.holdOpen) return;')
+s=s.replace('if(!presentationWanted){win.dashboardRequested=false;', 'if(!presentationWanted){NativeSettings.ShelfState.editing=false;win.dashboardRequested=false;')
+s=s.replace('        interval: 180' ,'        interval: IslandConfig.s("shelfCollapseDelay")',1)
 s=s.replace('readonly property int gap: win.inBar','readonly property int gap: win.attachedNotch ? 0 : win.inBar',1)
 needle='''                color: Colors.alpha(win.bodyColor, IslandConfig.s("fill") / 100)'''
 s=s.replace(needle,needle+'''\n                Rectangle{visible:win.attachedNotch;anchors.top:parent.top;width:parent.width;height:Math.min(parent.height/2,18);color:parent.color}''',1)
 s=s.replace('    property bool forced: false','''    Timer{id:shelfHover;interval:IslandConfig.s("shelfHoverDelay");onTriggered:if(win.pointerIn && IslandConfig.s("shelfOpenOnHover"))win.dashboardRequested=true}
     onPointerInChanged:{if(win.pointerIn && IslandConfig.s("shelfOpenOnHover"))shelfHover.restart();else shelfHover.stop()}
-    Connections{target:NativeSettings.ShelfState;function onCloseRequested(){win.dashboardRequested=false}
+    Connections{target:NativeSettings.ShelfState;function onHoldOpenChanged(){if(!NativeSettings.ShelfState.holdOpen && win.dashboardRequested)pointerLeave.restart()}\n    function onCloseRequested(){NativeSettings.ShelfState.editing=false;win.dashboardRequested=false}
     function onReveal(page){if(win.presentationWanted){win.dashboardRequested=true}}}
     DropArea{ x:stage.x; y:stage.y; width:stage.width;height:stage.height;keys:['text/uri-list'];onEntered:{pointerLeave.stop();win.dashboardRequested=true;NativeSettings.ShelfState.reveal(6)}\n    onDropped:drop=>{NativeSettings.ShelfState.add(drop.urls);drop.acceptProposedAction()}}
     property bool forced: false''',1)
@@ -101,4 +109,11 @@ p.write_text(s)
 p=root/'shell.qml'
 s=p.read_text();s='import "island-shelf"\n'+s
 s=s.replace('    id: appRoot','    id: appRoot\n    FloatingMusic {}\n    FloatingTray {}',1)
+p.write_text(s)
+
+# Visual shape/material controls precede the advanced schema rows in Settings.
+p=root/'ui/settings/pages/RosaPage.qml';s=p.read_text().replace('import qs.settingsapp','import qs.settingsapp\nimport "../../../island-shelf"',1)
+s=s.replace('    property bool weatherLocationRevealed:false','    property bool weatherLocationRevealed:false\n    ContentSection{ShelfAppearance{Layout.fillWidth:true;settingsPage:true}}',1)
+s=s.replace('model: group.modelData.names.filter(name=>name!=="eatPopups")', 'model: group.modelData.names.filter(name=>name!=="eatPopups" && !["surfaceMode","externalSurfaceMode","shelfMaterial","shelfWidth","shelfHeight","shelfSlot1","shelfSlot2","shelfSlot3","shelfSlot4","shelfWeight1","shelfWeight2","shelfWeight3","shelfWeight4"].includes(name))')
+s=s.replace('    ContentSection {\n        title: I18n.tr("Dashboard")', '    ContentSection {\n        title: I18n.tr("Dashboard")\n        TahoeButton{text:I18n.tr("Customize shelf…");onClicked:Quickshell.execDetached(["quickintosh","ipc","call","shelf","open","8"])}',1)
 p.write_text(s)

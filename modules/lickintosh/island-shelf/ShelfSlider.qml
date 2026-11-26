@@ -1,7 +1,10 @@
 import QtQuick
 import QtQuick.Controls
+import qs.services
 Slider {
- id:control;implicitHeight:26;leftPadding:5;rightPadding:5
+ id:control;property bool manageHold:true;property bool holding:false;onPressedChanged:{if(manageHold && holding!==pressed){holding=pressed;ShelfState.interaction(holding)}}
+ Component.onDestruction:if(holding)ShelfState.interaction(false)
+ implicitHeight:26;leftPadding:5;rightPadding:5
  background:Rectangle{x:control.leftPadding;y:(control.height-height)/2;width:control.availableWidth;height:4;radius:2;color:'#393940'
   Rectangle{height:4;radius:2;width:parent.width*control.visualPosition;color:'#d9d9df'}
  }

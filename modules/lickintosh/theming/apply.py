@@ -1,5 +1,6 @@
 """Reuse the user's enabled Noctalia Legacy templates without starting its shell."""
 from pathlib import Path
+from media_palette import palette_image
 import json,tomllib,subprocess,sys,fcntl,hashlib,time,os
 
 HOME=Path.home();STATE=HOME/'.local/state/lickintosh/theming';STATE.mkdir(parents=True,exist_ok=True)
@@ -53,7 +54,7 @@ with (STATE/'apply.lock').open('w') as lock:
   valid[name]=t
  method=settings.get('colorSchemes',{}).get('generationMethod','content')
  if method not in ['content','tonal-spot','fruit-salad','rainbow','monochrome','vibrant','faithful','dysfunctional','muted']:method='content'
- signature=hashlib.sha256((str(image.resolve())+str(image.stat().st_mtime_ns)+mode+method+json.dumps(valid,sort_keys=True)).encode()).hexdigest()
+ signature=hashlib.sha256(('first-frame-v1'+str(image.resolve())+str(image.stat().st_mtime_ns)+mode+method+json.dumps(valid,sort_keys=True)).encode()).hexdigest()
  statusfile=STATE/'status.json'
  try:previous=json.loads(statusfile.read_text())
  except (FileNotFoundError,ValueError):previous={}
@@ -67,7 +68,8 @@ with (STATE/'apply.lock').open('w') as lock:
   p=Path(t['output_path']).expanduser()
   if p.is_file():(backup/str(i)).write_bytes(p.read_bytes())
  (backup/'manifest.json').write_text(json.dumps([t['output_path'] for t in paths],indent=2))
- command=[sys.executable,str(SOURCE/'Scripts/python/src/theming/template-processor.py'),str(image),'--scheme-type',method,'--config',str(config),'--default-mode',mode,'-o',str(STATE/'palette.json')]
+ palette_source=palette_image(image,STATE/'video-frames')
+ command=[sys.executable,str(SOURCE/'Scripts/python/src/theming/template-processor.py'),str(palette_source),'--scheme-type',method,'--config',str(config),'--default-mode',mode,'-o',str(STATE/'palette.json')]
  with (STATE/'apply.log').open('w') as log:
   result=subprocess.run(command,stdout=log,stderr=log,timeout=180)
  if result.returncode==0:subprocess.run(['lickintosh-desktop-profile','mode',mode],check=True)

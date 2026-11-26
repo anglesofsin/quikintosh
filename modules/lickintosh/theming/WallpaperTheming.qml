@@ -5,7 +5,7 @@ import qs.services
 Scope {
  id:root
  property bool enabled:false
- readonly property string wallpaper:ShellConfig.options.wallpaper.path
+ readonly property string wallpaper:{const w=ShellConfig.options.wallpaper;const still=Theme.isLight ? w.pathLight:w.pathDark;return still || w.videoPath || w.path}
  readonly property string mode:Theme.isLight ? 'light' : 'dark'
  readonly property bool wallpaperGtk:ShellConfig.options.appearance.wallpaperGtk
  readonly property bool wallpaperFileIcons:ShellConfig.options.appearance.wallpaperFileIcons || WidgetState.widgetStyle==='tinted'

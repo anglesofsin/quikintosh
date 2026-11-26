@@ -13,6 +13,11 @@ Singleton {
  Process{id:awake;onExited:code=>{if(root.nextAwakeMinutes>0){Qt.callLater(root.startAwake);return}root.awakeUntil=0;if(code!==0 && code!==15)root.awakeError=qsTr('Idle inhibition is unavailable on this system')}}
  property bool trayOpen:false
  property bool editing:false
+ property var editorOwners:({})
+ property int interactionCount:0
+ readonly property bool holdOpen:editing || Object.keys(editorOwners).length>0 || interactionCount>0
+ function setEditor(owner,on){const next=Object.assign({},editorOwners);if(on)next[owner]=true;else delete next[owner];editorOwners=next}
+ function interaction(on){interactionCount=Math.max(0,interactionCount+(on ? 1:-1))}
  property bool playerOpen:false
  property var items:[]
  property var clips:[]
@@ -22,7 +27,7 @@ Singleton {
  property bool ready:false
  property var pending:[]
  property int openPage:0
- Connections{target:IslandBus;function onLockedChanged(){if(IslandBus.locked){root.playerOpen=false;root.trayOpen=false;root.editing=false}}}
+ Connections{target:IslandBus;function onLockedChanged(){if(IslandBus.locked){root.playerOpen=false;root.trayOpen=false;root.editing=false;root.editorOwners=({});root.interactionCount=0}}}
  signal closeRequested()
  signal reveal(int page)
  function send(event){if(ready)worker.write(JSON.stringify(event)+'\n');else pending=pending.concat([event])}

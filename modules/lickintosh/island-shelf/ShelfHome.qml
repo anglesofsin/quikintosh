@@ -20,8 +20,9 @@ Flickable {
     Layout.fillWidth:true;Layout.fillHeight:true
     Layout.horizontalStretchFactor:IslandConfig.s('shelfWeight'+(index+1))
     Layout.minimumWidth:140
-    Rectangle{anchors.fill:parent;anchors.margins:-4;radius:16;color:'transparent';border.width:1;border.color:Theme.accent;visible:ShelfState.editing}
-    Loader {anchors.fill:parent;sourceComponent:({media:music,calendar:calendar,weather:weather,focus:focus,notes:notes,performance:stats,files:files})[slot.modelData] || music}
+    Rectangle{anchors.fill:parent;radius:20;color:IslandConfig.s('shelfWidgetCards') ? '#151518':'transparent';border.color:IslandConfig.s('shelfWidgetCards') ? '#25252b':'transparent'}
+    Rectangle{anchors.fill:parent;anchors.margins:-1;radius:20;color:'transparent';border.width:1;border.color:Theme.accent;visible:ShelfState.editing}
+    Loader {anchors.fill:parent;anchors.margins:IslandConfig.s('shelfWidgetCards') ? 14:0;sourceComponent:({media:music,calendar:calendar,weather:weather,focus:focus,notes:notes,performance:stats,files:files})[slot.modelData] || music}
     DropArea{anchors.fill:parent;keys:['application/x-quickintosh-shelf-slot'];onDropped:drop=>{
      const from=Number(drop.getDataAsString('application/x-quickintosh-shelf-slot'));const to=slot.index
      if(Number.isInteger(from) && from>=0 && from<4 && from!==to){const old=IslandConfig.s('shelfSlot'+(to+1));IslandConfig.setStyle('shelfSlot'+(to+1),IslandConfig.s('shelfSlot'+(from+1)));IslandConfig.setStyle('shelfSlot'+(from+1),old)}drop.acceptProposedAction()
@@ -35,12 +36,12 @@ Flickable {
      property real startX:0;property int original:1
      MouseArea{anchors.fill:parent;cursorShape:Qt.SizeHorCursor;onPressed:e=>{parent.startX=mapToGlobal(e.x,e.y).x;parent.original=IslandConfig.s('shelfWeight'+(slot.index+1))};onPositionChanged:e=>{if(pressed){const change=Math.round((mapToGlobal(e.x,e.y).x-parent.startX)/100);IslandConfig.setStyle('shelfWeight'+(slot.index+1),Math.max(1,Math.min(3,parent.original+change)))}}}
     }
-    Rectangle {visible:slot.index>0;anchors.left:parent.left;anchors.leftMargin:-9;width:1;height:parent.height;color:'#242426'}
+    Rectangle {visible:slot.index>0 && !IslandConfig.s('shelfWidgetCards');anchors.left:parent.left;anchors.leftMargin:-9;width:1;height:parent.height;color:'#242426'}
    }
   }
  }
  Component {id:music
-  ColumnLayout {spacing:12
+  ColumnLayout {id:musicCard;spacing:12
    RowLayout {spacing:12;Layout.fillWidth:true
     Rectangle {Layout.preferredWidth:64;Layout.preferredHeight:64;radius:13;color:'#222225';clip:true
      Image{anchors.fill:parent;source:MprisState.artUrl;fillMode:Image.PreserveAspectCrop;asynchronous:true}
@@ -55,11 +56,11 @@ Flickable {
     background:Rectangle{y:seek.height/2-2;width:seek.width;height:4;radius:2;color:'#333336';Rectangle{height:4;radius:2;width:parent.width*seek.visualPosition;color:'#d9d9de'}}
     handle:Item{}
    }
-   RowLayout {Layout.alignment:Qt.AlignHCenter;spacing:14
+   RowLayout {Layout.alignment:Qt.AlignHCenter;spacing:8
     CtrlButton{icon:'music/backward.svg';size:20;active:MprisState.canGoPrevious;onClicked:MprisState.previous()}
     CtrlButton{icon:MprisState.isPlaying ? 'music/pause.svg':'music/play.svg';size:25;active:MprisState.canTogglePlaying;onClicked:MprisState.togglePlaying()}
     CtrlButton{icon:'music/forward.svg';size:20;active:MprisState.canGoNext;onClicked:MprisState.next()}
-    ShelfButton{text:qsTr('Lyrics');onClicked:root.openPage(9)}
+    ShelfButton{visible:musicCard.width>240;text:qsTr('Lyrics');onClicked:root.openPage(9)}
     ShelfButton{icon:'notch/external-link.svg';onClicked:ShelfState.playerOpen=true}
    }
   }

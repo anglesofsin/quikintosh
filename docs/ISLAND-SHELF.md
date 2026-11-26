@@ -51,3 +51,5 @@ path, modification time and size. Wallpaper Options includes playback enable,
 pause on battery and pause in fullscreen, plus Restore playback defaults. Defaults
 retain playback enabled, pause on battery disabled and pause in fullscreen enabled.
 No frame-rate limit or resolution reduction is added by default.
+
+Automatic menubar contrast uses the same cached first frame as the animated wallpaper palette. Dock occlusion accepts both numeric and address/name workspace identities, including visible special workspaces.

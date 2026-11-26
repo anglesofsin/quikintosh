@@ -13,13 +13,19 @@ function blocked(clients, monitors, monitorName, dock, shellScale) {
         if (!client || client.mapped === false || client.hidden) continue
         const owner = monitors.find(m => m.id === client.monitor)
         if (!owner) continue
-        const workspace = client.workspace?.id
-        const special = owner.specialWorkspace?.id
-        // Hidden/minimized special workspaces do not obstruct the desktop,
-        // including pinned windows moved there by the shell's Hide action.
-        const specialVisible = special !== undefined && special !== 0 && workspace === special
-        if (workspace < 0 ? !specialVisible
-            : !client.pinned && workspace !== owner.activeWorkspace?.id) continue
+        const workspace = client.workspace || {}
+        const active = owner.activeWorkspace || {}
+        const special = owner.specialWorkspace || {}
+        const namedSpecial = workspace.type === 'special' || String(workspace.address || workspace.name || '').startsWith('special:')
+        const isSpecial = namedSpecial || Number(workspace.id) < 0
+        function same(a,b) {
+            if(a.id !== undefined && b.id !== undefined)return a.id === b.id
+            const x=String(a.address || a.name || ''), y=String(b.address || b.name || '')
+            return x!=='' && x===y
+        }
+        const specialShown = same(workspace,special) && (special.id !== 0) &&
+            (Number(special.id)<0 || String(special.address || special.name || '').startsWith('special:'))
+        if(isSpecial ? !specialShown : !client.pinned && !same(workspace,active))continue
         if (owner.id === monitor.id && Number(client.fullscreen) > 0) return true
         if (!client.at || !client.size) continue
         const x = Number(client.at[0]), y = Number(client.at[1])

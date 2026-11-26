@@ -56,9 +56,14 @@ p.write_text(s)
 p=root/'tahoedock/TahoeDockSurface.qml';s=p.read_text()
 s=s.replace(' id:root',''' id:root
  property bool nativeDockGlassAvailable:false
+ property int nativeProbeAttempts:0
+ Timer{id:dockNativeRetry;interval:1500;onTriggered:if(!dockNativeProbe.running)dockNativeProbe.running=true}
+ Connections{target:Hyprland;function onRawEvent(event){if(['workspace','workspacev2','activespecial','activespecialv2','configreloaded'].includes(event.name)){if(!root.nativeDockGlassAvailable){root.nativeProbeAttempts=0;dockNativeRetry.restart()}}}}
+
  readonly property bool nativeDockGlass:nativeDockGlassAvailable && !Theme.plainSurfaces
- Process{id:dockNativeProbe;running:true;command:['hyprctl','-j','hyprglass','status'];stdout:StdioCollector{onStreamFinished:{try{const status=JSON.parse(text);root.nativeDockGlassAvailable=status.versionCheck==='match' && status.features?.layers?.active===true}catch(_){root.nativeDockGlassAvailable=false}}}}
+ Process{id:dockNativeProbe;running:true;onExited:{if(!root.nativeDockGlassAvailable && ++root.nativeProbeAttempts<10)dockNativeRetry.restart()}\n command:['hyprctl','-j','hyprglass','status'];stdout:StdioCollector{onStreamFinished:{try{const status=JSON.parse(text);root.nativeDockGlassAvailable=status.versionCheck==='match' && status.features?.layers?.active===true}catch(_){root.nativeDockGlassAvailable=false}}}}
 ''',1)
+s=s.replace('obstructed:!!windowWatcher.item?.blocked', 'nativeGlass:root.nativeDockGlass,nativeAvailable:root.nativeDockGlassAvailable,obstructed:!!windowWatcher.item?.blocked')
 s=s.replace('instantReveal:true;ready:!Theme.plainSurfaces && dockGlassPresence.present;', 'instantReveal:true;ready:!root.nativeDockGlass && !Theme.plainSurfaces && dockGlassPresence.present;',1)
 s=s.replace('TahoeGlass{anchors.fill:parent;backdrop:Theme.plainSurfaces ? null : dockGlass;cornerRadius:24}', 'TahoeGlass{anchors.fill:parent;visible:!root.nativeDockGlass;backdrop:Theme.plainSurfaces || root.nativeDockGlass ? null : dockGlass;cornerRadius:24}',1)
 s=s.replace("Theme.surfaceFor('dock') : '#10ffffff'", "Theme.surfaceFor('dock') : root.nativeDockGlass ? '#08000000':'#10ffffff'",1)

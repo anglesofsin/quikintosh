@@ -1,5 +1,8 @@
 """Sample only the wallpaper's menu-bar strip, once per wallpaper/display change."""
 import json,subprocess,sys,os,urllib.parse
+from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parent.parent/'theming'))
+from media_palette import palette_image
 
 def foreground(rgb):
     values=[v/255 for v in rgb]
@@ -9,6 +12,8 @@ def foreground(rgb):
 
 def sample(path,screens):
     expanded=os.path.expanduser(urllib.parse.unquote(path[7:]) if path.startswith('file://') else path)
+    try:expanded=str(palette_image(expanded,Path.home()/'.local/state/lickintosh/theming/video-frames'))
+    except (OSError,ValueError,subprocess.SubprocessError):return {'path':path,'screens':{}}
     out={}
     for screen in screens:
         width=max(1,int(screen['width']));height=max(32,int(screen['height']))

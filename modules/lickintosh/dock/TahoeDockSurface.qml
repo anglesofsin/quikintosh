@@ -59,7 +59,7 @@ Scope {
    clients:GlassTracker.clientsSnapshot
    monitors:GlassTracker.monitorSnapshots.map(m=>{
     const live=Hyprland.monitors.values.find(item=>item.name===m.name)
-    return Object.assign({},m,{activeWorkspace:{id:live?.activeWorkspace?.id ?? m.activeWorkspace?.id}})
+    return Object.assign({},m,{activeWorkspace:live?.activeWorkspace ? {id:live.activeWorkspace.id,name:live.activeWorkspace.name}:m.activeWorkspace})
    })
    monitorName:dock.screen?.name || ''
    shellScale:Number(Quickshell.env('QT_SCALE_FACTOR') || 1)

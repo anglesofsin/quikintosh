@@ -33,6 +33,11 @@ class DockVisibility(unittest.TestCase):
         values=[{'name':name,'clients':clients,'blocked':blocked,'monitors':[monitor],'rect':[500,950,600,90],'scale':1} for name,clients,blocked in cases]
         special=dict(monitor,specialWorkspace={'id':-99})
         values.append(dict(values[0],name='visible special workspace',clients=[window(workspace={'id':-99})],monitors=[special],blocked=True))
+        modern=dict(monitor,activeWorkspace={'address':'1','type':'normal','name':'1'},specialWorkspace={'address':'special:public','type':'special','name':'special:public'})
+        values.append(dict(values[0],name='modern visible special',monitors=[modern],clients=[window(workspace={'address':'special:public','type':'special','name':'special:public'})],blocked=True))
+        values.append(dict(values[0],name='modern hidden special',monitors=[modern],clients=[window(workspace={'address':'special:hidden','type':'special','name':'special:hidden'})],blocked=False))
+        values.append(dict(values[0],name='modern regular workspace',monitors=[modern],clients=[window(workspace={'address':'1','type':'normal','name':'1'})],blocked=True))
+        values.append(dict(values[0],name='modern empty special',monitors=[dict(modern,specialWorkspace={'address':'','type':'','name':''})],clients=[window(workspace={'address':'special:public','type':'special','name':'special:public'})],blocked=False))
         other={'id':1,'name':'other','x':2020,'y':50,'activeWorkspace':{'id':2},'specialWorkspace':{'id':0}}
         values.append(dict(values[0],name='other monitor',clients=[window(monitor=1,workspace={'id':2},at=[2200,990])],monitors=[monitor,other]))
         values.append(dict(values[0],name='window crossing monitor edge',clients=[window(monitor=1,workspace={'id':2},at=[1000,990],size=[1300,200])],monitors=[monitor,other],blocked=True))

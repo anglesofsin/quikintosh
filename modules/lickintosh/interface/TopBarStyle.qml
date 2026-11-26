@@ -6,7 +6,7 @@ import qs.services
 import qs.components.glass
 Singleton {
     id:root
-    readonly property string wallpaperPath:GlassWallpaper.stillPath
+    readonly property string wallpaperPath:GlassWallpaper.videoActive ? ShellConfig.options.wallpaper.videoPath:GlassWallpaper.stillPath
     readonly property string colorMode:ShellConfig.options.topbar.foregroundMode
     readonly property string screenSpec:JSON.stringify(Quickshell.screens.map(s=>({name:s.name,width:s.width,height:s.height})))
     property var samples:({})

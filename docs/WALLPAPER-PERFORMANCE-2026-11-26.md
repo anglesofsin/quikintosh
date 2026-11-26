@@ -39,3 +39,15 @@ transparency, blur and UI geometry. It does not replace preparation with
 construction on click or turn off effects. Live video rendering still has an
 inherent cost, and these observations do not establish the cause of every
 possible host freeze.
+
+## Applied verification
+
+After activation and shell-only restart, with the original video still playing,
+closed panels settled to 6 mapped layers. A six-second sample measured median
+GPU usage of 70% (67–72%) and 1,446 MiB VRAM. Shell IPC reported ready, no hidden
+window captures were active, and Hyprland reported no configuration errors.
+The isolated lifecycle test exercised all six panel types and Launchpad twice;
+prepared scenes survived closing and reopening. Its first control-center opening
+was slow (886 ms) under the software-rendered nested test; subsequent measured
+openings ranged from 13–138 ms. This does not prove all interaction latency or
+intermittent live freezes have been eliminated.

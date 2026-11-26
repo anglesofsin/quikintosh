@@ -9,8 +9,8 @@ def configure_layers(name):
     # Also register after a first-boot plugin load, which follows Lua config.
     if name == 'hyprglass':
         subprocess.run(['hyprctl', 'eval',
-            'if hl.plugin.hyprglass then hl.plugin.hyprglass.layer("quickshell:dock", '
-            '{preset="pomme",mask_mode="contour",mask_threshold=0.18,live_resample=true}) end'],
+            'if hl.plugin.hyprglass then hl.plugin.hyprglass.preset("quickintosh-dock", {inherits="pomme",blur_strength=0.65,bevel_strength=0.18,specular_strength=0.22,dark={brightness=1.0,contrast=1.04,tint_color=0x00000010},light={brightness=1.0,contrast=1.04,tint_color=0x00000010}}); hl.plugin.hyprglass.layer("quickshell:dock", '
+            '{preset="quickintosh-dock",mask_mode="contour",mask_threshold=0.18,live_resample=true}) end'],
             capture_output=True, text=True, timeout=3)
 
 

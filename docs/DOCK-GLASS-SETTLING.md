@@ -43,3 +43,8 @@ An isolated native-layer fixture completed three fullscreen/workspace cycles
 without config errors and rendered a uniform Dock surface on the empty desktop.
 Physical monitor picture-mode changes cannot be established in the nested
 Wayland test; verify Discord fullscreen on the user's monitor after activation.
+
+Dock material refinement: remove the white client wash (26% white), replacing
+it with a restrained 19% black contour surface. Use a Dock-only Pomme-derived
+preset with a smaller blur radius, neutral tint, restored contrast, and a weaker
+bevel/specular rim. Window and other panel glass presets are unchanged.

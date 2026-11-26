@@ -292,7 +292,7 @@ PanelWindow {
                     fillMode: Image.PreserveAspectCrop
                     asynchronous: true
                 }
-                Text { font.family: sfText.name; anchors.centerIn: parent; visible: !MprisState.artUrl; text: "♫"; color: "#aaa"; font.pixelSize: 34 }
+                TintedIcon { anchors.centerIn: parent; visible: !MprisState.artUrl; size:38; source:Quickshell.shellPath("assets/icons_desktop/MacTahoe/actions/symbolic/music-note-symbolic.svg"); tint:"#d8d8dc" }
             }
             ColumnLayout {
                 Layout.preferredWidth: 240

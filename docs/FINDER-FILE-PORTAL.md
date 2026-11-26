@@ -57,3 +57,10 @@ Quick Look toolbar icons reuse the rice's vector artwork with a consistent
 stroke weight (Feather MIT license included with the assets). Narrow windows put
 additional actions in the More menu. The interface was rendered at 880×650 and
 520×450 in the isolated compositor; the 12 backend tests passed.
+
+Cold-start ordering: the GTK toplevel-model observer is installed synchronously
+in the Finder presentation constructor, before any chooser can map. It must not
+wait for the CSS/display timer. A stress test delaying CSS installation by five
+seconds reproduced the old tiled `org.gnome.Nautilus` chooser; the early observer
+kept three consecutive cold SaveFile requests floating with the dedicated id.
+The test used Discord-style blob titles and external Wayland parent handles.

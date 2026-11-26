@@ -194,3 +194,7 @@ text = text.replace('                {key:"dashboardWeatherArt", label:"Show wea
 path.write_text(text)
 
 exec(compile((source/'interaction.py').read_text(),str(source/'interaction.py'),'exec'))
+
+# Use the same filled music symbol for both album-art fallback tiles.
+p = root / 'ui/topbar/notch/dashboard/MediaModule.qml'
+p.write_text(p.read_text().replace('/assets/icons/notch/music.svg', '/assets/icons_desktop/MacTahoe/actions/symbolic/music-note-symbolic.svg'))

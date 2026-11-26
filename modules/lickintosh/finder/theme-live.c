@@ -47,9 +47,6 @@ static gboolean install(gpointer unused) {
     (void)unused;
     GdkDisplay *display=gdk_display_get_default();
     if(!display)return G_SOURCE_CONTINUE;
-    GListModel *windows=gtk_window_get_toplevels();
-    g_signal_connect(windows,"items-changed",G_CALLBACK(windows_changed),NULL);
-    windows_changed(windows,0,0,g_list_model_get_n_items(windows),NULL);
     provider=gtk_css_provider_new();
     stylesheet=g_build_filename(g_get_user_config_dir(),"gtk-4.0","quickintosh-live.css",NULL);
     gtk_style_context_add_provider_for_display(display,GTK_STYLE_PROVIDER(provider),GTK_STYLE_PROVIDER_PRIORITY_USER+1);
@@ -66,6 +63,12 @@ __attribute__((constructor)) static void initialize(void) {
     if(length<0)return;
     exe[length]='\0';
     if(!strstr(exe,"/.nautilus-wrapped") && !g_getenv("QUICKINTOSH_THEME_LIVE_TEST"))return;
+    /* The first portal request can create/map its chooser before the CSS
+     * display timer runs. Observe the model now; this does not create a GTK
+     * window or initialize a display. The application id must precede map. */
+    GListModel *windows=gtk_window_get_toplevels();
+    g_signal_connect(windows,"items-changed",G_CALLBACK(windows_changed),NULL);
+    windows_changed(windows,0,0,g_list_model_get_n_items(windows),NULL);
     /* Do not propagate this GTK4-only provider into applications Finder opens. */
     const char *preload=g_getenv("LD_PRELOAD");
     if(preload){

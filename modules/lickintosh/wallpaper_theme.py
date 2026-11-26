@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-VERSION=1
+VERSION=2
 HEX=re.compile(r'#[0-9a-fA-F]{6}$')
 COLOR=re.compile(r'#[0-9a-fA-F]{6}(?![0-9a-zA-Z])|#[0-9a-fA-F]{3}(?![0-9a-zA-Z])')
 STYLE=re.compile(r'((?:fill|stroke|stop-color|flood-color|color)\s*:\s*)(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})(?![0-9a-zA-Z])')
@@ -61,17 +61,23 @@ def recolor_svg(text,accent):
   target_l=max(.18,min(.94,light+(l-.65)*.7))
   target_s=max(.12,min(1,saturation))
   return '#'+''.join(f'{round(v*255):02x}' for v in colorsys.hls_to_rgb(hue,target_l,target_s))
- tree=ET.fromstring(text);changed=False
- for element in tree.iter():
-  for key,value in list(element.attrib.items()):
-   if key in ['fill','stroke','stop-color','flood-color','color']:new=color(value)
-   elif key=='style':new=STYLE.sub(lambda m:m[1]+color(m[2]),value)
-   else:continue
-   if new!=value:changed=True;element.set(key,new)
-  if element.tag.endswith('}style') and element.text:
-   new=STYLE.sub(lambda m:m[1]+color(m[2]),element.text)
-   if new!=element.text:changed=True;element.text=new
- return ET.tostring(tree,encoding='unicode') if changed else None
+ # Keep namespaces, gradient references, filters and serialization untouched.
+ # QtSvg and GTK must read exactly the same original artwork structure.
+ ET.fromstring(text)  # Reject malformed input before producing an overlay.
+ changed=False
+ def attribute(match):
+  nonlocal changed
+  original=match[3];updated=color(original)
+  if updated!=original:changed=True
+  return match[1]+match[2]+updated+match[2]
+ output=re.sub(r'((?:fill|stroke|stop-color|flood-color|color)\s*=\s*)(["\'])(#[0-9a-fA-F]{3,6})\2',attribute,text)
+ def style(match):
+  nonlocal changed
+  updated=color(match[2])
+  if updated!=match[2]:changed=True
+  return match[1]+updated
+ output=STYLE.sub(style,output)
+ return output if changed else None
 
 def managed_slot(parent,current):
  name='Quickintosh-Wallpaper-'+('B' if current=='Quickintosh-Wallpaper-A' else 'A')

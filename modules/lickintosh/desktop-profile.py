@@ -2,6 +2,8 @@
 import base64, configparser, fcntl, json, os, shutil, subprocess, sys
 from pathlib import Path
 from quicklook.mime_types import supported_mimes,DESKTOP_ID
+os.environ.setdefault('XDG_RUNTIME_DIR','/run/user/'+str(os.getuid()))
+if (Path(os.environ['XDG_RUNTIME_DIR'])/'bus').exists():os.environ.setdefault('DBUS_SESSION_BUS_ADDRESS','unix:path='+os.environ['XDG_RUNTIME_DIR']+'/bus')
 HOME=Path.home(); CONFIG=HOME/'.config'; STATE=HOME/'.local/state/lickintosh/desktop-profile'
 STATE.mkdir(parents=True,exist_ok=True)
 FILES=['gtk-3.0/settings.ini','gtk-3.0/gtk.css','gtk-4.0/settings.ini','gtk-4.0/gtk.css','mimeapps.list','gtk-3.0/bookmarks','fontconfig/conf.d/60-quickintosh-fonts.conf','kitty/quickintosh-fonts.conf','kitty/kitty.conf','Code/User/settings.json','Code - Insiders/User/settings.json','VSCodium/User/settings.json','Cursor/User/settings.json','Antigravity/User/settings.json','zed/settings.json']

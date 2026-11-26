@@ -13,7 +13,7 @@ class ThemeTests(unittest.TestCase):
    off=m.prepare(home,theme,icons,'dark',{},palette);self.assertFalse(off['gtkEnabled']);self.assertFalse(off['iconsEnabled'])
    on=m.prepare(home,theme,icons,'dark',{'wallpaperGtk':True,'wallpaperFileIcons':True},palette)
    self.assertTrue(on['gtkEnabled']);self.assertTrue(on['iconsEnabled']);self.assertIn('folder',on['icons'])
-   svg=Path(on['icons']['folder']).read_text();self.assertNotIn('#67b1de',svg);self.assertIn('#fff',svg)
+   svg=Path(on['icons']['folder']).read_text();self.assertNotIn('#67b1de',svg);self.assertIn('#fff',svg);self.assertTrue(svg.startswith('<svg xmlns='));self.assertNotIn('ns0:',svg)
    css=home/'.local/share/themes'/on['gtkTheme']/'gtk-4.0/gtk.css';stamp=css.stat().st_mtime_ns
    same=m.prepare(home,theme,icons,'dark',{'wallpaperGtk':True,'wallpaperFileIcons':True},palette);self.assertEqual(same['gtkTheme'],on['gtkTheme']);self.assertEqual(stamp,css.stat().st_mtime_ns)
    light=m.prepare(home,theme,icons,'light',{'wallpaperGtk':True,'wallpaperFileIcons':True},palette);self.assertNotEqual(light['gtkTheme'],on['gtkTheme'])

@@ -27,3 +27,12 @@ preservation tests; real installed artwork generated 208 compatible icon names
 in approximately one second in a temporary home. Editor JSONC font changes
 preserve comments and unrelated preferences. Runtime checks are recorded below
 when activation completes.
+
+SVG compatibility correction: replace only color attribute/style values in the
+original SVG text, preserving its namespaces, gradient references, filters and
+serialization. Do not serialize an ElementTree with generated namespace prefixes.
+Bump the generation schema to invalidate old overlays. GTK 4 icon-theme lookup
+was exercised directly and selected the generated regular folder SVG; a rendered
+preview retained its original lit gradient. Desktop profile IPC now discovers the
+standard session D-Bus address if absent from its launch environment, so theme
+changes reach running GTK applications as well as configuration files.

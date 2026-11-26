@@ -33,16 +33,18 @@ class CaretPlacement(unittest.TestCase):
   fake=SimpleNamespace(Gio=SimpleNamespace(),GLib=SimpleNamespace(Error=RuntimeError,Variant=Variant))
   with patch.dict(sys.modules,{'gi':SimpleNamespace(repository=fake),'gi.repository':fake}):
    spec=importlib.util.spec_from_file_location('emoji_placement',SOURCE/'placement.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
-  module.connection=object();module.app_cache={':1.5':321};calls=[]
+  module.connection=object();module.app_cache={':1.5':321};calls=[];text_length=[10]
   def call(bus,path,interface,method,parameters=None,timeout=25):
    calls.append(method)
    if method=='GetChildren':return ([(':1.5','/app')] if bus=='org.a11y.atspi.Registry' else [(':1.5','/field')],)
    if method=='GetState':return ([1<<12 if path=='/field' else 0,0],)
-   if method=='Get':return (7,)
+   if method=='Get':return (7 if parameters.value[1]=='CaretOffset' else text_length[0],)
    if method=='GetCharacterExtents':return (300,400,1,22)
    raise AssertionError(method)
   module.call=call
   self.assertEqual(module.caret(321),{'x':300,'y':422,'height':22})
+  text_length[0]=7
+  self.assertEqual(module.caret(321),{'x':301,'y':422,'height':22})
   self.assertNotIn('GetText',calls)
   self.assertIsNone(module.caret(999))
 if __name__=='__main__':unittest.main()

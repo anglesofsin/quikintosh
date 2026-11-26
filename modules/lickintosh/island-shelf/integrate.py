@@ -105,6 +105,13 @@ s=s.replace('    property bool forced: false','''    Timer{id:shelfHover;interva
     function onReveal(page){if(win.presentationWanted){win.dashboardRequested=true}}}
     DropArea{ x:stage.x; y:stage.y; width:stage.width;height:stage.height;keys:['text/uri-list'];onEntered:{pointerLeave.stop();win.dashboardRequested=true;NativeSettings.ShelfState.reveal(6)}\n    onDropped:drop=>{NativeSettings.ShelfState.add(drop.urls);drop.acceptProposedAction()}}
     property bool forced: false''',1)
+# Keep the compact surface covered until both morphs have reached their rest.
+s=s.replace('    onDashboardRequestedChanged: if (dashboardRequested) dashboardClose.stop(); else dashboardClose.restart()', '    property bool dashboardCover:false\n    function collapseActivity(){force.stop();windupHold.stop();win.forced=false;win.hub.mediaBig=false;win.hub.voicePeek=false;win.hub.pinned=false;win.hushed=true;win.opened=false}\n    onDashboardRequestedChanged:{\n        if(dashboardRequested){dashboardCover=true;collapseActivity();dashboardClose.stop()}\n        else dashboardClose.restart()\n    }\n')
+s=s.replace('id: dashboardClose; interval: NativeSettings.SettingsPreferences.accessibility.reduceMotion ? 1:IslandConfig.s("shelfAnimationMs")+50', 'id: dashboardClose; interval: NativeSettings.SettingsPreferences.accessibility.reduceMotion ? 1:IslandConfig.s("shelfAnimationMs")+50;onTriggered:{if(Math.abs(morph.value)>.015){dashboardClose.restart();return}win.dashboardCover=false}')
+s=s.replace('win.dashboardRequested || dashboardClose.running','win.dashboardCover')
+s=s.replace('win.wideKind !== "" && !win.seeking','win.wideKind !== "" && !win.seeking && !win.dashboardCover')
+s=s.replace('            win.dashboardRequested = false;\n            win.forced = false;\n            win.hub.voicePeek = false;', '            win.dashboardRequested=false;win.collapseActivity();')
+s=s.replace('                    opacity: {\n                        if (!win.bigMotion)', '                    opacity: {\n                        if(!win.opened || win.dashboardCover)return 0;\n                        if (!win.bigMotion)',1)
 p.write_text(s)
 p=root/'shell.qml'
 s=p.read_text();s='import "island-shelf"\n'+s

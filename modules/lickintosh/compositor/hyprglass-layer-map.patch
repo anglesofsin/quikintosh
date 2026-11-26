@@ -1,0 +1,15 @@
+--- a/src/BackgroundDamageObserver.cpp
++++ b/src/BackgroundDamageObserver.cpp
+@@ -437,6 +437,12 @@
+     // root is reachable no earlier than the map
+     g_pGlobalState->observerListeners.push_back(Event::bus()->m_events.window.open.listen([](PHLWINDOW window) { watchView(window); }));
+ 
++    // A layer's root can acquire its CWLSurface view association after
++    // view.create. Register again when mapped; watchSurface deduplicates roots.
++    // Otherwise an animated wallpaper created after plugin startup can render
++    // forever without invalidating the cached glass above it.
++    g_pGlobalState->observerListeners.push_back(Event::bus()->m_events.layer.opened.listen([](PHLLS layer) { watchView(layer); }));
++
+     // View state registries cannot enumerate popups/subsurfaces, so sweep every
+     // live surface and keep the ones that belong to a view.
+     PROTO::compositor->forEachSurface([](SP<CWLSurfaceResource> resource) {

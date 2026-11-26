@@ -45,7 +45,7 @@ Item {
   transformOrigin:root.vertical ? (ShellConfig.options.dockAppearance.position==='right' ? Item.Right:Item.Left):Item.Bottom
   width:root.iconSize;height:width;scale:root.dragging ? 1:root.zoom*root.dropScale
   transform:Translate{y:(!root.dragging && !root.vertical ? -root.bounce : 0)+root.dragOffsetY;x:(!root.dragging && root.vertical ? root.bounce : 0)+root.dragOffsetX;Behavior on x{enabled:!root.dragging;NumberAnimation{duration:160;easing.type:Easing.OutCubic}}Behavior on y{enabled:!root.dragging;NumberAnimation{duration:160;easing.type:Easing.OutCubic}}}
-  Image {visible:!root.previewStack;anchors.fill:parent;anchors.margins:-ShellConfig.options.dockAppearance.iconOverflow;source:root.entry.icon || '';sourceSize:Qt.size(128,128);smooth:true;mipmap:true;fillMode:Image.PreserveAspectFit
+  Image {asynchronous:true;visible:!root.previewStack;anchors.fill:parent;anchors.margins:-ShellConfig.options.dockAppearance.iconOverflow;source:root.entry.icon || '';sourceSize:Qt.size(128,128);smooth:true;mipmap:true;fillMode:Image.PreserveAspectFit
    layer.enabled:ShellConfig.options.dockAppearance.monochromeIcons || ShellConfig.options.dockAppearance.iconTint
    layer.effect:MultiEffect{saturation:ShellConfig.options.dockAppearance.monochromeIcons ? -1 : 0;colorization:ShellConfig.options.dockAppearance.iconTint ? ShellConfig.options.dockAppearance.iconTintStrength : 0;colorizationColor:ShellConfig.options.dockAppearance.iconTintColor}
   }

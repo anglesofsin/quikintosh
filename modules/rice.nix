@@ -326,6 +326,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-review}/review.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/cursor}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/dock-glass-fix}/integrate.py $out
+      ${pkgs.python3}/bin/python3 ${./lickintosh/live-backdrop}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/desktop-files}/integrate.py $out ${quickLookPython}/bin/python3
       ${pkgs.python3}/bin/python3 ${./lickintosh/wallpaper-theme}/integrate.py $out
       patchShebangs $out/tools $out/rosa/helpers

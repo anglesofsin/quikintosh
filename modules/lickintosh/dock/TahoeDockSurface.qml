@@ -83,6 +83,9 @@ Scope {
   }
  }
  property bool revealed:false
+ Timer{id:revealRecovery;interval:600;repeat:true;running:root.options.hoverToReveal && root.revealed && !!windowWatcher.item?.blocked && !root.stackOpen && !root.stackPending && !root.controller.menuVisible && !root.dockDragging && !DockDrag.desktopDragging && !DockDrag.stackDragging;onTriggered:if(!cursorRecovery.running)cursorRecovery.running=true}
+ Process{id:cursorRecovery;command:['hyprctl','cursorpos','-j'];stdout:StdioCollector{onStreamFinished:{try{const p=JSON.parse(text),r=windowWatcher.item?.dockRect,m=GlassTracker.monitorSnapshots.find(m=>m.name===dock.screen?.name),scale=Number(Quickshell.env('QT_SCALE_FACTOR') || 1);if(!r || !m)return;const x=m.x+r.x*scale,y=m.y+r.y*scale;if(p.x<x-8 || p.x>x+r.width*scale+8 || p.y<y-8 || p.y>y+r.height*scale+8){root.lensHovered=false;root.controller.hoverActive=false;root.hoveredIndex=-1;root.hoverLabel='';root.revealed=false}}catch(_){}}}}
+
  property int hoveredIndex:-1
  property string hoverLabel:''
  property var recentApps:[]
@@ -200,7 +203,7 @@ Scope {
 
  }
  function remember(){send({action:'remember',apps:controller.groupedClients.filter(g=>!root.blocked(g.key)).map(g=>({key:g.key,name:g.displayName,icon:g.iconPath}))})}
- Connections {target:controller;function onGroupedClientsChanged(){root.remember()}function onPinnedFilesChanged(){root.refreshPreviews()}function onActiveAppIdChanged(){if(!root.blocked(root.controller.activeAppId))root.send({action:'focus',key:root.controller.activeAppId})}function onFullscreenActiveChanged(){if(root.controller.fullscreenActive)root.revealed=false}}
+ Connections {target:controller;function onGroupedClientsChanged(){root.remember()}function onPinnedFilesChanged(){root.refreshPreviews()}function onActiveAppIdChanged(){if(!root.blocked(root.controller.activeAppId))root.send({action:'focus',key:root.controller.activeAppId})}function onMenuVisibleChanged(){if(!root.controller.menuVisible && root.options.hoverToReveal)hideDelay.restart()}function onFullscreenActiveChanged(){if(root.controller.fullscreenActive)root.revealed=false}}
  Connections{target:QuickLookState;function onFilesChanged(paths,changes,operation){
   if(changes.length)root.send({action:'renameRecentFiles',changes:changes})
   if(['duplicate','paste'].includes(operation))for(const path of paths)root.send({action:'recent',path:path})
@@ -212,7 +215,7 @@ Scope {
  Timer{id:springDismiss;interval:1000;running:root.stackOpen && root.stackDropMode && root.dragHoveredPath==='' && !receiverStack.dropInside;onTriggered:{root.stackOpen=false;root.stackPending=false;root.stackDropMode=false}}
  Timer{id:stackRefresh;interval:120;onTriggered:root.send({action:'list',folder:root.folder,sort:root.preference(root.folder,'sort')})}
  Timer {interval:2500;running:root.options.showTrash;repeat:true;onTriggered:root.send({action:'refresh'})}
- Timer {id:hideDelay;interval:root.options.hideDelay;onTriggered:if(!root.lensHovered && !edgeHover.hovered && !root.stackOpen && !root.stackPending && !root.controller.menuVisible)root.revealed=false}
+ Timer {id:hideDelay;interval:root.options.hideDelay;onTriggered:{if(!root.lensHovered && !edgeHover.hovered && !root.stackOpen && !root.stackPending && !root.controller.menuVisible)root.revealed=false;else if(root.options.hoverToReveal)hideDelay.restart()}}
  onStackOpenChanged:if(stackOpen){hideDelay.stop();revealed=true}else{root.hoveredIndex=-1;root.frozenZoomIndex=-1;if(options.hoverToReveal || controller.fullscreenActive)hideDelay.restart()}
  Connections {target:root.options;function onHoverToRevealChanged(){root.revealed=!root.options.hoverToReveal}function onPositionChanged(){root.controller.closeContextMenu();root.stackOpen=false;root.stackPending=false}function onStackSortChanged(){root.refreshPreviews()}function onStackDisplayChanged(){root.refreshPreviews()}}
  PanelWindow {
@@ -238,7 +241,7 @@ Scope {
    x:root.vertical ? (options.position==='right' ? dock.width-4 : 0) : plate.x
    y:root.vertical ? plate.y : dock.height-4
    HoverHandler{id:edgeHover;onHoveredChanged:{if(hovered){root.revealed=true;hideDelay.stop()}else if(options.hoverToReveal || controller.fullscreenActive)hideDelay.restart()}}
-   DropArea{anchors.fill:parent;onEntered:drag=>{if(drag.hasUrls){root.revealed=true;hideDelay.stop()}}}
+   DropArea{anchors.fill:parent;onEntered:drag=>{if(drag.hasUrls){root.revealed=true;hideDelay.stop()}}onExited:hideDelay.restart();onDropped:hideDelay.restart()}
   }
   LiquidGlassBackdrop {
    id:dockGlass;wallpaperPath:GlassWallpaper.path;screenSize:Qt.size(dock.screen.width,dock.screen.height);windowPosition:root.origin

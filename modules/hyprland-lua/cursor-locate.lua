@@ -1,6 +1,6 @@
 -- Continuous native scaling. Theme reloads happen only on preference changes.
 local current={size=31,theme='MacTahoe-cursors',shake=true,scale=4,sensitivity=1,speed=1.7,timeout=900}
-local previousTheme,previousSize
+local previousTheme,previousSize,previousResolution
 local ok,reason=pcall(function()
     hl.plugin.load('@CURSOR_LOCATOR_PLUGIN@')
 end)
@@ -16,9 +16,10 @@ quickintosh_cursor=function(options)
     current.speed=math.max(.3,math.min(5,tonumber(current.speed) or 1.7))
     current.timeout=math.max(200,math.min(3000,tonumber(current.timeout) or 900))
     if not tostring(current.theme):match('^[%w_-]+$') then current.theme='MacTahoe-cursors' end
-    if previousTheme~=current.theme or previousSize~=current.size then
+    local resolution=math.min(512,math.ceil(current.size*current.scale*2))
+    if previousTheme~=current.theme or previousSize~=current.size or previousResolution~=resolution then
         hl.exec_cmd('hyprctl setcursor '..current.theme..' '..math.floor(current.size+.5))
-        previousTheme,previousSize=current.theme,current.size
+        previousTheme,previousSize,previousResolution=current.theme,current.size,resolution
     end
     if hl.plugin and hl.plugin.dynamic_cursors then
         hl.config({plugin={dynamic_cursors={
@@ -26,7 +27,7 @@ quickintosh_cursor=function(options)
             shake={enabled=current.shake~=false,effects=false,ipc=false,
                 threshold=6/current.sensitivity,base=1.15,speed=current.speed,
                 influence=.12,limit=current.scale,timeout=current.timeout},
-            hyprcursor={enabled=false,nearest=0}
+            hyprcursor={enabled=true,nearest=0,resolution=resolution,fallback="clientside"}
         }}})
     end
 end

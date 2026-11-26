@@ -1,0 +1,39 @@
+--- a/src/highres.cpp
++++ b/src/highres.cpp
+@@ -46,7 +46,7 @@
+         return;
+     }
+ 
+-    std::string  name = Pointer::Cursor::mgr()->m_theme;
++    std::string  name = Pointer::Cursor::mgr()->m_theme + "-HD";
+     unsigned int size = CONFIG(highresSize) != -1 ?
+         CONFIG(highresSize) :
+         std::round(Pointer::Cursor::mgr()->m_currentStyleInfo.size * CONFIG(shakeBase) * 1.5f); // * 1.5f to accommodate for slight growth
+@@ -77,7 +77,7 @@
+ 
+         auto options                 = Hyprcursor::SManagerOptions();
+         options.logFn                = hcLogger;
+-        options.allowDefaultFallback = true;
++        options.allowDefaultFallback = false;
+ 
+         auto manager = makeUnique<Hyprcursor::CHyprcursorManager>(name.empty() ? nullptr : name.c_str(), options);
+ 
+@@ -99,6 +99,7 @@
+ }
+ 
+ void CHighresHandler::loadShape(const std::string& name) {
++    this->shape = name;
+     if (!manager) {
+         // don't show old, potentially outdated shapes
+         texture = nullptr;
+@@ -143,6 +144,10 @@
+ }
+ 
+ SP<Render::ITexture> CHighresHandler::getTexture() {
++    // Adopt the async vector theme without waiting for another pointer-shape
++    // change. Polling a ready future never blocks the render thread.
++    if (managerFuture && managerFuture->wait_for(std::chrono::seconds(0)) == std::future_status::ready)
++        loadShape(shape.empty() ? std::string{"default"} : shape);
+     return texture;
+ }
+ 

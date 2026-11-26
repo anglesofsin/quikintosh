@@ -1,1 +1,3 @@
 modules/lickintosh/widget-review/fonts/*/OFL.txt -whitespace
+# Unified diffs use a single space as the prefix of empty context lines.
+modules/lickintosh/cursor/highres.patch -whitespace

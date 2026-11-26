@@ -1,4 +1,4 @@
-import json,os,re,struct,subprocess
+import json,os,re,struct,subprocess,zipfile
 from pathlib import Path
 
 def tint(source,target,color):
@@ -27,6 +27,30 @@ def tint(source,target,color):
                 struct.pack_into('<I',data,at,(a<<24)|(rr<<16)|(gg<<8)|bb)
         out.write_bytes(data)
 
+def tint_hd(source,dest,color):
+    """Recolor vector fills; keep original paths, hotspots and all frames."""
+    dest.mkdir(parents=True,exist_ok=True)
+    channels=tuple(int(color[i:i+2],16) for i in (1,3,5))
+    def replace(match):
+        value=match[2][1:]
+        if len(value)==3:value=''.join(c*2 for c in value)
+        rgb=[int(value[i:i+2],16) for i in (0,2,4)]
+        if max(rgb)>150:return match[0]
+        factor=.65+.35*max(rgb)/150
+        return match[1]+'#'+''.join(f'{round(c*factor):02x}' for c in channels)
+    for p in source.rglob('*'):
+        if not p.is_file():continue
+        out=dest/p.relative_to(source);out.parent.mkdir(parents=True,exist_ok=True)
+        if p.suffix=='.hlc':
+            with zipfile.ZipFile(p) as src,zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as target:
+                for entry in src.infolist():
+                    data=src.read(entry.filename)
+                    if entry.filename.endswith('.svg'):
+                        data=re.sub(r'(fill[=:]?[=:\s]*["\']?)(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})(?![0-9a-fA-F])',replace,data.decode()).encode()
+                    target.writestr(entry,data)
+        else:out.write_bytes(p.read_bytes())
+    (dest/'.vector-cache-v1').touch()
+
 def apply(values):
     def get(key,default):return values.get('qi-cursor:'+key,default)
     size=max(16,min(96,int(get('size',31))));theme=get('theme','MacTahoe-cursors');color=get('color','original')
@@ -39,6 +63,9 @@ def apply(values):
         name='Quickintosh-'+theme+'-'+color[1:].lower();dest=Path.home()/'.local/share/icons'/name
         if not (dest/'index.theme').exists():
             tint(source,dest/'cursors',color);(dest/'index.theme').write_text('[Icon Theme]\nName='+name+'\n')
+        hd_source=next((p/(theme+'-HD') for p in dirs if (p/(theme+'-HD')/'manifest.hl').exists()),None)
+        hd_dest=Path.home()/'.local/share/icons'/(name+'-HD')
+        if hd_source and not (hd_dest/'.vector-cache-v1').exists():tint_hd(hd_source,hd_dest,color)
         theme=name
     opts=dict(size=size,theme=theme,shake=bool(get('shake',True)),scale=max(1.5,min(8,float(get('scale',4)))),sensitivity=max(.5,min(2,float(get('sensitivity',1)))),speed=max(.3,min(5,float(get('speed',1.7)))),timeout=max(200,min(3000,int(get('timeout',900)))))
     lua='{'+','.join(k+'='+('true' if v is True else 'false' if v is False else json.dumps(v)) for k,v in opts.items())+'}'

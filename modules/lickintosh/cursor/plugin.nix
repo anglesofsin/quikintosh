@@ -12,6 +12,7 @@ compiler.mkDerivation {
  };
  nativeBuildInputs = [ pkg-config ];
  buildInputs = lib.optionals modern hyprland.buildInputs ++ [ lua5_5 hyprland.dev aquamarine hyprcursor hyprgraphics hyprlang hyprutils pixman libdrm libglvnd libinput wayland wayland-protocols libxkbcommon libxcb libxcb-errors xorg.xcbutilwm xorg.xcbutilrenderutil glslang cairo ];
+ patches = [ ./highres.patch ];
  dontConfigure = true;
  enableParallelBuilding = true;
  dontUseCmakeConfigure = true;

@@ -32,3 +32,24 @@ scale samples spanning 1×–4× and returned to 1×. Warps were enabled only in
 fixture because nested Wayland input is classified as warped motion. Live
 configuration ignores warps and leaves shake IPC disabled. These are functional
 and interpolation checks, not a benchmark of the user's physical monitor FPS.
+
+## High-resolution magnification
+
+MacTahoe and MacTahoe Dark now include separate `-HD` Hyprcursor themes packed
+from upstream SVG paths, including shape aliases, click hotspots and animation
+frames. The normal cursor remains the existing Xcursor theme, retaining its
+normal size and shape. The native magnifier reads the separate vector theme at
+twice the configured maximum size (capped at 512 px), instead of stretching the
+small normal cursor texture. Bilinear sampling replaces nearest-neighbor scaling.
+Themes load asynchronously and are adopted on the next render once ready,
+without requiring a subsequent pointer-shape change. Changing maximum size
+refreshes the cached resolution once; mouse motion does not rebuild themes.
+Custom color variants also retain vector SVGs and metadata in their HD cache.
+Unavailable application-provided custom cursors keep their own image rather than
+being replaced with an unrelated fallback cursor.
+
+Validation rendered arrow/text/hand at 33 and 264 px through libhyprcursor in both
+MacTahoe themes, including all 13 wait/progress animation frames. The nested
+compositor loaded the 264 px vector theme asynchronously (169 ms in this software
+fixture), completed animated magnification and recorded progressive shake values
+from 1× to 4×. This measures functionality, not physical-monitor frame rate.

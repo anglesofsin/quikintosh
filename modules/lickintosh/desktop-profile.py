@@ -100,7 +100,7 @@ def apply(theme_root,icon_root,color):
  from font_preferences import apply as apply_fonts
  apply_fonts(HOME,write)
  fontconf=CONFIG/'fontconfig/conf.d/60-quickintosh-fonts.conf'
- write(fontconf,b'<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><alias><family>sans-serif</family><prefer><family>SF Pro Text</family></prefer></alias><alias><family>monospace</family><prefer><family>SF Mono</family></prefer></alias></fontconfig>')
+ write(fontconf,b'<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><match target="pattern"><test name="family" compare="eq"><string>sans-serif</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Pro Text</string></edit></match><match target="pattern"><test name="family" compare="eq"><string>SF Pro</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Pro Text</string></edit></match><match target="pattern"><test name="family" compare="eq"><string>monospace</string></test><edit name="family" mode="prepend" binding="strong"><string>SF Mono</string></edit></match></fontconfig>')
  write(CONFIG/'kitty/quickintosh-fonts.conf',b'font_family SF Mono\nbold_font auto\nitalic_font auto\nbold_italic_font auto\n')
  kitty=CONFIG/'kitty/kitty.conf'
  if kitty.exists():

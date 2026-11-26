@@ -81,7 +81,7 @@ def apply(theme_root,icon_root,color):
  except (OSError,ValueError):palette={}
  try:tinted=json.loads((CONFIG/'lickintosh/core/widgets.json').read_text()).get('widgetStyle')=='tinted'
  except (OSError,ValueError):tinted=False
- options=dict(options,wallpaperFileIcons=options.get('wallpaperFileIcons',False) or tinted)
+ options=dict(options,wallpaperFileIcons=options.get('wallpaperFileIcons',False) or tinted,wallpaperTintedAccents=tinted)
  themed=prepare(HOME,theme_root,icon_root,color,options,palette)
  theme=themed['gtkTheme'];icons=themed['iconTheme']
  # Availability does not select the theme in any other rice.

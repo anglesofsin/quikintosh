@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-VERSION=2
+VERSION=3
 HEX=re.compile(r'#[0-9a-fA-F]{6}$')
 COLOR=re.compile(r'#[0-9a-fA-F]{6}(?![0-9a-zA-Z])|#[0-9a-fA-F]{3}(?![0-9a-zA-Z])')
 STYLE=re.compile(r'((?:fill|stroke|stop-color|flood-color|color)\s*:\s*)(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3})(?![0-9a-zA-Z])')
@@ -24,7 +24,7 @@ def palette_for(palette,mode):
  if not all(HEX.fullmatch(str(colors.get(k,''))) for k in required):return {}
  return {k:v for k,v in colors.items() if isinstance(v,str) and HEX.fullmatch(v)}
 
-def gtk_colors(c):
+def gtk_colors(c,full=True):
  names={
  'accent_color':'primary','accent_bg_color':'primary','accent_fg_color':'on_primary',
  'window_bg_color':'surface_container_low','window_fg_color':'on_surface',
@@ -43,11 +43,23 @@ def gtk_colors(c):
  'theme_unfocused_selected_bg_color':'surface_container_highest','theme_unfocused_selected_fg_color':'on_surface',
  'borders':'outline_variant','unfocused_borders':'outline_variant',
  }
+ if not full:names={k:v for k,v in names.items() if k.startswith('accent') or 'selected' in k}
  return '\n/* Quickintosh wallpaper palette; Tahoe geometry remains unchanged. */\n'+''.join('@define-color '+key+' '+c[role]+';\n' for key,role in names.items())+'''
 selection { background-color: @accent_bg_color; color: @accent_fg_color; }
 button.suggested-action { background-image: none; background-color: @accent_bg_color; color: @accent_fg_color; }
 switch:checked { background-color: @accent_bg_color; border-color: @accent_bg_color; }
 '''
+
+def gtk_accent_overrides(source):
+ # Tahoe hard-codes its accent into rules as well as named colors. Override
+ # only those declarations, retaining original layout, assets and materials.
+ output=[]
+ for match in re.finditer(r'([^{}]+)\{([^{}]*)\}',source):
+  declarations=[]
+  for declaration in match[2].split(';'):
+   if re.search(r'#0088ff\b',declaration,re.I):declarations.append(re.sub(r'#0088ff\b','@accent_bg_color',declaration,flags=re.I).strip()+';')
+  if declarations:output.append(match[1].strip()+' { '+' '.join(declarations)+' }')
+ return '\n'.join(output)+'\n'
 
 def recolor_svg(text,accent):
  rgb=tuple(int(accent[i:i+2],16)/255 for i in (1,3,5));hue,light,saturation=colorsys.rgb_to_hls(*rgb)
@@ -95,16 +107,16 @@ def prepare(home,theme_root,icon_root,mode,options,palette):
  try:previous=json.loads(state.read_text())
  except (OSError,ValueError):previous={}
  colors=palette_for(palette,mode)
- signature=hashlib.sha256(json.dumps([VERSION,mode,colors,str(theme_root),str(icon_root)],sort_keys=True).encode()).hexdigest()
+ signature=hashlib.sha256(json.dumps([VERSION,mode,colors,str(theme_root),str(icon_root),bool(options.get("wallpaperGtk"))],sort_keys=True).encode()).hexdigest()
  result={'gtkTheme':base_theme,'iconTheme':base_icons,'gtkEnabled':False,'iconsEnabled':False,'icons':{},'signature':signature}
- if colors and options.get('wallpaperGtk',False):
+ if colors and (options.get('wallpaperGtk',False) or options.get('wallpaperTintedAccents',False)):
   if previous.get('gtkEnabled') and previous.get('signature')==signature and (home/'.local/share/themes'/previous['gtkTheme']/'gtk-4.0/gtk.css').is_file():
    result['gtkTheme']=previous['gtkTheme']
   else:
    name,folder=managed_slot(home/'.local/share/themes',previous.get('gtkTheme'))
    for version in ['gtk-3.0','gtk-4.0']:
     source=theme_root/'share/themes'/base_theme/version/'gtk.css'
-    write(folder/version/'gtk.css','@import url("'+str(source)+'");\n'+gtk_colors(colors))
+    write(folder/version/'gtk.css','@import url("'+str(source)+'");\n'+gtk_colors(colors,options.get('wallpaperGtk',False))+gtk_accent_overrides(source.read_text()))
    write(folder/'.quickintosh-generated.json',json.dumps({'signature':signature,'base':base_theme}))
    result['gtkTheme']=name
   result['gtkEnabled']=True

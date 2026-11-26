@@ -18,6 +18,9 @@ class ThemeTests(unittest.TestCase):
    same=m.prepare(home,theme,icons,'dark',{'wallpaperGtk':True,'wallpaperFileIcons':True},palette);self.assertEqual(same['gtkTheme'],on['gtkTheme']);self.assertEqual(stamp,css.stat().st_mtime_ns)
    light=m.prepare(home,theme,icons,'light',{'wallpaperGtk':True,'wallpaperFileIcons':True},palette);self.assertNotEqual(light['gtkTheme'],on['gtkTheme'])
    off=m.prepare(home,theme,icons,'dark',{},palette);self.assertEqual(off['gtkTheme'],'MacTahoe-Dark');self.assertEqual(off['iconTheme'],'MacTahoe-dark');self.assertEqual(off['icons'],{})
+ def test_hardcoded_accent_overrides(self):
+  text='row:selected { color: #0088FF; padding: 12px; } button { background: alpha(#0088ff,.2); }'
+  css=m.gtk_accent_overrides(text);self.assertNotIn('#0088',css);self.assertIn('@accent_bg_color',css);self.assertNotIn('padding',css)
  def test_invalid_palette_falls_back(self):
   with tempfile.TemporaryDirectory() as temp:
    r=m.prepare(temp,temp,temp,'dark',{'wallpaperGtk':True,'wallpaperFileIcons':True},{'dark':{'primary':'bad'}});self.assertFalse(r['gtkEnabled']);self.assertFalse(r['iconsEnabled'])

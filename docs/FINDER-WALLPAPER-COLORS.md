@@ -45,3 +45,12 @@ artwork in both locations, bypassing the dark app-container shader. The separate
 GTK interface-color switch remains independent. Outside Tinted, the explicit
 file-icon switch retains its existing opt-in behavior. WallpaperTheming watches
 the effective choice so changing style applies/restores GTK's icon theme.
+
+Tinted GTK accents: Tinted synchronizes the original Tahoe accent rules too,
+without requiring the separate full-interface palette switch. The base theme
+contains hard-coded `#0088FF` declarations for sidebar links, selection outlines
+and other controls; emit narrowly scoped overrides replacing only these color
+declarations with the palette's accent. Preserve other properties and base
+resources. The full GTK switch still controls surface/background colors.
+Validation: generated GTK 4 stylesheet loaded through GtkCssProvider with zero
+parsing messages; targeted accent replacement tests pass.

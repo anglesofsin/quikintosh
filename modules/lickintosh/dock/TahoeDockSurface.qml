@@ -54,9 +54,9 @@ Scope {
   active:root.options.hoverToReveal
   sourceComponent:DockOcclusion {
    property bool subscribed:false
-   Component.onCompleted:{subscribed=true;GlassTracker.captureUsers++;GlassTracker.refreshMonitorSnapshot();GlassTracker.refreshWindows()}
-   Component.onDestruction:if(subscribed)GlassTracker.captureUsers--
-   clients:Hyprland.toplevels.values.map(client=>client.lastIpcObject)
+   Component.onCompleted:{subscribed=true;GlassTracker.inventoryUsers++;GlassTracker.refreshMonitorSnapshot();GlassTracker.refreshWindows()}
+   Component.onDestruction:if(subscribed)GlassTracker.inventoryUsers--
+   clients:GlassTracker.clientsSnapshot
    monitors:GlassTracker.monitorSnapshots.map(m=>{
     const live=Hyprland.monitors.values.find(item=>item.name===m.name)
     return Object.assign({},m,{activeWorkspace:{id:live?.activeWorkspace?.id ?? m.activeWorkspace?.id}})

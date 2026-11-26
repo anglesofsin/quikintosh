@@ -48,6 +48,15 @@ Singleton{
     property list<var> appNames:[]
    }
    property JsonObject focus:JsonObject{
+    property int profileVersion:0
+    property bool autoDndSharing:false
+    property string activeId:'dnd'
+    property list<var> profiles:[
+     {id:'dnd',name:'Do Not Disturb',appMode:'allow',apps:'',peopleMode:'allow',people:'',allowCritical:true,timeSensitive:false,schedule:false,start:'22:00',end:'07:00',days:[0,1,2,3,4,5,6],triggerApps:''},
+     {id:'work',name:'Work',appMode:'allow',apps:'',peopleMode:'allow',people:'',allowCritical:true,timeSensitive:false,schedule:false,start:'09:00',end:'17:00',days:[1,2,3,4,5],triggerApps:''},
+     {id:'personal',name:'Personal',appMode:'silence',apps:'',peopleMode:'allow',people:'',allowCritical:true,timeSensitive:false,schedule:false,start:'18:00',end:'22:00',days:[0,1,2,3,4,5,6],triggerApps:''},
+     {id:'sleep',name:'Sleep',appMode:'allow',apps:'',peopleMode:'allow',people:'',allowCritical:true,timeSensitive:false,schedule:false,start:'22:00',end:'07:00',days:[0,1,2,3,4,5,6],triggerApps:''}
+    ]
     property double endAt:0
     property bool schedule:false
     property string start:'22:00'

@@ -33,7 +33,7 @@ ScrollView{
  function pref(label,group,key,kind,extra){const value=SettingsPreferences[group][key];return row(label,kind,Object.assign({action:'pref',group:group,key:key,checked:value,value:String(value),number:Number(value)},extra || {}))}
  function input(label,key,kind,extra){const value=SettingsPreferences.inputOverrides[key]===undefined ? stateData.input?.values?.[key]:SettingsPreferences.inputOverrides[key];return row(label,kind,Object.assign({action:'input',key:key,number:Number(value),checked:!!value,value:value===undefined ? '':String(value),available:value!==undefined},extra || {}))}
  function permissionSelection(){if(pageId!=='app-permissions')return;const id=selectedPermissionApp || stateData.privacy?.flatpaks?.[0]?.id;if(id && stateData.permissions?.app!==id)SettingsState.query('permissions',false,{app:id})}
- function refresh(){const name=current?.query;if(name)SettingsState.query(name);if(['account','about'].includes(pageId))SettingsState.query('system');if(pageId==='notifications')SettingsState.query('apps');if(pageId==='sound')SettingsState.query('audio');if(pageId==='games')SettingsState.query('main');if(pageId==='shortcuts')SettingsState.query('shortcuts');permissionSelection()}
+ function refresh(){const name=current?.query;if(name)SettingsState.query(name);if(['account','about'].includes(pageId))SettingsState.query('system');if(['notifications','focus'].includes(pageId))SettingsState.query('apps');if(pageId==='sound')SettingsState.query('audio');if(pageId==='games')SettingsState.query('main');if(pageId==='shortcuts')SettingsState.query('shortcuts');permissionSelection()}
  Component.onCompleted:refresh()
  onPageIdChanged:{selectedApp='';selectedPermissionApp='';Qt.callLater(root.refresh)}
  Connections{target:SettingsState;function onReadyChanged(){root.refresh()}function onDataChanged(){root.permissionSelection()}function onCompleted(name,result){if(['audio-volume','audio-mute','audio-default'].includes(name))SettingsState.query('audio',true);if(name==='default-app'){const next=Object.assign({},SettingsPreferences.defaultApps);next[result.mime]=result.app;SettingsPreferences.defaultApps=next;SettingsState.query('apps',true);}if(name==='login-toggle')SettingsState.query('login',true);if(name.startsWith('network-'))SettingsState.query('network',true);if(name==='printer-default')SettingsState.query('printers',true);if(name==='flatpak-permission'){const id=root.selectedPermissionApp || root.stateData.privacy?.flatpaks?.[0]?.id;if(id)SettingsState.query('permissions',true,{app:id})}if(name==='usage-clear')SettingsState.query('usage',true);if(name==='shortcut-save')SettingsState.query('shortcuts',true)}}
@@ -108,15 +108,30 @@ ScrollView{
     toggle('Show Banners',SettingsPreferences.appRule(notificationApp).banners!==false,'app-rule',{key:'banners',available:!!notificationApp})
    ]))
   }else if(pageId==='focus'){
-   result.push(card('Do Not Disturb',[
-    toggle('Do Not Disturb',ShellConfig.options.session.focus,'dnd'),
+   const p=FocusState.profile
+   result.push(card('Focus',[
+    choice('Profile',FocusState.profiles.map(p=>p.name),FocusState.profiles.findIndex(item=>item.id===p.id),'focus-profile'),
+    row('Name','field',{value:p.name,action:'focus-edit',key:'name'}),
+    toggle('Enable Focus',ShellConfig.options.session.focus,'dnd'),
     choice('Turn Off',['Manually','In 1 Hour','This Evening'],SettingsPreferences.focus.endAt>0 ? 1:0,'focus-duration'),
-    pref('Allow Critical Alerts','focus','allowCritical','switch')
+    button('New Profile','Add…','focus-add'),button('Delete Profile','Remove','focus-remove',{available:FocusState.profiles.length>1})
    ]))
-   result.push(card('Set a Schedule',[
-    pref('Scheduled','focus','schedule','switch'),pref('From','focus','start','field',{description:'24-hour time, for example 22:00'}),pref('To','focus','end','field',{description:'Schedules can continue past midnight.'})
-   ],'The schedule runs while Lickintosh is active.'))
-   result.push(card('Repeat',['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map((day,index)=>toggle(day,SettingsPreferences.focus.days.includes(index),'focus-day',{target:index}))))
+   result.push(card('Notifications',[
+    choice('Applications',['Allow Selected','Silence Selected'],p.appMode==='silence' ? 1:0,'focus-mode',{key:'appMode'}),
+    choice('Application',notificationApps,notificationApps.indexOf(notificationApp),'notification-app',{available:notificationApps.length>0}),
+    toggle('Selected',!!notificationApp && String(p.apps || '').split(',').map(s=>s.trim()).includes(notificationApp),'focus-app',{available:!!notificationApp}),
+    choice('People',['Allow Selected','Silence Selected'],p.peopleMode==='silence' ? 1:0,'focus-mode',{key:'peopleMode'}),
+    row('People','field',{value:p.people || '',action:'focus-edit',key:'people',description:'For apps that provide sender information.'}),
+    toggle('Critical Alerts',p.allowCritical!==false,'focus-edit',{key:'allowCritical'}),
+    toggle('Time-Sensitive Notifications',!!p.timeSensitive,'focus-edit',{key:'timeSensitive'})
+   ]))
+   result.push(card('Schedule & Automation',[
+    toggle('Scheduled',!!p.schedule,'focus-edit',{key:'schedule'}),
+    row('From','field',{value:p.start,action:'focus-edit',key:'start'}),row('To','field',{value:p.end,action:'focus-edit',key:'end'}),
+    row('When Using Apps','field',{value:p.triggerApps || '',action:'focus-edit',key:'triggerApps'}),
+    pref('Do Not Disturb While Screen Sharing','focus','autoDndSharing','switch')
+   ]))
+   result.push(card('Repeat',['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'].map((day,index)=>toggle(day,(p.days || []).includes(index),'focus-profile-day',{target:index}))))
   }else if(pageId==='accessibility'){
    result.push(card('Vision & Display',[
     pref('Reduce Motion','accessibility','reduceMotion','switch'),pref('Reduce Transparency','accessibility','reduceTransparency','switch'),
@@ -233,6 +248,13 @@ ScrollView{
   if(name==='notification-app'){selectedApp=notificationApps[value];return}
   if(name==='app-rule'){SettingsPreferences.rule(notificationApp,row.key,value);return}
   if(name==='preview'){SettingsPreferences.notifications.previews=['always','unlocked','never'][value];return}
+  if(name==='focus-profile'){FocusState.select(FocusState.profiles[value].id);return}
+  if(name==='focus-app'){const names=String(FocusState.profile.apps || '').split(',').map(s=>s.trim()).filter(s=>s && s!==notificationApp);if(value)names.push(notificationApp);FocusState.edit('apps',names.join(', '));return}
+  if(name==='focus-edit'){FocusState.edit(row.key,value);return}
+  if(name==='focus-mode'){FocusState.edit(row.key,value===1 ? 'silence':'allow');return}
+  if(name==='focus-add'){FocusState.add();return}
+  if(name==='focus-remove'){FocusState.remove();return}
+  if(name==='focus-profile-day'){const days=(FocusState.profile.days || []).filter(day=>day!==row.target);if(value)days.push(row.target);FocusState.edit('days',days.sort());return}
   if(name==='focus-day'){const days=SettingsPreferences.focus.days.filter(day=>day!==row.target);if(value)days.push(row.target);SettingsPreferences.focus.days=days.sort();return}
   if(name==='dnd'){ShellConfig.options.session.focus=value;if(!value)SettingsPreferences.focus.endAt=0;return}
   if(name==='focus-duration'){const date=new Date();if(value===2)date.setHours(20,0,0,0);SettingsPreferences.focus.endAt=value===0 ? 0:value===1 ? Date.now()+3600000:Math.max(Date.now()+60000,date.getTime());return}

@@ -1,54 +1,30 @@
-#!/run/current-system/sw/bin/bash
-# Ctrl+Super+H/S changes capture visibility for the active special workspace.
-# Normal workspaces are intentionally always visible in screen capture.
-set -u
-
-ACTION="${1:-}"
-case "$ACTION" in
-    hide|show) ;;
-    *) echo "uso: $0 hide|show" >&2; exit 1 ;;
-esac
-
-STATE="$HOME/.local/state/infinite-desktop/stream-hidden"
-mkdir -p "$(dirname "$STATE")"
-touch "$STATE"
-
-TARGET=$(hyprctl monitors -j 2>/dev/null | python3 -c '
-import json, sys
-try:
-    monitors = json.load(sys.stdin)
-    monitor = next((item for item in monitors if item.get("focused")), monitors[0])
-    special = monitor.get("specialWorkspace") or {}
-    if special.get("id"):
-        print(special.get("name", ""))
-except Exception:
-    pass
-' 2>/dev/null)
-
-if [ -z "$TARGET" ]; then
-    exit 0
-fi
-
-# Drop legacy entries for normal workspaces and duplicate special entries.
-SANITIZED=$(mktemp)
-awk 'index($0, "special:") == 1 && !seen[$0]++' "$STATE" > "$SANITIZED"
-mv "$SANITIZED" "$STATE"
-
-if [ "$ACTION" = "hide" ]; then
-    grep -qxF "$TARGET" "$STATE" || echo "$TARGET" >> "$STATE"
-    VALUE=1
-else
-    FILTERED=$(mktemp)
-    grep -vxF "$TARGET" "$STATE" > "$FILTERED" || true
-    mv "$FILTERED" "$STATE"
-    VALUE=0
-fi
-
-LUA="for _, ws in ipairs(hl.get_workspaces()) do
-    if ws.special and ws.name == '${TARGET}' then
-        for _, w in ipairs(hl.get_workspace_windows(ws)) do
-            hl.dispatch(hl.dsp.window.set_prop({prop = \"no_screen_share\", value = ${VALUE}, window = \"address:\" .. w.address}))
-        end
-    end
-end"
-hyprctl eval "$LUA" >/dev/null 2>&1
+#!/usr/bin/env bash
+# Hide/show only the active special workspace in screen capture.
+set -euo pipefail
+case "${1:-}" in hide|show) ;; *) echo 'Usage: toggle-stream-hide.sh hide|show' >&2; exit 1;; esac
+exec python3 - "$1" <<'PY'
+import fcntl,json,os,subprocess,sys
+from pathlib import Path
+monitors=json.loads(subprocess.check_output(['hyprctl','monitors','-j'],text=True))
+monitor=next((m for m in monitors if m.get('focused')),monitors[0] if monitors else {})
+target=(monitor.get('specialWorkspace') or {}).get('name','')
+if not target.startswith('special:'):sys.exit(0)
+state=Path.home()/'.local/state/infinite-desktop/stream-hidden'
+state.parent.mkdir(parents=True,exist_ok=True)
+with (state.parent/'stream-hidden.lock').open('w') as lock:
+ fcntl.flock(lock,fcntl.LOCK_EX)
+ names=set(state.read_text().splitlines()) if state.exists() else set()
+ names={x for x in names if x.startswith('special:')}
+ hidden=sys.argv[1]=='hide'
+ value='1' if hidden else '0'
+ # Lua set_prop takes text; JSON quoting is valid for these Unicode-free
+ # workspace control strings and names are encoded as UTF-8 Lua byte escapes.
+ quote=lambda s:'"'+''.join('\\%03d'%b for b in s.encode())+'"'
+ lua='for _,ws in ipairs(hl.get_workspaces()) do if ws.special and ws.name=='+quote(target)+' then for _,w in ipairs(hl.get_workspace_windows(ws)) do hl.dispatch(hl.dsp.window.set_prop({prop="no_screen_share",value="'+value+'",window="address:"..w.address})) end end end'
+ result=subprocess.run(['hyprctl','eval',lua],text=True,capture_output=True)
+ if result.returncode or 'error' in result.stdout.lower():
+  print(result.stdout+result.stderr,file=sys.stderr);sys.exit(1)
+ if hidden:names.add(target)
+ else:names.discard(target)
+ temporary=state.with_suffix('.tmp');temporary.write_text(''.join(n+'\n' for n in sorted(names)));temporary.replace(state)
+PY

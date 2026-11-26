@@ -701,7 +701,7 @@ local function syncWindowStreamVisibility(w, ws, hidden)
     local hide = ws and ws.special and hidden[ws.name] or false
     hl.dispatch(hl.dsp.window.set_prop({
         prop = "no_screen_share",
-        value = hide and 1 or 0,
+        value = hide and "1" or "0",
         window = "address:" .. addr,
     }))
 end

@@ -148,23 +148,7 @@ for path in directory.glob('*.qml'):
 
 # Fullscreen presentation is a single reactive decision shared by island and dot.
 path = root / 'services/PrivacyPresentation.qml'
-path.write_text("""pragma Singleton
-import QtQuick
-import Quickshell
-import Quickshell.Hyprland
-import Quickshell.Wayland
-Singleton {
-    function fullscreen(screenName) {
-        const active = Hyprland.activeToplevel
-        const foreign = ToplevelManager.activeToplevel
-        if (!active || !foreign || !foreign.fullscreen) return false
-        const monitor = active.monitor
-        return !!monitor && monitor.name === screenName
-    }
-    // Older integration stages call this; ownership is now derived from focus.
-    function setCorner(screenName, show) {}
-}
-""")
+shutil.copyfile(source/'PrivacyPresentation.qml',path)
 path = root / 'rosa/overlays/IslandWindow.qml'
 text = path.read_text()
 a = text.index('    property var fallbackMonitors:')

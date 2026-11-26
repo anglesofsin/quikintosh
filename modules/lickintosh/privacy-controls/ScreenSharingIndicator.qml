@@ -93,10 +93,9 @@ Item {
                 y: Math.max(30, root.mapToItem(null, 0, root.height).y + 8)
                 width: Math.min(320, popup.width - 16)
                 height: panel.implicitHeight + 28
-                opacity: popup.entered ? 1 : 0
+                opacity: 1
                 scale: popup.entered ? 1 : .96
                 transformOrigin: Item.TopRight
-                Behavior on opacity { NumberAnimation { duration: ShellMotion.fade() } }
                 Behavior on scale { NumberAnimation { duration: ShellMotion.fade(); easing.type: Easing.OutCubic } }
                 radius: 19
                 color: Theme.plainSurfaces ? (Theme.isLight ? "#f4f4f6" : "#242426")

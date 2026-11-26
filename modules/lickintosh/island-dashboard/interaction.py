@@ -78,14 +78,30 @@ text=text.replace('onRequestFrame: view.captureFrame()',
                   'onRequestFrame: if(root.capturing && view.windowSource && !view.sourceClosed && !view.dying)view.captureFrame()')
 path.write_text(text)
 
-# Fullscreen is already an immediate hide. Do not run the old 520 ms fold
-# underneath an unmapped window and resume that unfinished fold on return.
+# Keep the surface mapped until the horizontal dismissal has finished. Qt's
+# property animation can also reverse mid-flight without resuming stale springs.
 interaction_edit('rosa/overlays/IslandWindow.qml',
     '        id: fold\n        response: 0.5',
     '        id: fold\n        enabled: false\n        response: 0.5')
 interaction_edit('rosa/overlays/IslandWindow.qml',
     '    readonly property bool idleEligible:',
-    '    onBlockedChanged: {if(blocked){win.dashboardRequested=false;win.forced=false;win.hub.voicePeek=false} else {fold.land();birth.land()}}\n    readonly property bool idleEligible:')
+    """    readonly property bool presentationWanted:win.mine && win.wanted && IslandConfig.s("enabled") && !win.blocked && !IslandBus.locked
+    property real presentationProgress:presentationWanted ? 1:0
+    onPresentationWantedChanged:{
+        if(!presentationWanted){win.dashboardRequested=false;win.forced=false;win.hub.voicePeek=false}
+        else {fold.land();birth.land()}
+    }
+    Behavior on presentationProgress {NumberAnimation {duration:NativeSettings.SettingsPreferences.accessibility.reduceMotion ? 0:160;easing.type:Easing.OutCubic}}
+    readonly property bool idleEligible:""")
+path=root/'rosa/overlays/IslandWindow.qml'
+text=path.read_text().replace('visible: !win.blocked && !IslandBus.locked','visible: win.presentationProgress>0.001 && !IslandBus.locked',1)
+text=text.replace('opacity: birth.value * Math.min(1,idleVisibility.progress*4)', 'opacity: win.presentationProgress * birth.value * Math.min(1,idleVisibility.progress*4)',1)
+text=text.replace('xScale:idleVisibility.progress','xScale:idleVisibility.progress*win.presentationProgress',1)
+text=text.replace('yScale:0.85+0.15*idleVisibility.progress','yScale:0.85+0.15*idleVisibility.progress*win.presentationProgress',1)
+text=text.replace('target: win.blocked ? 1 : 0','target: 0',1)
+# A blocked window must retain geometry for its shrinking surface.
+text=text.replace('(win.blocked && fold.value < 0.96)','(win.presentationProgress>0.001)')
+path.write_text(text)
 
 # Unmapped/prepared panels must never paint an input cursor or a partial edge
 # over fullscreen content. Preparation resumes after leaving fullscreen.
@@ -99,4 +115,24 @@ text=path.read_text().replace('                visible: true','                v
 text=text.replace('                                    focus:               true','                                    focus: root.opened && !win.closing',1)
 # Rendering preparation is not a user input session: never display its caret.
 text=text.replace('                                    onTextChanged: {','                                    cursorVisible: root.opened && !win.closing && activeFocus\n                                    onTextChanged: {',1)
+path.write_text(text)
+
+# Expanded modules replace the entire control-center presentation, including its
+# auxiliary chrome. Both must follow the same transition as the grid tiles.
+path=root/'ui/topbar/statusarea/controlcenter/ControlCenter.qml'
+text=path.read_text()
+condition='!(root.wifiOpened || root.wifiClosing || root.btOpened || root.btClosing || root.playerExpanded || root.playerClosing || root.themeOpened || root.themeClosing || root.timerOpened || root.timerClosing || root.alarmOpened || root.alarmClosing || root.stopwatchOpened || root.stopwatchClosing)'
+text=text.replace('visible:MediaCaptureState.controlCenterActive;backdrop:ccBackdrop','visible:MediaCaptureState.controlCenterActive && '+condition+';backdrop:ccBackdrop')
+text=text.replace('opacity: ControlCatalog.galleryOpen ? 0 : 1','opacity: ControlCatalog.galleryOpen || !('+condition+') ? 0 : 1')
+text=text.replace('enabled: !ControlCatalog.galleryOpen','enabled: !ControlCatalog.galleryOpen && '+condition)
+path.write_text(text)
+exec(compile((Path(sys.argv[3])/'integrate.py').read_text(),str(Path(sys.argv[3])/'integrate.py'),'exec'))
+
+# Native rendering can bypass refreshWindows(); inventory consumers still need
+# the settled IPC snapshot after moves, closes and workspace changes.
+path=root/'components/glass/GlassTracker.qml'
+text=path.read_text().replace('''            if (root.captureUsers > 0)
+                root.refreshWindows()''','''            if(root.inventoryUsers>0)root.captureSnapshot()
+            if (root.captureUsers > 0)
+                root.refreshWindows()''')
 path.write_text(text)

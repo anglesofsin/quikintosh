@@ -319,6 +319,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/branding.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/i18n}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/island-dashboard/integrate.py} $out ${./lickintosh/island-dashboard} ${./lickintosh/focus}
+      ${pkgs.python3}/bin/python3 ${./lickintosh/island-shelf}/integrate.py $out ${quickLookPython}/bin/python3
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-tahoe}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/emoji}/integrate.py $out ${quickLookPython}/bin/python3
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-organization}/integrate.py $out

@@ -441,6 +441,8 @@ hl.window_rule({
 
 -- Preview pixels stay opaque; HyprGlass draws behind the translucent chrome.
 if shellActions["switcher-next"] then
+    hl.window_rule({name="quickintosh-floating-tray",match={title="^Quickintosh File Tray$"},float=true,center=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
+    hl.window_rule({name="quickintosh-floating-player",match={title="^Quickintosh Floating Player$"},float=true,center=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
     hl.window_rule({name="quickintosh-share-picker",match={title="^Quickintosh Screen Sharing$"},float=true,center=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
     hl.window_rule({name="lickintosh-settings",match={class="^org[.]lickintosh[.]Settings$"},float=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
     hl.window_rule({name="lickintosh-quick-look",match={title="^(Lickintosh|Quickintosh) Quick Look.*"},float=true,center=true,stay_focused=true,focus_on_activate=true,no_anim=false,animation="popin 88%",opacity="1.0 1.0",tag="+hyprglass_enabled"})

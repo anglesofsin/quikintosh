@@ -43,7 +43,8 @@
       "id": "batteries",
       "name": "Batteries",
       "url": "https://getdroppy.app/features/batteries",
-      "status": "existing-shell-integration-to-audit"
+      "status": "partial",
+      "scope": "UPower and KDE Connect read-only charge inventory; scrolling battery rings, charging/low/offline presentation and 24h disconnected cache. Per-device alert settings and background low-charge activity remain pending."
     },
     {
       "id": "breather",

@@ -16,13 +16,15 @@ class IslandMorphUI(unittest.TestCase):
    p=root/'rosa/overlays/Island.qml';s=p.read_text();p.unlink();s=s.replace('    id: root','    id: root\n    property var qaWindow:null',1).replace('        IslandWindow {','        IslandWindow {\n            Component.onCompleted:root.qaWindow=this',1);p.write_text(s)
    p=root/'rosa/overlays/IslandWindow.qml';s=p.read_text();p.unlink();s=s.replace('    id: win','    id: win\n    readonly property var qaGeometry:({cover:dashboardCover,requested:dashboardRequested,compactOpacity:stage.opacity,morph:morph.value,visible:visible,opened:opened})',1);p.write_text(s)
    (root/'shell.qml').write_text('''import QtQuick
+import QtTest
 import Quickshell
 import Quickshell.Io
 import qs.rosa.overlays
 import qs.rosa.services
 ShellRoot{
+ TestCase{id:pointer;name:'PrivatePointer';when:false}
  Island{id:hub;demoKind:'clock'}
- IpcHandler{target:'morphQA';function state():string{return JSON.stringify(hub.qaWindow?.qaGeometry || {})}function expandIsland(on:bool):void{hub.qaWindow.dashboardRequested=on}function activity(kind:string,on:bool):void{hub.demoKind=kind;hub.demoWide=on;hub.qaWindow.forced=on}function dashboardEnabled(on:bool):void{IslandConfig.setStyle("dashboardEnabled",on)}}
+ IpcHandler{target:'morphQA';function state():string{return JSON.stringify(hub.qaWindow?.qaGeometry || {})}function rightClick():void{const item=hub.qaWindow.contentItem;pointer.mouseClick(item,item.width/2,10,Qt.RightButton)}function expandIsland(on:bool):void{hub.qaWindow.dashboardRequested=on}function activity(kind:string,on:bool):void{hub.demoKind=kind;hub.demoWide=on;hub.qaWindow.forced=on}function dashboardEnabled(on:bool):void{IslandConfig.setStyle("dashboardEnabled",on)}}
 }''')
    env=dict(os.environ,HOME=tmp,XDG_CONFIG_HOME=tmp+'/.config',XDG_CACHE_HOME=tmp+'/.cache',XDG_STATE_HOME=tmp+'/.state',XDG_RUNTIME_DIR=str(runtime),WAYLAND_DISPLAY=os.environ[REQUIRED[3]],HYPRLAND_INSTANCE_SIGNATURE=os.environ[REQUIRED[4]],DBUS_SESSION_BUS_ADDRESS='unix:path=/nonexistent');env.pop('DISPLAY',None)
    qs=os.environ[REQUIRED[1]]
@@ -43,6 +45,9 @@ ShellRoot{
       time.sleep(.025)
      self.fail(str(last)+'\n'+(root/'log').read_text()[-3500:])
     wait(lambda s:s.get('visible') and s.get('compactOpacity',0)>.95,timeout=30)
+    ipc('rightClick');wait(lambda s:s.get('cover') and s.get('requested'))
+    time.sleep(.6);self.assertTrue(json.loads(ipc('state'))['requested'],'Right click shelf disappeared')
+    ipc('rightClick');wait(lambda s:not s.get('cover') and not s.get('requested'))
     for _ in range(20):
      ipc('expandIsland','true');wait(lambda s:s.get('cover') and s.get('compactOpacity')==0)
      time.sleep(.08)

@@ -6,6 +6,10 @@ import Quickshell.Widgets
 import qs.services
 Item {
  id:root
+ signal openLyrics()
+ signal openSources()
+ onOpenLyrics:ShelfState.reveal(9)
+ onOpenSources:ShelfState.reveal(10)
  property bool portrait:false
  property bool showPopout:true
  property var demo:({})
@@ -25,6 +29,14 @@ Item {
  onWatchingChanged:syncWatch()
  Component.onCompleted:syncWatch()
  Component.onDestruction:if(held)MprisState.watchPosition(false)
+ TapHandler{acceptedButtons:Qt.RightButton;onTapped:contextMenu.popup()}
+ ShelfMenu{id:contextMenu
+  ShelfMenuItem{text:qsTr('Customize Home');onTriggered:{ShelfState.reveal(0);ShelfState.editing=true}}
+  ShelfMenuItem{text:qsTr('Audio sources');onTriggered:root.openSources()}
+  ShelfMenuItem{text:qsTr('Lyrics');onTriggered:root.openLyrics()}
+  ShelfMenuSeparator{}
+  ShelfMenuItem{text:qsTr('Open Settings');onTriggered:SettingsLauncher.open('')}
+ }
  ColumnLayout {
   anchors.fill:parent
   spacing:root.portrait ? 16:root.height<170 ? 4:8
@@ -53,7 +65,7 @@ Item {
     Text{Layout.fillWidth:true;text:root.title || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:20;font.weight:Font.DemiBold;color:ShelfStyle.primary;elide:Text.ElideRight}
     Text{Layout.fillWidth:true;text:root.artist || (root.sample ? '':MprisState.identity);textFormat:Text.PlainText;font.family:ShelfStyle.textFamily;font.pixelSize:root.portrait ? 16:14;color:ShelfStyle.secondary;elide:Text.ElideRight}
    }
-   ShelfButton{visible:root.showPopout;flat:true;icon:'laptop.png';iconSize:24;accessibleLabel:qsTr('Floating player');onClicked:ShelfState.playerOpen=true}
+   ShelfButton{visible:!root.portrait;flat:true;icon:'notch/sliders.svg';iconSize:23;accessibleLabel:qsTr('Audio sources');onClicked:root.openSources()}
   }
   ColumnLayout {
    Layout.fillWidth:true;spacing:0
@@ -75,6 +87,7 @@ Item {
   }
   RowLayout {
    id:transport;Layout.fillWidth:true;Layout.preferredHeight:root.portrait ? 54:root.height<170 ? 32:40;spacing:22
+   ShelfButton{visible:root.showPopout;flat:true;icon:'notch/list.svg';iconSize:22;accessibleLabel:qsTr('Lyrics');onClicked:root.openLyrics()}
    Item{Layout.fillWidth:true}
    Repeater {
     model:[{icon:'backward',label:qsTr('Previous track'),enabled:MprisState.canGoPrevious},{icon:MprisState.isPlaying ? 'pause':'play',label:MprisState.isPlaying ? qsTr('Pause'):qsTr('Play'),enabled:MprisState.canTogglePlaying},{icon:'forward',label:qsTr('Next track'),enabled:MprisState.canGoNext}]
@@ -90,6 +103,7 @@ Item {
     }
    }
    Item{Layout.fillWidth:true}
+   ShelfButton{visible:root.showPopout;flat:true;icon:'laptop.png';iconSize:24;accessibleLabel:qsTr('Floating player');onClicked:ShelfState.playerOpen=true}
   }
   RowLayout {
    visible:root.hasVolume && (root.portrait || root.height>=210);Layout.fillWidth:true;spacing:10

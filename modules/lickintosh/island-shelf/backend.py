@@ -1,9 +1,12 @@
 """Private reference tray. File drops never move or delete the originals."""
+import itertools
 import json,math,mimetypes,os,subprocess,sys,tempfile,time,zipfile
 from pathlib import Path
 from urllib.parse import unquote,urlparse
 
-class Shelf:
+from file_ops import FileOperations
+
+class Shelf(FileOperations):
     def __init__(self,root=None):
         self.root=Path(root or Path.home()/'.local/state/quickintosh/island-shelf')
         self.root.mkdir(parents=True,exist_ok=True,mode=0o700)
@@ -40,7 +43,7 @@ class Shelf:
             try:s=p.stat()
             except OSError:continue
             mime=mimetypes.guess_type(p.name)[0] or 'application/octet-stream'
-            rows.append(dict(item,name=p.name,directory=p.is_dir(),size=s.st_size,uri=p.as_uri(),preview=p.as_uri() if mime.startswith('image/') else '',mime=mime))
+            rows.append(dict(item,name=p.name,directory=p.is_dir(),size=s.st_size,uri=p.as_uri(),preview=self.thumbnail(p,mime),mime=mime,count=sum(1 for _ in itertools.islice(p.iterdir(),10000)) if p.is_dir() else 0))
         return sorted(rows,key=lambda x:(not x.get('pinned',False),-x.get('added',0)))
     def managed(self,values):
         allowed={x['path'] for x in self.items}
@@ -78,7 +81,14 @@ class Shelf:
             text=p.read_text(errors='replace')[:4096] if p.suffix=='.txt' else ''
             rows.append(dict(path=str(p),name=text[:120].replace('\n',' ') if text else p.name,text=text,image=p.as_uri() if p.suffix=='.png' else '',kind='image' if p.suffix=='.png' else 'text'))
             if len(rows)>=80:break
-        return rows
+        try:meta=json.loads((self.root/'clipboard-meta.json').read_text())
+        except (OSError,ValueError):meta={}
+        for item in rows:
+            item.update(meta.get(item['path'],{}));item['added']=Path(item['path']).stat().st_mtime
+            text=item.get('text','').strip()
+            if text.startswith(('http://','https://')):item['kind']='link'
+            elif len(text)==7 and text.startswith('#') and all(c in '0123456789abcdefABCDEF' for c in text[1:]):item['kind']='color'
+        return sorted(rows,key=lambda x:(not x.get('pinned',False),-x.get('added',0)))
     def handle(self,event):
         action=event.get('action','list');values=event.get('paths',[])
         if action=='add':self.add(values)
@@ -88,6 +98,30 @@ class Shelf:
             for x in self.items:
                 if x['path'] in values:x['pinned']=not x.get('pinned',False)
             self.save()
+        elif action=='rename':self.rename(values,str(event.get('name','')))
+        elif action=='unzip':self.unpack(values)
+        elif action=='folder':self.folder_copy(values,event)
+        elif action=='transform':self.transform(event)
+        elif action in ('pinClip','removeClip'):return self.clip_action(event)
+        elif action=='storage':return self.storage()
+        elif action=='cleanPreviews':
+            folder=self.root/'previews'
+            for p in folder.glob('*.png'):
+                if p.is_file() and not p.is_symlink():p.unlink()
+            return self.storage()
+        elif action=='track':
+            self.managed(values)
+            for x in self.items:
+                if x['path'] in values and Path(x['path']).is_dir():x['tracked']=not x.get('tracked',False);x['pinned']=True;x['seen']=[str(p) for p in Path(x['path']).iterdir()][:2048]
+            self.save()
+        elif action=='scanTracked':
+            arrivals=[]
+            for x in list(self.items):
+                if not x.get('tracked'):continue
+                try:current=[str(p) for p in Path(x['path']).iterdir() if not p.name.startswith('.')][:2048]
+                except OSError:continue
+                arrivals.extend(p for p in current if p not in x.get('seen',[]));x['seen']=current
+            if arrivals:self.add(arrivals)
         elif action=='archive':self.archive(values)
         elif action=='copy':
             paths=self.managed(values)
@@ -136,8 +170,13 @@ def main():
     shelf=Shelf()
     print(json.dumps(dict(type='ready',items=shelf.entries())),flush=True)
     for line in sys.stdin:
+        busy=False
         try:
-            event=json.loads(line);response=shelf.handle(event)
+            event=json.loads(line)
+            busy=event.get('action') in ('transform','archive','unzip','folder','rename')
+            if busy:print(json.dumps(dict(type='busy',value=True)),flush=True)
+            response=shelf.handle(event)
         except Exception as e:response=dict(type='error',message=str(e))
         print(json.dumps(response,ensure_ascii=False),flush=True)
+        if busy:print(json.dumps(dict(type='busy',value=False)),flush=True)
 if __name__=='__main__':main()

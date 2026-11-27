@@ -22,28 +22,30 @@ Flickable {
     Layout.horizontalStretchFactor:IslandConfig.s('shelfWeight'+(index+1))*(modelData==='media' ? 105:modelData==='weather' ? 95:100)
     Layout.minimumWidth:140
     Rectangle{anchors.fill:parent;radius:20;color:IslandConfig.s('shelfWidgetCards') ? '#151518':'transparent';border.color:IslandConfig.s('shelfWidgetCards') ? '#25252b':'transparent'}
-    Rectangle{anchors.fill:parent;anchors.margins:-1;radius:20;color:'transparent';border.width:1;border.color:'#70ffffff';visible:ShelfState.editing}
-    Loader {anchors.fill:parent;anchors.margins:IslandConfig.s('shelfWidgetCards') ? 14:0;sourceComponent:({media:music,calendar:calendar,weather:weather,focus:focusComponent,notes:notes,performance:stats,files:files,clipboard:clipboardWidget,audio:audioWidget,awake:awakeWidget,storage:storageWidget,camera:cameraWidget,ring:ringWidget,transcribe:transcribeWidget,terminal:terminalWidget,breather:breatherWidget,vault:vaultWidget,developer:developerWidget,teleprompter:teleprompterWidget,notifications:notificationsWidget})[slot.modelData] || music}
+    Rectangle{anchors.fill:parent;anchors.margins:-1;radius:20;color:'transparent';border.width:1;border.color:'#50ffffff';visible:ShelfState.editing}
+    Loader {anchors.fill:parent;anchors.margins:IslandConfig.s('shelfWidgetCards') ? 14:0;sourceComponent:({media:music,calendar:calendar,weather:weather,focus:focusComponent,notes:notes,performance:stats,files:files,clipboard:clipboardWidget,audio:audioWidget,awake:awakeWidget,storage:storageWidget,camera:cameraWidget,queue:queueWidget,selection:selectionWidget,ring:ringWidget,transcribe:transcribeWidget,terminal:terminalWidget,breather:breatherWidget,vault:vaultWidget,developer:developerWidget,teleprompter:teleprompterWidget,notifications:notificationsWidget})[slot.modelData] || music}
     DropArea{anchors.fill:parent;keys:['application/x-quickintosh-shelf-slot','application/x-quickintosh-widget'];onDropped:drop=>{
      const key=drop.source?.widgetKey || drop.getDataAsString('application/x-quickintosh-widget');if(key){IslandConfig.setStyle('shelfSlot'+(slot.index+1),key);drop.acceptProposedAction();return}
      const from=drop.source?.slotIndex!==undefined ? drop.source.slotIndex:Number(drop.getDataAsString('application/x-quickintosh-shelf-slot'));const to=slot.index
      if(Number.isInteger(from) && from>=0 && from<4 && from!==to){const old=IslandConfig.s('shelfSlot'+(to+1));IslandConfig.setStyle('shelfSlot'+(to+1),IslandConfig.s('shelfSlot'+(from+1)));IslandConfig.setStyle('shelfSlot'+(from+1),old)}drop.acceptProposedAction()
     }}
-    ShelfButton{visible:ShelfState.editing;anchors.right:parent.right;anchors.top:parent.top;implicitWidth:24;implicitHeight:24;icon:'notch/minus.svg';onClicked:IslandConfig.setStyle('shelfSlot'+(slot.index+1),'none')}
-    Rectangle{visible:ShelfState.editing;anchors.horizontalCenter:parent.horizontalCenter;anchors.top:parent.top;width:52;height:18;radius:9;color:'#44444b';z:20
+    ShelfButton{visible:ShelfState.editing;anchors.right:parent.right;anchors.top:parent.top;implicitWidth:24;implicitHeight:24;icon:'notch/minus.svg';anchors.topMargin:4;anchors.rightMargin:4;z:22;onClicked:IslandConfig.setStyle('shelfSlot'+(slot.index+1),'none')}
+    Rectangle{visible:ShelfState.editing;anchors.horizontalCenter:parent.horizontalCenter;anchors.top:parent.top;anchors.topMargin:2;width:42;height:14;radius:7;color:'#252529';z:20
      Text{anchors.centerIn:parent;text:'•••';color:'white';font.pixelSize:14}
      MouseArea{id:reorderMouse;objectName:'reorder-'+slot.index;anchors.fill:parent;drag.target:reorderProxy;onReleased:reorderProxy.Drag.drop();cursorShape:Qt.OpenHandCursor}
      Item{id:reorderProxy;property int slotIndex:slot.index;width:1;height:1;Drag.source:reorderProxy;Drag.keys:['application/x-quickintosh-shelf-slot'];Drag.active:reorderMouse.drag.active;Drag.dragType:Drag.Internal;Drag.supportedActions:Qt.MoveAction;Drag.proposedAction:Qt.MoveAction;Drag.mimeData:({'application/x-quickintosh-shelf-slot':String(slot.index)});Drag.onDragFinished:{x=0;y=0}}
     }
-    Rectangle{visible:ShelfState.editing;anchors.right:parent.right;anchors.bottom:parent.bottom;width:16;height:48;radius:8;color:'#44444b';z:20
+    Rectangle{visible:ShelfState.editing;anchors.right:parent.right;anchors.bottom:parent.bottom;anchors.rightMargin:3;anchors.bottomMargin:10;width:4;height:28;radius:2;color:'#80ffffff';z:20
      property real startX:0;property int original:1
-     MouseArea{anchors.fill:parent;cursorShape:Qt.SizeHorCursor;onPressed:e=>{parent.startX=mapToGlobal(e.x,e.y).x;parent.original=IslandConfig.s('shelfWeight'+(slot.index+1))}
+     MouseArea{anchors.fill:parent;anchors.margins:-7;cursorShape:Qt.SizeHorCursor;onPressed:e=>{parent.startX=mapToGlobal(e.x,e.y).x;parent.original=IslandConfig.s('shelfWeight'+(slot.index+1))}
 onPositionChanged:e=>{if(pressed){const change=Math.round((mapToGlobal(e.x,e.y).x-parent.startX)/100);IslandConfig.setStyle('shelfWeight'+(slot.index+1),Math.max(1,Math.min(3,parent.original+change)))}}}
     }
     Rectangle {visible:slot.index>0 && !IslandConfig.s('shelfWidgetCards');anchors.left:parent.left;anchors.leftMargin:-12;width:1;height:parent.height;color:'#242426'}
    }
   }
  }
+ Component{id:queueWidget;QueueShelf{}}
+ Component{id:selectionWidget;SelectionSettings{}}
  Component{id:ringWidget;RingSettings{}}
  Component{id:transcribeWidget;TranscribeShelf{}}
  Component{id:terminalWidget;TerminalShelf{}}

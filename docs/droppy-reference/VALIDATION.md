@@ -59,3 +59,11 @@ The microphone capture/stop protocol also passed using a private PulseAudio
 null-sink monitor, never a real microphone or the user's call. Evidence:
 /tmp/qi-private-recording-validation.json. The test server has its own session
 and socket and is shut down afterward.
+
+The full local workflow run /tmp/qi-editor-queue-release.log passed: delayed
+TrackAdded signal updates, jump/add/remove requests, transient Wayland primary
+selection/copy, app confirmation UI and toolkit/camera/notch rendering. The
+private_mpris_queue fixture separately verifies delayed queue changes on D-Bus.
+Latest personalization adds explicit recency-order and actual reorder assertions.
+App-data review/uninstall runs in an isolated worker so scanning and package
+operations cannot block the shelf backend. No actual uninstall was tested.

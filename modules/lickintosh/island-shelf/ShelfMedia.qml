@@ -31,6 +31,8 @@ Item {
  Component.onDestruction:if(held)MprisState.watchPosition(false)
  MouseArea{anchors.fill:parent;acceptedButtons:Qt.RightButton;onClicked:event=>contextMenu.popup(root,event.x,event.y)}
  ShelfMenu{id:contextMenu
+  ShelfMenuItem{symbol:'notch/list.svg';text:qsTr('Playing Next');onTriggered:ShelfState.openDetail('queue')}
+  ShelfMenuItem{symbol:'notch/type.svg';text:qsTr('Lyrics');onTriggered:root.openLyrics()}
   ShelfMenuItem{symbol:'notch/grid.svg';text:qsTr('Customize Home');onTriggered:{ShelfState.reveal(0);ShelfState.editing=true}}
   ShelfMenu{id:sourcesMenu;title:qsTr('Source')
    Instantiator{model:MprisState.players
@@ -96,7 +98,7 @@ Item {
   }
   RowLayout {
    id:transport;Layout.fillWidth:true;Layout.preferredHeight:root.portrait ? 54:root.height<170 ? 32:40;spacing:22
-   ShelfButton{visible:root.showPopout;flat:true;icon:'notch/list.svg';iconSize:22;accessibleLabel:qsTr('Lyrics');onClicked:root.openLyrics()}
+   ShelfButton{visible:root.showPopout;flat:true;icon:'notch/list.svg';iconSize:22;accessibleLabel:qsTr('Playing Next');onClicked:ShelfState.openDetail('queue')}
    Item{Layout.fillWidth:true}
    Repeater {
     model:[{icon:'backward',label:qsTr('Previous track'),enabled:MprisState.canGoPrevious},{icon:MprisState.isPlaying ? 'pause':'play',label:MprisState.isPlaying ? qsTr('Pause'):qsTr('Play'),enabled:MprisState.canTogglePlaying},{icon:'forward',label:qsTr('Next track'),enabled:MprisState.canGoNext}]

@@ -362,7 +362,8 @@ let
           exec ${lickintoshQs}/bin/qs -p "$active_config" "$@"
           ;;
         list|log|--help|--version)
-          exec ${lickintoshQs}/bin/qs -p ${lickintoshRoot} "$@"
+          ${pkgs.python3}/bin/python3 ${lickintoshRoot}/island-shelf/ensure_ring_shortcut.py
+      exec ${lickintoshQs}/bin/qs -p ${lickintoshRoot} "$@"
           ;;
       esac
       ${pkgs.python3}/bin/python3 ${../scripts/setup-defaults.py} ${lickintoshRoot}/quickintosh-defaults ${lickintoshRoot}/assets/wallpapers/daniel-leone.jpg
@@ -375,7 +376,6 @@ let
       export GI_TYPELIB_PATH="${pkgs.glib.out}/lib/girepository-1.0:''${GI_TYPELIB_PATH:-}"
       export GIO_EXTRA_MODULES="${pkgs.gvfs}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"
       export XDG_DATA_DIRS="${lickintoshRoot}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
-      ${pkgs.python3}/bin/python3 ${lickintoshRoot}/island-shelf/ensure_ring_shortcut.py
       ${pkgs.python3}/bin/python3 ${./lickintosh/rendering/ensure-geometry.py} ${quickintoshGeometry}/lib/quickintosh-geometry.so
       ${lib.optionalString supportsHyprimate ''
         ${pkgs.python3}/bin/python3 ${./lickintosh/compositor/load-plugin.py} quickintosh-capture-guard ${quickintoshGeometry}/lib/quickintosh-capture-guard.so

@@ -13,6 +13,18 @@ Singleton {
  function startAwake(){const minutes=nextAwakeMinutes;nextAwakeMinutes=0;awakeUntil=minutes>0 ? Date.now()+minutes*60000:0;if(minutes>0){awake.command=['systemd-inhibit','--what=idle','--mode=block','--who=Quickintosh','--why=User requested Stay Awake','sleep',String(minutes*60)];awake.running=true}}
  function keepAwake(minutes){awakeError='';nextAwakeMinutes=minutes;if(awake.running)awake.running=false;else startAwake()}
  Process{id:awake;onExited:code=>{if(root.nextAwakeMinutes>0){Qt.callLater(root.startAwake);return}root.awakeUntil=0;if(code!==0 && code!==15)root.awakeError=qsTr('Idle inhibition is unavailable on this system')}}
+ property string selectionText:''
+ property string selectionError:''
+ property point selectionPosition:Qt.point(0,0)
+ property bool selectionOpen:false
+ property bool selectionHovered:false
+ function clearSelection(){selectionOpen=false;selectionText=''}
+ Process{id:selectionWatch;onStarted:root.selectionError='';command:['wl-paste','--primary','--type','text','--watch',root.pythonExecutable,Quickshell.shellPath('island-shelf/selection_bridge.py')];running:root.utilityPreferences.selectionActionsEnabled===true && !IslandBus.locked
+  stdout:SplitParser{onRead:line=>{try{const e=JSON.parse(line);root.selectionText=e.text;if(!e.text.trim())root.clearSelection();else selectionQuiet.restart()}catch(_){}}}
+  onExited:code=>{if(code!==0 && root.utilityPreferences.selectionActionsEnabled)root.selectionError=qsTr('Primary selection is unavailable on this session.')}
+ }
+ Timer{id:selectionQuiet;interval:160;onTriggered:{if(root.selectionText && !selectionLocate.running)selectionLocate.running=true}}
+ Process{id:selectionLocate;command:['hyprctl','cursorpos','-j'];stdout:StdioCollector{onStreamFinished:{try{const p=JSON.parse(text);root.selectionPosition=Qt.point(p.x,p.y);root.selectionOpen=!!root.selectionText && !IslandBus.locked}catch(_){}}}}
  property bool ringArmed:false
  property bool ringRequested:false
  property bool ringOpen:false
@@ -36,7 +48,13 @@ Singleton {
   {key:'calendar',title:qsTr('Calendar'),icon:'calender',widget:'calendar'},
   {key:'notifications',title:qsTr('Notifications'),icon:'bell',page:4},
   {key:'awake',title:qsTr('Stay Awake'),icon:'coffee',page:12},
-  {key:'camera',title:qsTr('Camera'),icon:'camera',page:5}]
+  {key:'camera',title:qsTr('Camera'),icon:'camera',page:5},
+  {key:'queue',title:qsTr('Playing Next'),icon:'list',widget:'queue'},
+  {key:'selection',title:qsTr('Selection Actions'),icon:'copy',widget:'selection'},
+  {key:'developer',title:qsTr('Developer Tools'),icon:'clipboard',widget:'developer'},
+  {key:'teleprompter',title:qsTr('Teleprompter'),icon:'type',widget:'teleprompter'},
+  {key:'vault',title:qsTr('Obsidian Vault'),icon:'edit-3',widget:'vault'},
+  {key:'breather',title:qsTr('Break Reminders'),icon:'coffee',widget:'breather'}]
  readonly property var ringKeys:{const saved=utilityPreferences.ringActions || [];return ringCatalogue.map((a,i)=>saved[i] || a.key)}
  signal detailRequested(string key)
  function openDetail(key){detailRequested(key);reveal(13)}
@@ -47,7 +65,7 @@ Singleton {
  property point basketPosition:Qt.point(0,0)
  property bool basketOpen:false
  readonly property bool trayShakeEnabled:IslandConfig.s('trayShakeEnabled')!==false
- Connections{target:Hyprland;function onRawEvent(event){if(event.name==="quickintosh-drag-end"){basketDismiss.restart();return}if(event.name!=="quickintosh-drag-shake" || !root.trayShakeEnabled || IslandBus.locked)return;const point=event.data.split(",");root.basketPosition=Qt.point(Number(point[0]),Number(point[1]));root.basketOpen=true}}
+ Connections{target:Hyprland;function onRawEvent(event){if(event.name==='configreloaded'){Quickshell.execDetached([root.pythonExecutable,Quickshell.shellPath('island-shelf/ensure_ring_shortcut.py')]);return}if(event.name==="quickintosh-drag-end"){basketDismiss.restart();return}if(event.name!=="quickintosh-drag-shake" || !root.trayShakeEnabled || IslandBus.locked)return;const point=event.data.split(",");root.basketPosition=Qt.point(Number(point[0]),Number(point[1]));root.basketOpen=true}}
  Timer{id:basketDismiss;interval:300;onTriggered:root.basketOpen=false}
  property bool transformOpen:false
  property var transformPaths:[]
@@ -65,9 +83,19 @@ Singleton {
   }
   root.breakDue=next
  }}
+ readonly property var widgetPriority:['media','weather','calendar','focus','notes','files','clipboard','audio','notifications','performance','queue','camera','storage','awake','calculator','emoji','spotlight','applications','transcribe','terminal','vault','developer','breather','teleprompter','ring','selection','activities','settings']
+ function orderWidgets(items){const recent=utilityPreferences.widgetRecent || [];return items.slice().sort((a,b)=>{const x=recent.indexOf(a.key),y=recent.indexOf(b.key);if(x>=0 || y>=0)return x<0 ? 1:y<0 ? -1:x-y;return widgetPriority.indexOf(a.key)-widgetPriority.indexOf(b.key)})}
+ function useWidget(key){const recent=[key].concat((utilityPreferences.widgetRecent || []).filter(k=>k!==key)).slice(0,40);utilityPreferences=Object.assign({},utilityPreferences,{widgetRecent:recent});send({action:'utilityPreferences',values:{widgetRecent:recent}})}
+ function beginEditing(){reveal(0);editing=true}
  property var utilityPreferences:({})
  property var capabilities:({})
  property var installedApps:[]
+ property var queueData:({player:'',items:[],supported:false})
+ property var appJobEvent:({})
+ property var appPendingEvent:null
+ readonly property bool appBusy:(appJob.running && appJobEvent.action==='uninstall') || appPendingEvent?.action==='uninstall'
+ property var appDataReview:({})
+ signal applicationSuggested(string id)
  property var storageInfo:({total:0,used:0,free:0,cache:0})
  property bool fileBusy:false
  readonly property bool busy:fileBusy || transformJob.running
@@ -94,11 +122,11 @@ Singleton {
  property bool ready:false
  property var pending:[]
  property int openPage:0
- Connections{target:IslandBus;function onLockedChanged(){if(IslandBus.locked){root.playerOpen=false;root.ringRequested=false;root.ringOpen=false;root.trayOpen=false;root.basketOpen=false;root.editing=false;root.editorOwners=({});root.interactionCount=0;root.menuCount=0}}}
+ Connections{target:IslandBus;function onLockedChanged(){if(IslandBus.locked){root.clearSelection();root.playerOpen=false;root.ringRequested=false;root.ringOpen=false;root.trayOpen=false;root.basketOpen=false;root.editing=false;root.editorOwners=({});root.interactionCount=0;root.menuCount=0}}}
  signal developerResult(string text,string error)
  signal closeRequested()
  signal reveal(int page)
- function send(event){if(event.action==='archive' || event.action==='unzip')event=Object.assign({},event,{action:'transform',operation:event.action==='archive' ? 'zip':'unzip'});if(event.action==='transform'){if(transformJob.running)return;jobEvent=event;jobCancelled=false;notice='';noticeError=false;transformJob.running=true;return}if(ready)worker.write(JSON.stringify(event)+'\n');else pending=pending.concat([event])}
+ function send(event){if(['applicationData','uninstall'].includes(event.action)){if(appJob.running){if(appPendingEvent?.action!=='uninstall')appPendingEvent=event}else{appJobEvent=event;appJob.running=true}return}if(event.action==='archive' || event.action==='unzip')event=Object.assign({},event,{action:'transform',operation:event.action==='archive' ? 'zip':'unzip'});if(event.action==='transform'){if(transformJob.running)return;jobEvent=event;jobCancelled=false;notice='';noticeError=false;transformJob.running=true;return}if(ready)worker.write(JSON.stringify(event)+'\n');else pending=pending.concat([event])}
  function add(urls){send({action:'add',paths:Array.from(urls).map(String)})}
  Process {
   id:worker;command:['@PYTHON@',Quickshell.shellPath('island-shelf/backend.py')];running:IslandConfig.s('enabled');stdinEnabled:true
@@ -111,11 +139,13 @@ Singleton {
    else if(e.type==='renamed'){root.items=e.items;root.transformPaths=root.transformPaths.map(p=>{const i=e.before.indexOf(p);return i>=0 ? e.after[i]:p})}
    else if(e.type==='vault')root.vaultInfo=e
    else if(e.type==='vaultNote')root.vaultNote(e.name,e.text,e.modified)
-   else if(e.type==='utilityPreferences')root.utilityPreferences=e.values
+   else if(e.type==='utilityPreferences'){root.utilityPreferences=e.values;if(!e.values.selectionActionsEnabled)root.clearSelection()}
    else if(e.type==='developerResult')root.developerResult(e.text,e.error)
    else if(e.type==='activities')root.activities=e.items
    else if(e.type==='storage')root.storageInfo=e
-   else if(e.type==='applications')root.installedApps=e.items
+   else if(e.type==='applications'){root.installedApps=e.items;if(e.suggested)root.applicationSuggested(e.suggested)}
+   else if(e.type==='queue')root.queueData=e
+   else if(e.type==='applicationData')root.appDataReview=e
    else if(e.type==='busy')root.fileBusy=e.value
    else if(e.type==='presets')root.transformPresets=e.items
    else if(e.type==='error'){root.noticeError=true;root.notice=e.message}
@@ -123,6 +153,11 @@ Singleton {
   onExited:{root.ready=false;if(IslandConfig.s('enabled'))retry.restart()}
  }
  function cancelTransform(){if(transformJob.running){jobCancelled=true;transformJob.running=false;notice=qsTr('Transformation cancelled')}}
+ Process{id:appJob;command:[root.pythonExecutable,Quickshell.shellPath('island-shelf/backend.py'),'--application-job'];stdinEnabled:true
+  onStarted:write(JSON.stringify(root.appJobEvent)+'\n')
+  stdout:SplitParser{onRead:line=>{try{const e=JSON.parse(line);if(e.type==='applications'){root.installedApps=e.items;root.noticeError=false;root.notice=qsTr('Application removed')}else if(e.type==='applicationData')root.appDataReview=e;else if(e.type==='error'){root.noticeError=true;root.notice=e.message}}catch(_){}}}
+  onExited:{if(root.appPendingEvent){root.appJobEvent=root.appPendingEvent;root.appPendingEvent=null;Qt.callLater(()=>appJob.running=true)}}
+ }
  Process{
   id:transformJob;command:['@PYTHON@',Quickshell.shellPath('island-shelf/backend.py'),'--transform-job'];stdinEnabled:true
   onStarted:write(JSON.stringify(root.jobEvent)+'\n')

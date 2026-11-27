@@ -7,8 +7,9 @@ from urllib.parse import unquote,urlparse
 from file_ops import FileOperations
 from app_ops import AppOperations
 from vault_ops import VaultOperations
+from media_queue import MediaQueue
 
-class Shelf(FileOperations,AppOperations,VaultOperations):
+class Shelf(FileOperations,AppOperations,VaultOperations,MediaQueue):
     def __init__(self,root=None):
         self.root=Path(root or Path.home()/'.local/state/quickintosh/island-shelf')
         self.root.mkdir(parents=True,exist_ok=True,mode=0o700)
@@ -93,7 +94,9 @@ class Shelf(FileOperations,AppOperations,VaultOperations):
         return sorted(rows,key=lambda x:(not x.get('pinned',False),-x.get('added',0)))
     def handle(self,event):
         action=event.get('action','list');values=event.get('paths',[])
-        if action in ('vaultSelect','vaultList','vaultRead','vaultSave'):return self.vault(event)
+        if action=='queueWatch':return self.queue_watch(event)
+        elif action=='queueAction':return self.queue_action(event)
+        elif action in ('vaultSelect','vaultList','vaultRead','vaultSave'):return self.vault(event)
         elif action=='utilityPreferences':
             path=self.root/'utilities.json'
             try:state=json.loads(path.read_text())
@@ -101,6 +104,8 @@ class Shelf(FileOperations,AppOperations,VaultOperations):
             values=event.get('values',{})
             if 'teleprompterText' in values:state['teleprompterText']=str(values['teleprompterText'])[:100000]
             if values.get('voiceLanguage') in ('auto','pt','en','es','fr','de','it','ja','ko','zh','ru'):state['voiceLanguage']=values['voiceLanguage']
+            if 'selectionActionsEnabled' in values:state['selectionActionsEnabled']=values['selectionActionsEnabled'] is True
+            if 'widgetRecent' in values:state['widgetRecent']=list(dict.fromkeys(key[:64] for key in values['widgetRecent'][:40] if isinstance(key,str)))
             if 'ringCount' in values:state['ringCount']=max(1,min(3,int(values['ringCount'])))
             if 'ringActions' in values:state['ringActions']=[key[:32] for key in values['ringActions'][:18] if isinstance(key,str)]
             if 'commandColumns' in values:state['commandColumns']=max(4,min(7,int(values['commandColumns'])))
@@ -138,7 +143,8 @@ class Shelf(FileOperations,AppOperations,VaultOperations):
         elif action=='transform':self.transform(event)
         elif action in ('presets','savePreset','removePreset'):return self.presets(event)
         elif action in ('pinClip','removeClip'):return self.clip_action(event)
-        elif action=='applications':return self.applications()
+        elif action=='applications':return self.applications(event)
+        elif action=='applicationData':return self.application_data(event)
         elif action=='uninstall':return self.uninstall(event)
         elif action=='share':return self.sharing(event)
         elif action=='storage':return self.storage()
@@ -219,7 +225,20 @@ def transform_job():
         return 1
     return 0
 
+def application_job():
+    os.nice(5)
+    try:
+        shelf=Shelf();event=json.loads(sys.stdin.readline(65537))
+        if event.get('action')=='applicationData':result=shelf.application_data(event)
+        elif event.get('action')=='uninstall':result=shelf.uninstall(event)
+        else:raise ValueError('Unknown application operation')
+        print(json.dumps(result),flush=True)
+    except Exception as error:
+        print(json.dumps(dict(type='error',message=str(error))),flush=True);return 1
+    return 0
+
 def main():
+    if '--application-job' in sys.argv:raise SystemExit(application_job())
     if '--transform-job' in sys.argv:raise SystemExit(transform_job())
     import threading
     from concurrent.futures import ThreadPoolExecutor
@@ -227,7 +246,7 @@ def main():
     def emit(event):
         line=json.dumps(event,ensure_ascii=False)+'\n'
         with lock:sys.stdout.write(line);sys.stdout.flush()
-    shelf=Shelf();shelf.defer_previews=True;shelf.preview_pending=set();shelf.preview_executor=ThreadPoolExecutor(max_workers=1,thread_name_prefix='file-preview');shelf.emit_preview=emit
+    shelf=Shelf();shelf.defer_previews=True;shelf.preview_pending=set();shelf.preview_executor=ThreadPoolExecutor(max_workers=1,thread_name_prefix='file-preview');shelf.emit_preview=emit;shelf.emit_event=emit
     emit(dict(type='ready',items=shelf.entries(),capabilities=shelf.capabilities()))
     for line in sys.stdin:
         busy=False

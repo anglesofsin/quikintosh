@@ -25,6 +25,10 @@ class DeveloperToolsTests(unittest.TestCase):
  def test_limits(self):
   with self.assertRaises(ValueError):transform('x'*1048577,'json')
   with self.assertRaises(ValueError):transform('', 'exec')
+ def test_widget_recency_is_unique_and_persistent(self):
+  with tempfile.TemporaryDirectory() as root:
+   Shelf(root).handle({'action':'utilityPreferences','values':{'widgetRecent':['notes','media','notes','weather']}})
+   self.assertEqual(Shelf(root).handle({'action':'utilityPreferences'})['values']['widgetRecent'],['notes','media','weather'])
  def test_command_preferences(self):
   with tempfile.TemporaryDirectory() as root:
    result=Shelf(root).handle({'action':'utilityPreferences','values':{'commandColumns':5,'commandFavorites':['calculator','notes']}})
@@ -37,6 +41,48 @@ class DeveloperToolsTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as root:
    shelf=Shelf(root);shelf.handle({'action':'utilityPreferences','values':{'teleprompterText':'script ☀'}})
    self.assertEqual(Shelf(root).handle({'action':'utilityPreferences'})['values'],{'teleprompterText':'script ☀'})
+
+class ApplicationCleanupTests(unittest.TestCase):
+ def test_personal_data_is_opt_in_and_scoped(self):
+  from unittest.mock import patch
+  from types import SimpleNamespace
+  with tempfile.TemporaryDirectory() as home,tempfile.TemporaryDirectory() as state:
+   folder=Path(home)/'.var/app/org.example.Test';folder.mkdir(parents=True);(folder/'note.txt').write_text('keep me')
+   shelf=Shelf(state);row=dict(id='org.example.Test',kind='flatpak',removable=True)
+   shelf.applications=lambda event=None:dict(type='applications',items=[row])
+   calls=[]
+   def runner(args,**kwargs):calls.append(args);return SimpleNamespace(returncode=0,stdout='')
+   with patch('app_ops.Path.home',return_value=Path(home)),patch('app_ops.subprocess.run',side_effect=runner):
+    review=shelf.application_data({'id':row['id']})
+    self.assertEqual(review['items'][0]['path'],str(folder));self.assertEqual(review['items'][0]['size'],7)
+    shelf.uninstall({'id':row['id'],'confirmed':True})
+    self.assertFalse(any(call[0]=='gio' for call in calls))
+    shelf.uninstall({'id':row['id'],'confirmed':True,'removeData':True})
+    self.assertEqual(calls[-1],['gio','trash','--',str(folder)])
+ def test_cleanup_rejects_symlink_and_unknown_app(self):
+  from unittest.mock import patch
+  with tempfile.TemporaryDirectory() as home,tempfile.TemporaryDirectory() as state,tempfile.TemporaryDirectory() as outside:
+   folder=Path(home)/'.var/app';folder.mkdir(parents=True);(folder/'org.example.Test').symlink_to(outside,target_is_directory=True)
+   shelf=Shelf(state);shelf.applications=lambda event=None:dict(items=[dict(id='org.example.Test',kind='flatpak',removable=True)])
+   with patch('app_ops.Path.home',return_value=Path(home)):
+    self.assertEqual(shelf.application_data({'id':'org.example.Test'})['items'],[])
+    with self.assertRaises(ValueError):shelf.application_data({'id':'unknown'})
+
+class SelectionBridgeTests(unittest.TestCase):
+ def test_transient_text_and_sensitive_clear(self):
+  import os,subprocess
+  script=Path(__file__).resolve().parents[1]/'modules/lickintosh/island-shelf/selection_bridge.py'
+  env=dict(os.environ,CLIPBOARD_STATE='data')
+  result=subprocess.run([sys.executable,str(script)],input='Olá selection',text=True,capture_output=True,env=env,check=True)
+  self.assertEqual(json.loads(result.stdout),{'text':'Olá selection'})
+  env['CLIPBOARD_STATE']='sensitive'
+  result=subprocess.run([sys.executable,str(script)],input='not retained',text=True,capture_output=True,env=env,check=True)
+  self.assertEqual(json.loads(result.stdout),{'text':''})
+ def test_oversized_selection_is_ignored(self):
+  import os,subprocess
+  script=Path(__file__).resolve().parents[1]/'modules/lickintosh/island-shelf/selection_bridge.py'
+  result=subprocess.run([sys.executable,str(script)],input='x'*65537,text=True,capture_output=True,env=dict(os.environ,CLIPBOARD_STATE='data'),check=True)
+  self.assertEqual(json.loads(result.stdout),{'text':''})
 
 class RingShortcutTests(unittest.TestCase):
  def test_no_override(self):

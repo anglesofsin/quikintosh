@@ -37,8 +37,8 @@ def integrate(root):
     s=s.replace('awake,widgetDetail][index]','awake,widgetDetail,storage][index]')
     s=s.replace('function onReveal(page){panel.selectPage(page)}','function onReveal(page){panel.selectPage(page)}function onDetailRequested(key){panel.detailWidget=key;panel.selectPage(13)}',1)
     s=s.replace('    Component {id:tray;','    Component{id:storage;StorageShelf{}}\n    Component {id:tray;',1)
-    s=s.replace('panel.detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring"].includes(panel.detailWidget) ? 620:380')
-    s=s.replace('detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring"].includes(detailWidget) ? 620:380')
+    s=s.replace('panel.detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring","selection","queue"].includes(panel.detailWidget) ? 620:380')
+    s=s.replace('detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring","selection","queue"].includes(detailWidget) ? 620:380')
     s=s.replace('13:(["calendar",','14:540,13:(["calendar",')
     s=s.replace('13:(detailWidget===','14:540,13:(detailWidget===')
     s=s.replace('({1:336,4:300','({14:300,1:336,4:300')
@@ -46,6 +46,8 @@ def integrate(root):
     s=s.replace('Rectangle{anchors.fill:parent;radius:52;visible:IslandConfig.s("shelfMaterial")','Rectangle{anchors.fill:parent;radius:panel.attachedNotch ? 0:52;visible:IslandConfig.s("shelfMaterial")',1)
     s=s.replace('    readonly property int bodyHeight:', '    readonly property int audioBodyHeight:Math.min(340,78+Math.max(1,Pipewire.nodes.values.filter(n=>n.isStream && n.audio).length)*46)\n    readonly property int bodyHeight:',1)
     s=s.replace('10:300','10:panel.audioBodyHeight')
+    s=s.replace('    readonly property int bodyHeight:', '    readonly property int detailBodyHeight:Math.min(output.height-80,({ring:430,queue:360,developer:320,vault:360,terminal:320,teleprompter:330,transcribe:300,breather:240})[detailWidget] || IslandConfig.s("shelfHeight"))\n    readonly property int bodyHeight:',1)
+    s=s.replace('({14:460,1:336','({13:panel.detailBodyHeight,14:460,1:336')
     s=s.replace('import QtQuick\n','import QtQuick\nimport QtQuick.Shapes\nimport Quickshell.Services.Pipewire\n',1)
     s=s.replace('margins.top: Math.max(0, capsuleTop)','margins.top: panel.attachedNotch ? 0:Math.max(0,capsuleTop)',1)
     s=s.replace('border.width: 1\n        border.color: "#12ffffff"','border.width:panel.attachedNotch ? 0:1\n        border.color: "#12ffffff"',1)
@@ -56,16 +58,16 @@ def integrate(root):
     s=s.replace('    ClippingRectangle {\n        id: body','    Shape{id:notchWings;visible:panel.attachedNotch && panel.geometryExpanded;anchors.top:body.top;anchors.horizontalCenter:body.horizontalCenter;width:visible ? body.width+56:0;height:visible ? 28:0;preferredRendererType:Shape.CurveRenderer\n        ShapePath{strokeWidth:-1;fillColor:"black";startX:0;startY:0\n            PathQuad{x:29;y:28;controlX:28;controlY:0}\n            PathLine{x:29;y:0}\n            PathLine{x:0;y:0}\n            PathMove{x:notchWings.width-29;y:0}\n            PathLine{x:notchWings.width-29;y:28}\n            PathQuad{x:notchWings.width;y:0;controlX:notchWings.width-28;controlY:0}\n            PathLine{x:notchWings.width-28;y:0}\n        }\n    }\n    ClippingRectangle {\n        id: body',1)
     p.write_text(s)
     qmldir=root/'island-shelf/qmldir'
-    qmldir.write_text(qmldir.read_text()+'\nHomeEditor HomeEditor.qml\nTransformWindow TransformWindow.qml\nStorageShelf StorageShelf.qml\nShelfMenu ShelfMenu.qml\nShelfMenuItem ShelfMenuItem.qml\nShelfMenuSeparator ShelfMenuSeparator.qml\nDragBasket DragBasket.qml\nHomeUtility HomeUtility.qml\nDeveloperTools DeveloperTools.qml\nTeleprompter Teleprompter.qml\nVaultShelf VaultShelf.qml\nBreatherShelf BreatherShelf.qml\nTerminalShelf TerminalShelf.qml\nTranscribeShelf TranscribeShelf.qml\nActionRing ActionRing.qml\nRingSettings RingSettings.qml\n')
+    qmldir.write_text(qmldir.read_text()+'\nHomeEditor HomeEditor.qml\nTransformWindow TransformWindow.qml\nStorageShelf StorageShelf.qml\nShelfMenu ShelfMenu.qml\nShelfMenuItem ShelfMenuItem.qml\nShelfMenuSeparator ShelfMenuSeparator.qml\nDragBasket DragBasket.qml\nHomeUtility HomeUtility.qml\nDeveloperTools DeveloperTools.qml\nTeleprompter Teleprompter.qml\nVaultShelf VaultShelf.qml\nBreatherShelf BreatherShelf.qml\nTerminalShelf TerminalShelf.qml\nTranscribeShelf TranscribeShelf.qml\nActionRing ActionRing.qml\nRingSettings RingSettings.qml\nSelectionActions SelectionActions.qml\nSelectionSettings SelectionSettings.qml\nQueueShelf QueueShelf.qml\n')
     p=root/'services/MprisState.qml';s=p.read_text()
     if p.is_symlink():p.unlink()
     s=s.replace('    readonly property MprisPlayer activePlayer: {','    property var preferredPlayer:null\n    function selectPlayer(player){preferredPlayer=player}\n    readonly property MprisPlayer activePlayer: {\n        if(root.preferredPlayer && root.players.includes(root.preferredPlayer))return root.preferredPlayer;',1)
     p.write_text(s)
     p=root/'shell.qml';s=p.read_text();s += '\n' if not s.endswith('\n') else ''
     # Add transformation window next to the existing floating tray/player.
-    s=s.replace('    FloatingMusic {','    ActionRing {}\n    DragBasket {}\n    TransformWindow {}\n    FloatingMusic {',1)
+    s=s.replace('    FloatingMusic {','    SelectionActions {}\n    ActionRing {}\n    DragBasket {}\n    TransformWindow {}\n    FloatingMusic {',1)
     s=s.replace('    NotificationServer {','    NotificationServer {\n        inlineReplySupported:true',1)
-    if 'TransformWindow {}' not in s:s=s.replace('FloatingMusic{','ActionRing{}\n    DragBasket{}\n    TransformWindow{}\n    FloatingMusic{',1)
+    if 'TransformWindow {}' not in s:s=s.replace('FloatingMusic{','SelectionActions{}\n    ActionRing{}\n    DragBasket{}\n    TransformWindow{}\n    FloatingMusic{',1)
     p.write_text(s)
 
 

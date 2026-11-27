@@ -72,7 +72,8 @@
       "id": "cleaner",
       "name": "Cleaner",
       "url": "https://getdroppy.app/features/cleaner",
-      "status": "pending"
+      "status": "implemented-core",
+      "scope": "User apps and exact Flatpak personal-data review. Personal data is opt-in and trashed; Nix system apps remain declarative."
     },
     {
       "id": "cleanmymac",
@@ -114,7 +115,8 @@
       "id": "dropclip",
       "name": "Dropclip",
       "url": "https://getdroppy.app/features/dropclip",
-      "status": "pending"
+      "status": "implemented-core",
+      "scope": "Opt-in transient primary selection Copy/Search. AI rewriting and translation remain separate integrations."
     },
     {
       "id": "droppy-cloud",
@@ -319,7 +321,8 @@
       "id": "playing-next",
       "name": "Playing Next",
       "url": "https://getdroppy.app/features/playing-next",
-      "status": "pending"
+      "status": "implemented-core",
+      "scope": "Live MPRIS TrackList metadata, jump/add/remove by advertised capability. Arbitrary reordering is not available in standard MPRIS."
     },
     {
       "id": "pomodoro",

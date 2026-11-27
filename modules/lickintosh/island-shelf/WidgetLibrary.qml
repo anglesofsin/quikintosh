@@ -21,8 +21,10 @@ Item {
   {key:'spotlight',title:qsTr('Spotlight'),icon:'search',command:['quickintosh','ipc','call','rice','spotlight']},
   {key:'applications',title:qsTr('Applications'),icon:'grid',command:['quickintosh','ipc','call','rice','launchpad']},
   {key:'settings',title:qsTr('Settings'),icon:'settings',command:['quickintosh','ipc','call','rice','settings']}]
- readonly property var visibleWidgets:(ShelfState.editing ? widgets.filter(w=>homeKeys.includes(w.key)):widgets.concat(launchers)).filter(w=>(!favoritesOnly || ShelfState.editing || favoriteKeys.includes(w.key)) && (!search || w.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())))
+ readonly property var visibleWidgets:ShelfState.orderWidgets((ShelfState.editing ? widgets.filter(w=>homeKeys.includes(w.key)):widgets.concat(launchers)).filter(w=>(!favoritesOnly || ShelfState.editing || favoriteKeys.includes(w.key)) && (!search || w.title.toLocaleLowerCase().includes(search.toLocaleLowerCase()))))
  readonly property var widgets:[
+  {key:'queue',title:qsTr('Playing Next'),icon:'list',page:13},
+  {key:'selection',title:qsTr('Selection Actions'),icon:'copy',page:13},
   {key:'ring',title:qsTr('Action Ring'),icon:'grid',page:13},
   {key:'transcribe',title:qsTr('Voice Transcription'),icon:'mic',page:13},
   {key:'terminal',title:qsTr('Quick Terminal'),icon:'type',page:13},
@@ -47,12 +49,12 @@ Item {
   {key:'activities',title:qsTr('Live Activities'),icon:'zap',page:11}]
  readonly property var homeKeys:['media','calendar','weather','focus','notes','performance','files','clipboard','audio','awake','storage','camera','notifications']
  function widget(key){return widgets.find(w=>w.key===key) || {title:qsTr('Add widget'),icon:'plus'}}
- function choose(item){if(item.command){ShelfState.closeRequested();Quickshell.execDetached(item.command);return}if(ShelfState.editing)IslandConfig.setStyle('shelfSlot'+(selectedSlot+1),item.key);else if(item.page===13)openWidget(item.key);else openPage(item.page)}
+ function choose(item){ShelfState.useWidget(item.key);if(item.command){ShelfState.closeRequested();Quickshell.execDetached(item.command);return}if(ShelfState.editing)IslandConfig.setStyle('shelfSlot'+(selectedSlot+1),item.key);else if(item.page===13)openWidget(item.key);else openPage(item.page)}
  function swap(direction){const other=selectedSlot+direction;if(other<0 || other>3)return;const a=IslandConfig.s('shelfSlot'+(selectedSlot+1));IslandConfig.setStyle('shelfSlot'+(selectedSlot+1),IslandConfig.s('shelfSlot'+(other+1)));IslandConfig.setStyle('shelfSlot'+(other+1),a);selectedSlot=other}
  ColumnLayout{anchors.fill:parent;spacing:16
   RowLayout{Layout.fillWidth:true
    Text{Layout.fillWidth:true;text:ShelfState.editing ? qsTr('Edit Home'):qsTr('Command Center');color:'white';font.family:ShelfStyle.displayFamily;font.pixelSize:19;font.weight:Font.DemiBold}
-   ShelfButton{visible:!ShelfState.editing;flat:true;icon:'notch/edit-3.svg';accessibleLabel:qsTr('Edit Home');onClicked:ShelfState.editing=true}
+   ShelfButton{visible:!ShelfState.editing;flat:true;icon:'notch/edit-3.svg';accessibleLabel:qsTr('Edit Home');onClicked:ShelfState.beginEditing()}
    ShelfButton{visible:ShelfState.editing;text:qsTr('Done');selected:true;onClicked:{ShelfState.editing=false;root.openPage(0)}}
   }
   RowLayout{visible:!ShelfState.editing;Layout.fillWidth:true;spacing:8

@@ -57,3 +57,13 @@ limited to the first five minutes. The microphone job is cancelled on lock or
 when its recording view becomes hidden. Temporary audio is removed after work.
 Language selection includes automatic, Portuguese and nine other choices.
 No audio is uploaded. This does not establish word-perfect transcription.
+
+Personalization uses one inline Home editor from both the pencil and context
+menu. Catalogues begin in a deliberate common-use order, then recently used
+widgets move to the front. Existing Home slots never reorder automatically.
+
+Playing Next reads the selected player's actual MPRIS TrackList, subscribes to
+track events and supports jump, add and remove when advertised. Standard MPRIS
+does not define arbitrary queue reordering; no private Spotify API is assumed.
+Selection Actions is opt-in; its primary-selection text is transient. Copy/Search
+work locally and external search happens only on an explicit click.

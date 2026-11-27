@@ -1,30 +1,41 @@
 # Droppy reference implementation audit
 
-Reference authority: user screenshots 1–23, getdroppy.app/features/file-tray,
-/features/now-playing, /features/audio-control, /features/notifications,
-/features/cleaner, /docs/transform, /docs/shelf. Research media stays outside Git.
+Reference: https://getdroppy.app/features, reviewed 2026-11-27, and user-provided
+screenshots. CATALOGUE.json inventories all 71 feature routes found on the page.
+A status of implemented-core means the underlying local capability exists;
+it does not claim full design or functional parity with the named product.
 
-Acceptance matrix:
-- [x] Right click: one click opens; second closes; empty activity never cancels it.
-- [x] Files: 4 columns, blue selection, thumbnail/name/metadata, round toolbar.
-- [ ] Files: pin, tracked folder, safe ZIP extraction, rename, folder drops.
-- [ ] Files: outbound URI drag, external URI drop, preview, copy, remove references.
-- [ ] Transform: local compression, conversion, resize, rotate, metadata removal,
-      PDF merge from images, ZIP; non-destructive outputs; controls typed.
-- [x] Clipboard: category tabs, colored/image cards, pin/remove, search/copy.
-- [ ] Home: inline editor/catalogue, remove/reorder/resize, real widgets.
-- [x] Audio: output/input tabs, per-stream sliders, reset, icons and mute.
-- [x] Storage: actual capacity/usage and bounded local-cache cleanup.
-- [x] Notifications: sender/icon/image/actions/reply when advertised by app.
-- [x] Media: artwork, elapsed/remaining, transport, lyrics/source controls.
-- [ ] Both island/notch geometries; native live material and reduced motion.
-- [ ] Runtime/private fixture, backend operation tests, screenshot comparisons.
+Implemented local capabilities:
 
-Platform boundary: no fake AirDrop, Droppy Cloud, iCloud or Apple Music private
-APIs. Show installed Linux sharing providers only when available. No automatic
-uninstall or deletion of user originals. Notification reply is possible only
-when the sending app exposes an inline reply action.
+- Persistent right-click shelf, left-click activity expansion; explicit ownership.
+- Files: round toolbar, selection, thumbnails, dimensions/text previews, pinning,
+  tracked folders, Quick Look, ZIP/extract, rename, folder copy and native URI drag.
+- Global native drag shake opens a cursor-positioned four-target basket. Targets
+  add to tray, transform, open files or share through installed LocalSend.
+- Transform: images, bounded FFmpeg video conversion/FPS/resize/compression,
+  PDF merge/compress/rotate/extract/render, metadata removal, local background
+  removal, presets and batch rename. Originals are preserved.
+- Clipboard category cards, search, pinning, copy and remove.
+- Home inline catalogue, actual slot drag reorder, width adjustment and cancel.
+- Output/input per-application audio, live disk usage and app inventory.
+  Explicit uninstall supports user Flatpaks/local shortcuts; Nix apps are read-only.
+- Notifications with images, advertised actions and native freedesktop inline reply.
+- MPRIS player transport, source choice, seek, volume, lyrics and floating variants.
+- Real calendar, notes, focus, weather, stats, camera and idle inhibition widgets.
+- Developer tools: offline JSON/Base64/URL/JWT inspection/UUID/SHA transformations.
+- Configurable break reminders, disabled initially, suspended during calls/DND.
+- Teleprompter: editable saved script, scrolling speed, text size and mirror mode.
+- Explicit Markdown vault selection, read/write and external-edit conflict checks.
+- Shared context menus: captured live backdrop, icons, blue selected rows,
+  separators and real media-source submenu.
 
-Checks indicate an implemented/validated capability, not pixel-identical parity.
-See VALIDATION.md for test scope and remaining gaps. Drag gestures and every
-platform integration have not been established by backend tests alone.
+Remaining catalogue work is recorded without concealing it in CATALOGUE.json.
+The catalogue extends beyond these modules: action ring,
+transcription, translation, account integrations, agent hooks and advanced
+Command Center layouts still need implementation or integration review.
+
+Platform boundaries: do not impersonate Droppy Cloud/iCloud/AirDrop or invoke
+private Apple APIs. Third-party accounts need a supported provider and user
+credentials; no credentials are discovered or copied from app profiles.
+Notification reply requires support from the sender. Destructive operations are
+never automatic. A compatible Linux alternative is not labelled pixel-identical.

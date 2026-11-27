@@ -20,5 +20,19 @@
   "purpose": "Droppy-inspired monochrome interface icons; visual parity requires review",
   "prompt": "Standalone white monochrome SF Symbols-inspired rounded semibold interface glyph, true transparent square, clean flat geometry, no shadows, texture, gradients, labels or background; readable at 20px.",
   "integration": "Original generated RGBA PNGs copied intact. QML requests a small DPI-scaled decoded image. No programmatic icon redrawing.",
-  "opticalBounds": "QML scale/centering from alpha>=128 bounds; original PNG files remain unchanged."
+  "opticalBounds": "QML scale/centering from alpha>=128 bounds; original PNG files remain unchanged.",
+  "additional_sheet": {
+    "source": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-e518be9c-6bbb-4c47-932a-2ca19258f075.png",
+    "generator": "OpenAI image_gen",
+    "integration": "Six equal cells cropped without repainting; alpha retained",
+    "assets": [
+      "archive",
+      "folder-plus",
+      "basket",
+      "background",
+      "paperclip",
+      "send"
+    ],
+    "prompt": "Six white SF Symbols semibold outline interface glyphs: archive, folder plus, basket, person crop, paperclip, send; transparent background, flat shapes."
+  }
 }

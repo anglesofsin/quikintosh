@@ -4,6 +4,11 @@ from pathlib import Path
 
 def integrate(root):
     root=Path(root)
+    p=root/'rosa/services/IslandConfig.qml';s=p.read_text()
+    if p.is_symlink():p.unlink()
+    s=s.replace('"performance", "files"','"performance", "files", "clipboard", "audio", "awake", "storage", "camera", "notifications"').replace('"performance","files"','"performance","files","clipboard","audio","awake","storage","camera","notifications"')
+    if 'trayShakeEnabled:' not in s:s=s.replace('readonly property var spec: ({','readonly property var spec: ({trayShakeEnabled:{type:"bool",def:true},',1)
+    p.write_text(s)
     p=root/'rosa/overlays/IslandWindow.qml';s=p.read_text()
     s=s.replace('    readonly property bool wanted:\n','    readonly property bool wanted: win.dashboardRequested || win.dashboardCover || IslandConfig.s("reserveClockSpace") ||\n',1)
     s=s.replace('(win.hub.kind === "clock" || win.hub.kind === "")','!win.dashboardRequested && !win.dashboardCover && (win.hub.kind === "clock" || win.hub.kind === "")',1)
@@ -24,35 +29,39 @@ def integrate(root):
     s=s.replace('ShelfButton{implicitWidth:44;implicitHeight:36;icon:"notch/grid.svg";', 'ShelfButton{implicitWidth:44;implicitHeight:36;icon:"notch/grid.svg";')
     a='            ShelfButton{visible:ShelfState.editing && panel.page!==8;'
     s=s.replace(a,'            ShelfButton{implicitWidth:44;implicitHeight:36;icon:"notch/hard-drive.svg";accessibleLabel:qsTr("Storage");selected:panel.page===14;onClicked:panel.selectPage(14)}\n'+a,1)
+    s=s.replace('visible:ShelfState.editing && panel.page!==8;', 'visible:ShelfState.editing && panel.page!==8 && panel.page!==0;')
     s=s.replace('index>13','index>14').replace('model:14','model:15')
     s=s.replace('    property var visitedPages:({0:true})',
         '    property var visitedPages:({0:true})\n    property int prewarmCursor:0\n    readonly property var prewarmPages:[2,5,11,13]\n    Timer{interval:250;running:panel.prewarmCursor<panel.prewarmPages.length;repeat:true;onTriggered:{const next=Object.assign({},panel.visitedPages);next[panel.prewarmPages[panel.prewarmCursor++]]=true;panel.visitedPages=next}}')
     s=s.replace('active:!!panel.visitedPages[index]','asynchronous:index!==0\n                            active:!!panel.visitedPages[index]')
     s=s.replace('awake,widgetDetail][index]','awake,widgetDetail,storage][index]')
     s=s.replace('    Component {id:tray;','    Component{id:storage;StorageShelf{}}\n    Component {id:tray;',1)
-    s=s.replace('13:(panel.detailWidget===','14:540,13:(panel.detailWidget===')
+    s=s.replace('panel.detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather"].includes(panel.detailWidget) ? 620:380')
+    s=s.replace('detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather"].includes(detailWidget) ? 620:380')
+    s=s.replace('13:(["calendar",','14:540,13:(["calendar",')
     s=s.replace('13:(detailWidget===','14:540,13:(detailWidget===')
     s=s.replace('({1:336,4:300','({14:300,1:336,4:300')
     s=s.replace('6:820','6:720').replace('6:280','6:250').replace('4:300','4:460')
-    # A menu on the capsule background, with actual settings and customization.
-    s=s.replace('id: body\n','''id: body
-        Menu{id:shelfMenu
-            background:Rectangle{radius:14;color:'#ed242426';border.color:'#30ffffff'}
-            MenuItem{text:qsTr('Customize Home');onTriggered:{panel.selectPage(0);ShelfState.editing=true}}
-            MenuItem{text:qsTr('Audio sources');onTriggered:panel.selectPage(10)}
-            MenuItem{text:qsTr('Open Control Center');onTriggered:Quickshell.execDetached(['quickintosh','ipc','call','rice','controlCenter'])}
-            MenuItem{text:qsTr('Open Settings');onTriggered:SettingsLauncher.open('')}
-        }
-''',1)
-    # Right click retains toggle behavior; context menu available explicitly via Home editor.
+    s=s.replace('Rectangle{anchors.fill:parent;radius:52;visible:IslandConfig.s("shelfMaterial")','Rectangle{anchors.fill:parent;radius:panel.attachedNotch ? 0:52;visible:IslandConfig.s("shelfMaterial")',1)
+    s=s.replace('import QtQuick\n','import QtQuick\nimport QtQuick.Shapes\n',1)
+    s=s.replace('margins.top: Math.max(0, capsuleTop)','margins.top: panel.attachedNotch ? 0:Math.max(0,capsuleTop)',1)
+    s=s.replace('radius: Math.min(52, height / 2)','radius: Math.min(52,height/2)\n        topLeftRadius:panel.attachedNotch ? 0:radius\n        topRightRadius:panel.attachedNotch ? 0:radius',1)
+    s=s.replace('Rectangle{visible:panel.attachedNotch;anchors.top:parent.top;width:parent.width;height:30;color:body.color}','',1)
+    s=s.replace('Region { item: navigation; radius: 22 }','Region { item: navigation; radius: 22 } Region{item:notchWings}',1)
+    s=s.replace('mask: Region { item: body; radius: panel.attachedNotch ? 0:52;', 'mask: Region { item:ShelfState.menuCount>0 ? panel.contentItem:body; radius:ShelfState.menuCount>0 ? 0:panel.attachedNotch ? 0:52;',1)
+    s=s.replace('    ClippingRectangle {\n        id: body','    Shape{id:notchWings;visible:panel.attachedNotch && panel.geometryExpanded;anchors.top:body.top;anchors.horizontalCenter:body.horizontalCenter;width:visible ? body.width+56:0;height:visible ? 28:0;preferredRendererType:Shape.CurveRenderer\n        ShapePath{strokeWidth:-1;fillColor:"black";startX:0;startY:0\n            PathQuad{x:28;y:28;controlX:28;controlY:0}\n            PathLine{x:28;y:0}\n            PathLine{x:0;y:0}\n            PathMove{x:notchWings.width-28;y:0}\n            PathLine{x:notchWings.width-28;y:28}\n            PathQuad{x:notchWings.width;y:0;controlX:notchWings.width-28;controlY:0}\n            PathLine{x:notchWings.width-28;y:0}\n        }\n    }\n    ClippingRectangle {\n        id: body',1)
     p.write_text(s)
     qmldir=root/'island-shelf/qmldir'
-    qmldir.write_text(qmldir.read_text()+'\nHomeEditor HomeEditor.qml\nTransformWindow TransformWindow.qml\nStorageShelf StorageShelf.qml\nShelfMenu ShelfMenu.qml\nShelfMenuItem ShelfMenuItem.qml\nShelfMenuSeparator ShelfMenuSeparator.qml\n')
+    qmldir.write_text(qmldir.read_text()+'\nHomeEditor HomeEditor.qml\nTransformWindow TransformWindow.qml\nStorageShelf StorageShelf.qml\nShelfMenu ShelfMenu.qml\nShelfMenuItem ShelfMenuItem.qml\nShelfMenuSeparator ShelfMenuSeparator.qml\nDragBasket DragBasket.qml\nHomeUtility HomeUtility.qml\nDeveloperTools DeveloperTools.qml\nTeleprompter Teleprompter.qml\nVaultShelf VaultShelf.qml\nBreatherShelf BreatherShelf.qml\n')
+    p=root/'services/MprisState.qml';s=p.read_text()
+    if p.is_symlink():p.unlink()
+    s=s.replace('    readonly property MprisPlayer activePlayer: {','    property var preferredPlayer:null\n    function selectPlayer(player){preferredPlayer=player}\n    readonly property MprisPlayer activePlayer: {\n        if(root.preferredPlayer && root.players.includes(root.preferredPlayer))return root.preferredPlayer;',1)
+    p.write_text(s)
     p=root/'shell.qml';s=p.read_text();s += '\n' if not s.endswith('\n') else ''
     # Add transformation window next to the existing floating tray/player.
-    s=s.replace('    FloatingMusic {','    TransformWindow {}\n    FloatingMusic {',1)
+    s=s.replace('    FloatingMusic {','    DragBasket {}\n    TransformWindow {}\n    FloatingMusic {',1)
     s=s.replace('    NotificationServer {','    NotificationServer {\n        inlineReplySupported:true',1)
-    if 'TransformWindow {}' not in s:s=s.replace('FloatingMusic{','TransformWindow{}\n    FloatingMusic{',1)
+    if 'TransformWindow {}' not in s:s=s.replace('FloatingMusic{','DragBasket{}\n    TransformWindow{}\n    FloatingMusic{',1)
     p.write_text(s)
 
 

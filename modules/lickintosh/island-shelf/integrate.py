@@ -27,7 +27,7 @@ p=base/'services/IslandConfig.qml';s=p.read_text();spec={
  'shelfLyricsBlank':dict(type='bool',def_=True),
 }
 for i,key in enumerate(['media','calendar','weather','none'],1):
- spec['shelfSlot'+str(i)]=dict(type='pick',def_=key,values=['none','media','calendar','weather','focus','notes','performance','files'])
+ spec['shelfSlot'+str(i)]=dict(type='pick',def_=key,values=['none','media','calendar','weather','focus','notes','performance','files','clipboard','audio','awake','storage','camera','notifications'])
  spec['shelfWeight'+str(i)]=dict(type='int',def_=1,min=1,max=3)
 lines=[]
 for key,value in spec.items():

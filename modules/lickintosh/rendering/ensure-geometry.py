@@ -8,7 +8,7 @@ def query(*args):
 try:
  plugins=json.loads(query('plugins','list','-j').stdout)
  ours=next((p for p in plugins if p.get('name')=='quickintosh-geometry'),None)
- if ours and ours.get('version')=='1.1.0':raise SystemExit(0)
+ if ours and ours.get('version')=='1.2.0':raise SystemExit(0)
  if ours:
   # Hyprland unload expects a path. Capabilities can make /proc/maps unreadable.
   # Restrict fallback candidates to Quickintosh's installed system launchers.

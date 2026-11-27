@@ -29,13 +29,22 @@ Item {
  onWatchingChanged:syncWatch()
  Component.onCompleted:syncWatch()
  Component.onDestruction:if(held)MprisState.watchPosition(false)
- TapHandler{acceptedButtons:Qt.RightButton;onTapped:point=>contextMenu.popup(root,point.position.x,point.position.y)}
+ MouseArea{anchors.fill:parent;acceptedButtons:Qt.RightButton;onClicked:event=>contextMenu.popup(root,event.x,event.y)}
  ShelfMenu{id:contextMenu
-  ShelfMenuItem{text:qsTr('Customize Home');onTriggered:{ShelfState.reveal(0);ShelfState.editing=true}}
-  ShelfMenuItem{text:qsTr('Audio sources');onTriggered:root.openSources()}
-  ShelfMenuItem{text:qsTr('Lyrics');onTriggered:root.openLyrics()}
+  ShelfMenuItem{symbol:'notch/grid.svg';text:qsTr('Customize Home');onTriggered:{ShelfState.reveal(0);ShelfState.editing=true}}
+  ShelfMenu{id:sourcesMenu;title:qsTr('Source')
+   Instantiator{model:MprisState.players
+    delegate:ShelfMenuItem{required property var modelData;symbol:'notch/music.svg';text:(MprisState.activePlayer===modelData ? '✓ ':'')+(modelData.identity || qsTr('Media player'));onTriggered:MprisState.selectPlayer(modelData)}
+    onObjectAdded:(index,object)=>sourcesMenu.insertItem(index,object)
+    onObjectRemoved:(index,object)=>sourcesMenu.removeItem(object)
+   }
+   ShelfMenuSeparator{}
+   ShelfMenuItem{symbol:'notch/sliders.svg';text:qsTr('App volumes');onTriggered:ShelfState.reveal(10)}
+  }
+  ShelfMenuItem{symbol:'notch/list.svg';text:qsTr('Lyrics');onTriggered:root.openLyrics()}
   ShelfMenuSeparator{}
-  ShelfMenuItem{text:qsTr('Open Settings');onTriggered:SettingsLauncher.open('')}
+  ShelfMenuItem{symbol:'notch/grid.svg';text:qsTr('Open Command Center');onTriggered:ShelfState.reveal(8)}
+  ShelfMenuItem{symbol:'notch/settings.svg';text:qsTr('Open Settings');onTriggered:SettingsLauncher.open('')}
  }
  ColumnLayout {
   anchors.fill:parent

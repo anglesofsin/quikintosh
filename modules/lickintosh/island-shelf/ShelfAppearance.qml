@@ -53,4 +53,9 @@ ColumnLayout {
   ShelfSlider{manageHold:!root.settingsPage;Layout.preferredWidth:180;from:200;to:520;stepSize:10;value:IslandConfig.s('shelfHeight');onMoved:IslandConfig.setStyle('shelfHeight',value)}
   Text{Layout.preferredWidth:42;text:IslandConfig.s('shelfHeight')+' px';color:root.muted;font.family:ShelfStyle.textFamily;font.pixelSize:11}
  }
+ RowLayout{Layout.fillWidth:true
+  Text{Layout.fillWidth:true;text:qsTr('Shake dragged files to open basket');color:root.ink;font.family:ShelfStyle.textFamily;font.pixelSize:13}
+  Switch{checked:IslandConfig.s('trayShakeEnabled')!==false;onToggled:IslandConfig.setStyle('trayShakeEnabled',checked)}
+ }
+
 }

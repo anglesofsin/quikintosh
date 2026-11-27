@@ -1,48 +1,31 @@
 # Native surface validation
 
-The review runs on a private, nested Hyprland display. It does not inject input
-into the user's desktop or use the user's Discord profile. Screenshots and
-recordings are written to `~/.local/state/quickintosh/reviews/droppy-reference-review`.
+Tests run in an isolated nested compositor and private D-Bus, never on the user's
+pointer or Discord profile. Artifacts: ~/.local/state/quickintosh/reviews/droppy-reference-review.
 
-Validated in this revision:
+Established evidence:
 
-- Fifteen expanded pages load, including Files, Clipboard, Audio and Storage.
-- Switching pages updates the selected page synchronously; visited pages retain
-  their components. Each page lays out at its destination size during the outer
-  capsule morph, rather than reflowing at every intermediate width.
-- The widget editor keeps the shelf open after the pointer leaves.
-- Actual MPRIS transport and volume requests reach the isolated test player.
-- Native glass renders without reading a stale layer-cache entry in the fixture.
-- Nine temporary-file tests exercise archive/extraction, path traversal rejection,
-  folder copying/collision handling, rename/collision handling, reference-only
-  removal, tracked folder arrivals, image resizing, PDF generation and storage.
+- 17 temporary-file tests: archive/extraction safety, rename/collision handling,
+  folder copies, tracked arrivals, image target size, PDF operations, video FPS,
+  presets, transform-job isolation and uninstall guards.
+- 9 offline developer/vault/reminder tests: Unicode, hashes, malformed inputs, bounded
+  data, JWT inspection, persisted script, safe vault paths and edit conflicts.
+- Actual native URI drag, five-reversal shake, basket appearance and Transform
+  drop: /tmp/qi-native-drag-check4.log.
+- Native NotificationReplied signal with exact fixture reply text:
+  /tmp/qi-native-notification-check.log. No message was sent to a real person.
+- Local background segmentation produced an actual alpha image.
+- Geometry 1.2.0 policy tests and private current-compositor ABI loading passed.
+- Fifteen pages, Home editor hold, actual slot reorder, MPRIS commands, three
+  floating player modes, notch/island geometry and native glass drawing passed
+  in /tmp/qi-reference-release-qa-v2.log.
 
-The screenshot review caught a Transform placement race; placement now retries
-until the compositor has mapped the window, with a bounded retry count.
+The complete v8 run passed in /tmp/qi-reference-release-qa-v8.log, including
+toolkit execution through the actual QML/backend channel and the notch seam
+correction. A focused release run separately covers the new reminder module
+and editor holds in the final source.
+Tab-selection timing measures synchronous selection, not end-to-end frame latency.
+Video capture shutdown is allowed 45 seconds to flush the software test encoder.
+The test checks all QML diagnostics for missing assets and runtime exceptions.
 
-This is not a claim of pixel-identical parity with every Droppy screen. In
-particular, global drag shaking outside Quickintosh, proprietary Apple sharing,
-background removal and arbitrary video/PDF transformation are not implemented
-by this patch. Transform currently operates on local images and ZIP archives.
-Reply depends on the sending application's freedesktop inline-reply capability.
-Do not represent a synchronous tab-selection benchmark as a display-frame or
-end-to-end latency benchmark.
-
-Additional evidence: the actual compact owner passed two synthetic right clicks
-on its private window, 20 expand/collapse cycles and 12 interrupted reversals.
-A fake notification sender received the exact text submitted through the reply
-field; no message was sent to another person. Transform placement was asserted
-as a floating 414×680 window; the action footer is outside its scrolling content.
-
-Follow-up validation: all 35 compact activities and privacy spacing during
-three alignments passed. Privacy geometry now uses the explicit animated
-transforms instead of a mapToItem binding that cycled on the live desktop.
-The context menu is a 240-pixel popup window, verified visually outside the
-capsule's clipping bounds. Synthetic clicks on the actual ellipsis button and
-the Customize Home entry activated editing. Popups use explicit item-relative
-positions; cross-window mapToGlobal comparisons are not a reliable placement
-assertion on these Wayland layer surfaces.
-Heavy page creation is incubated asynchronously and prewarmed; camera device
-creation is deferred until the user explicitly requests a preview. A subsequent
-56-selection run had a maximum synchronous selection duration of 7 ms (this
-still does not measure end-to-end display latency).
+No claim is made of full 71-feature parity or pixel identity across all screens.

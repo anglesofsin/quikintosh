@@ -5,7 +5,7 @@ let
 in
 compiler.mkDerivation {
  pname = "quickintosh-geometry";
- version = "1.1.0";
+ version = "1.2.0";
  src = ./.;
  nativeBuildInputs = [ pkg-config ];
  buildInputs = lib.optionals modern hyprland.buildInputs ++ [ hyprland.dev aquamarine hyprcursor hyprgraphics hyprlang hyprutils pixman libdrm libglvnd libinput wayland wayland-protocols libxkbcommon libxcb libxcb-errors xorg.xcbutilwm xorg.xcbutilrenderutil glslang cairo ];
@@ -18,6 +18,8 @@ compiler.mkDerivation {
  checkPhase = ''
    $CXX -std=c++23 focus-restore-policy-test.cpp -o focus-policy-test
    ./focus-policy-test
+   $CXX -std=c++23 drag-shake-test.cpp -o drag-shake-test
+   ./drag-shake-test
  '';
  installPhase = ''mkdir -p $out/lib; cp quickintosh-geometry.so $out/lib/; ${lib.optionalString modern "cp quickintosh-capture-guard.so $out/lib/"}'';
 }

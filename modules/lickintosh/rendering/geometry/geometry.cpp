@@ -20,6 +20,14 @@
 #include <hyprland/src/Compositor.hpp>
 #include <hyprland/src/event/EventBus.hpp>
 #include <wayland-server-core.h>
+#include "drag-shake.hpp"
+#ifdef QUICKINTOSH_HYPRLAND_057
+#include <hyprland/src/protocols/core/DataDevice.hpp>
+#include <hyprland/src/ipc/s2/S2.hpp>
+#endif
+static CHyprSignalListener dragListener;
+static CHyprSignalListener dragButtonListener;
+static DragShake dragShake;
 #ifdef QUICKINTOSH_HYPRLAND_057
 #include <hyprland/src/desktop/view/window/Window.hpp>
 #include <hyprland/src/desktop/view/window/WindowPresentation.hpp>
@@ -147,6 +155,13 @@ APICALL EXPORT PLUGIN_DESCRIPTION_INFO PLUGIN_INIT(HANDLE value){
 #endif
  if(!command)throw std::runtime_error("Quickintosh geometry: IPC registration failed");
  startFrames();
- return {"quickintosh-geometry","Read-only rendered window/workspace geometry","Quickintosh","1.1.0"};
+#ifdef QUICKINTOSH_HYPRLAND_057
+ dragButtonListener=Event::bus()->m_events.input.mouse.button.listen([](IPointer::SButtonEvent event,Event::SCallbackInfo&){if(event.state==WL_POINTER_BUTTON_STATE_RELEASED){if(dragShake.fired)IPC::Socket2::sock()->postEvent({.event="quickintosh-drag-end",.data=""});dragShake.reset();}});
+ dragListener=Event::bus()->m_events.input.mouse.move.listen([](Vector2D position,Event::SCallbackInfo&){
+  if(dragShake.sample(PROTO::data && PROTO::data->dndActive(),position.x,position.y,DragShake::Clock::now()))
+   IPC::Socket2::sock()->postEvent({.event="quickintosh-drag-shake",.data=std::format("{:.0f},{:.0f}",position.x,position.y)});
+ });
+#endif
+ return {"quickintosh-geometry","Read-only rendered window/workspace geometry","Quickintosh","1.2.0"};
 }
-APICALL EXPORT void PLUGIN_EXIT(){stopFrames();if(command)HyprlandAPI::unregisterHyprCtlCommand(handle,command);command.reset();}
+APICALL EXPORT void PLUGIN_EXIT(){dragButtonListener.reset();dragListener.reset();stopFrames();if(command)HyprlandAPI::unregisterHyprCtlCommand(handle,command);command.reset();}

@@ -5,8 +5,10 @@ from pathlib import Path
 from urllib.parse import unquote,urlparse
 
 from file_ops import FileOperations
+from app_ops import AppOperations
+from vault_ops import VaultOperations
 
-class Shelf(FileOperations):
+class Shelf(FileOperations,AppOperations,VaultOperations):
     def __init__(self,root=None):
         self.root=Path(root or Path.home()/'.local/state/quickintosh/island-shelf')
         self.root.mkdir(parents=True,exist_ok=True,mode=0o700)
@@ -43,7 +45,7 @@ class Shelf(FileOperations):
             try:s=p.stat()
             except OSError:continue
             mime=mimetypes.guess_type(p.name)[0] or 'application/octet-stream'
-            rows.append(dict(item,name=p.name,directory=p.is_dir(),size=s.st_size,uri=p.as_uri(),preview=self.thumbnail(p,mime),mime=mime,count=sum(1 for _ in itertools.islice(p.iterdir(),10000)) if p.is_dir() else 0))
+            rows.append(dict(item,name=p.name,directory=p.is_dir(),size=s.st_size,uri=p.as_uri(),preview=self.thumbnail(p,mime),mime=mime,dimensions=self.dimensions(p,mime),textPreview=self.text_preview(p,mime),count=sum(1 for _ in itertools.islice(p.iterdir(),10000)) if p.is_dir() else 0))
         return sorted(rows,key=lambda x:(not x.get('pinned',False),-x.get('added',0)))
     def managed(self,values):
         allowed={x['path'] for x in self.items}
@@ -91,18 +93,49 @@ class Shelf(FileOperations):
         return sorted(rows,key=lambda x:(not x.get('pinned',False),-x.get('added',0)))
     def handle(self,event):
         action=event.get('action','list');values=event.get('paths',[])
-        if action=='add':self.add(values)
+        if action in ('vaultSelect','vaultList','vaultRead','vaultSave'):return self.vault(event)
+        elif action=='utilityPreferences':
+            path=self.root/'utilities.json'
+            try:state=json.loads(path.read_text())
+            except (ValueError,OSError):state={}
+            values=event.get('values',{})
+            if 'teleprompterText' in values:state['teleprompterText']=str(values['teleprompterText'])[:100000]
+            if 'breaksEnabled' in values:state['breaksEnabled']=values['breaksEnabled'] is True
+            for key in ('eyesMinutes','stretchMinutes','waterMinutes'):
+                if key in values:state[key]=max(5,min(240,int(values[key])))
+            if values:
+                fd,tmp=tempfile.mkstemp(dir=self.root,prefix='.utilities-')
+                try:
+                    with os.fdopen(fd,'w') as stream:json.dump(state,stream,ensure_ascii=False)
+                    Path(tmp).replace(path)
+                finally:Path(tmp).unlink(missing_ok=True)
+            return dict(type='utilityPreferences',values=state)
+        elif action=='developerTool':
+            from developer_tools import transform
+            try:return dict(type='developerResult',text=transform(event.get('text',''),event.get('operation','')),error='')
+            except (ValueError,TypeError,UnicodeError,RecursionError) as error:return dict(type='developerResult',text='',error=str(error))
+        elif action=='copyText':
+            text=str(event.get('text',''))
+            if len(text)>1024*1024:raise ValueError('Text is too large')
+            subprocess.run(['wl-copy','--type','text/plain;charset=utf-8'],input=text.encode(),check=True,timeout=4)
+        elif action=='add':self.add(values)
         elif action=='remove':self.items=[x for x in self.items if x['path'] not in values];self.save()
         elif action=='clear':self.items=[x for x in self.items if x.get('pinned')];self.save()
         elif action=='pin':
             for x in self.items:
                 if x['path'] in values:x['pinned']=not x.get('pinned',False)
             self.save()
+        elif action=='renameMany':
+            after=self.rename_many(event);return dict(type='renamed',items=self.entries(),before=values,after=after)
         elif action=='rename':self.rename(values,str(event.get('name','')))
         elif action=='unzip':self.unpack(values)
         elif action=='folder':self.folder_copy(values,event)
         elif action=='transform':self.transform(event)
+        elif action in ('presets','savePreset','removePreset'):return self.presets(event)
         elif action in ('pinClip','removeClip'):return self.clip_action(event)
+        elif action=='applications':return self.applications()
+        elif action=='uninstall':return self.uninstall(event)
+        elif action=='share':return self.sharing(event)
         elif action=='storage':return self.storage()
         elif action=='cleanPreviews':
             folder=self.root/'previews'
@@ -166,17 +199,39 @@ class Shelf(FileOperations):
         elif action=='clipboard':return dict(type='clipboard',items=self.clipboard())
         return dict(type='tray',items=self.entries())
 
+def transform_job():
+    import signal
+    def cancel(*_):raise RuntimeError('Transformation cancelled')
+    signal.signal(signal.SIGTERM,cancel)
+    os.nice(5)
+    shelf=Shelf();outputs=[]
+    shelf.add=lambda values:outputs.extend(str(x) for x in values)
+    try:
+        event=json.loads(sys.stdin.readline());shelf.transform(event)
+        print(json.dumps(dict(type='transformDone',paths=outputs)),flush=True)
+    except Exception as error:
+        print(json.dumps(dict(type='error',message=str(error))),flush=True)
+        return 1
+    return 0
+
 def main():
-    shelf=Shelf()
-    print(json.dumps(dict(type='ready',items=shelf.entries())),flush=True)
+    if '--transform-job' in sys.argv:raise SystemExit(transform_job())
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+    lock=threading.Lock()
+    def emit(event):
+        line=json.dumps(event,ensure_ascii=False)+'\n'
+        with lock:sys.stdout.write(line);sys.stdout.flush()
+    shelf=Shelf();shelf.defer_previews=True;shelf.preview_pending=set();shelf.preview_executor=ThreadPoolExecutor(max_workers=1,thread_name_prefix='file-preview');shelf.emit_preview=emit
+    emit(dict(type='ready',items=shelf.entries(),capabilities=shelf.capabilities()))
     for line in sys.stdin:
         busy=False
         try:
             event=json.loads(line)
             busy=event.get('action') in ('transform','archive','unzip','folder','rename')
-            if busy:print(json.dumps(dict(type='busy',value=True)),flush=True)
+            if busy:emit(dict(type='busy',value=True))
             response=shelf.handle(event)
         except Exception as e:response=dict(type='error',message=str(e))
-        print(json.dumps(response,ensure_ascii=False),flush=True)
-        if busy:print(json.dumps(dict(type='busy',value=False)),flush=True)
+        emit(response)
+        if busy:emit(dict(type='busy',value=False))
 if __name__=='__main__':main()

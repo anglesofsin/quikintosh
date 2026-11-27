@@ -1,0 +1,432 @@
+{
+  "source": "https://getdroppy.app/features",
+  "reviewed": "2026-11-27",
+  "features": [
+    {
+      "id": "agents",
+      "name": "Agents",
+      "url": "https://getdroppy.app/features/agents",
+      "status": "pending"
+    },
+    {
+      "id": "ai-background-removal",
+      "name": "Ai Background Removal",
+      "url": "https://getdroppy.app/features/ai-background-removal",
+      "status": "implemented-core"
+    },
+    {
+      "id": "ai-stats",
+      "name": "Ai Stats",
+      "url": "https://getdroppy.app/features/ai-stats",
+      "status": "pending"
+    },
+    {
+      "id": "alfred-workflow",
+      "name": "Alfred Workflow",
+      "url": "https://getdroppy.app/features/alfred-workflow",
+      "status": "platform-specific-requires-alternative"
+    },
+    {
+      "id": "apple-music",
+      "name": "Apple Music",
+      "url": "https://getdroppy.app/features/apple-music",
+      "status": "platform-specific-requires-alternative"
+    },
+    {
+      "id": "audio-control",
+      "name": "Audio Control",
+      "url": "https://getdroppy.app/features/audio-control",
+      "status": "implemented-core"
+    },
+    {
+      "id": "batteries",
+      "name": "Batteries",
+      "url": "https://getdroppy.app/features/batteries",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "breather",
+      "name": "Breather",
+      "url": "https://getdroppy.app/features/breather",
+      "status": "implemented-core"
+    },
+    {
+      "id": "calculator",
+      "name": "Calculator",
+      "url": "https://getdroppy.app/features/calculator",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "calendar",
+      "name": "Calendar",
+      "url": "https://getdroppy.app/features/calendar",
+      "status": "implemented-core"
+    },
+    {
+      "id": "camera",
+      "name": "Camera",
+      "url": "https://getdroppy.app/features/camera",
+      "status": "implemented-core"
+    },
+    {
+      "id": "cleaner",
+      "name": "Cleaner",
+      "url": "https://getdroppy.app/features/cleaner",
+      "status": "pending"
+    },
+    {
+      "id": "cleanmymac",
+      "name": "Cleanmymac",
+      "url": "https://getdroppy.app/features/cleanmymac",
+      "status": "platform-specific-requires-alternative"
+    },
+    {
+      "id": "clipboard",
+      "name": "Clipboard",
+      "url": "https://getdroppy.app/features/clipboard",
+      "status": "implemented-core"
+    },
+    {
+      "id": "command-center",
+      "name": "Command Center",
+      "url": "https://getdroppy.app/features/command-center",
+      "status": "pending"
+    },
+    {
+      "id": "customize",
+      "name": "Customize",
+      "url": "https://getdroppy.app/features/customize",
+      "status": "implemented-core"
+    },
+    {
+      "id": "devly",
+      "name": "Devly",
+      "url": "https://getdroppy.app/features/devly",
+      "status": "implemented-core"
+    },
+    {
+      "id": "dockdoor",
+      "name": "Dockdoor",
+      "url": "https://getdroppy.app/features/dockdoor",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "dropclip",
+      "name": "Dropclip",
+      "url": "https://getdroppy.app/features/dropclip",
+      "status": "pending"
+    },
+    {
+      "id": "droppy-cloud",
+      "name": "Droppy Cloud",
+      "url": "https://getdroppy.app/features/droppy-cloud",
+      "status": "platform-specific-requires-alternative"
+    },
+    {
+      "id": "dynamic-island",
+      "name": "Dynamic Island",
+      "url": "https://getdroppy.app/features/dynamic-island",
+      "status": "implemented-core"
+    },
+    {
+      "id": "element-capture",
+      "name": "Element Capture",
+      "url": "https://getdroppy.app/features/element-capture",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "emoji-picker",
+      "name": "Emoji Picker",
+      "url": "https://getdroppy.app/features/emoji-picker",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "file-tray",
+      "name": "File Tray",
+      "url": "https://getdroppy.app/features/file-tray",
+      "status": "implemented-core"
+    },
+    {
+      "id": "finder-services",
+      "name": "Finder Services",
+      "url": "https://getdroppy.app/features/finder-services",
+      "status": "pending"
+    },
+    {
+      "id": "floating-player",
+      "name": "Floating Player",
+      "url": "https://getdroppy.app/features/floating-player",
+      "status": "implemented-core"
+    },
+    {
+      "id": "fringe",
+      "name": "Fringe",
+      "url": "https://getdroppy.app/features/fringe",
+      "status": "platform-specific-requires-alternative"
+    },
+    {
+      "id": "glass",
+      "name": "Glass",
+      "url": "https://getdroppy.app/features/glass",
+      "status": "implemented-core"
+    },
+    {
+      "id": "high-alert",
+      "name": "High Alert",
+      "url": "https://getdroppy.app/features/high-alert",
+      "status": "pending"
+    },
+    {
+      "id": "huds",
+      "name": "Huds",
+      "url": "https://getdroppy.app/features/huds",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "ios",
+      "name": "Ios",
+      "url": "https://getdroppy.app/features/ios",
+      "status": "pending"
+    },
+    {
+      "id": "kaset",
+      "name": "Kaset",
+      "url": "https://getdroppy.app/features/kaset",
+      "status": "platform-specific-requires-alternative"
+    },
+    {
+      "id": "keys",
+      "name": "Keys",
+      "url": "https://getdroppy.app/features/keys",
+      "status": "pending"
+    },
+    {
+      "id": "liquidmouse",
+      "name": "Liquidmouse",
+      "url": "https://getdroppy.app/features/liquidmouse",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "live-activities",
+      "name": "Live Activities",
+      "url": "https://getdroppy.app/features/live-activities",
+      "status": "implemented-core"
+    },
+    {
+      "id": "localsend",
+      "name": "Localsend",
+      "url": "https://getdroppy.app/features/localsend",
+      "status": "implemented-core"
+    },
+    {
+      "id": "lock-screen",
+      "name": "Lock Screen",
+      "url": "https://getdroppy.app/features/lock-screen",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "lyrics",
+      "name": "Lyrics",
+      "url": "https://getdroppy.app/features/lyrics",
+      "status": "implemented-core"
+    },
+    {
+      "id": "mac-duo",
+      "name": "Mac Duo",
+      "url": "https://getdroppy.app/features/mac-duo",
+      "status": "platform-specific-requires-alternative"
+    },
+    {
+      "id": "magnify",
+      "name": "Magnify",
+      "url": "https://getdroppy.app/features/magnify",
+      "status": "pending"
+    },
+    {
+      "id": "mcp",
+      "name": "Mcp",
+      "url": "https://getdroppy.app/features/mcp",
+      "status": "pending"
+    },
+    {
+      "id": "mechey",
+      "name": "Mechey",
+      "url": "https://getdroppy.app/features/mechey",
+      "status": "pending"
+    },
+    {
+      "id": "meetings",
+      "name": "Meetings",
+      "url": "https://getdroppy.app/features/meetings",
+      "status": "pending"
+    },
+    {
+      "id": "notch-shelf",
+      "name": "Notch Shelf",
+      "url": "https://getdroppy.app/features/notch-shelf",
+      "status": "implemented-core"
+    },
+    {
+      "id": "notes",
+      "name": "Notes",
+      "url": "https://getdroppy.app/features/notes",
+      "status": "implemented-core"
+    },
+    {
+      "id": "notifications",
+      "name": "Notifications",
+      "url": "https://getdroppy.app/features/notifications",
+      "status": "implemented-core"
+    },
+    {
+      "id": "now-playing",
+      "name": "Now Playing",
+      "url": "https://getdroppy.app/features/now-playing",
+      "status": "implemented-core"
+    },
+    {
+      "id": "obsidian",
+      "name": "Obsidian",
+      "url": "https://getdroppy.app/features/obsidian",
+      "status": "implemented-core"
+    },
+    {
+      "id": "ocr",
+      "name": "Ocr",
+      "url": "https://getdroppy.app/features/ocr",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "openrouter-usage",
+      "name": "Openrouter Usage",
+      "url": "https://getdroppy.app/features/openrouter-usage",
+      "status": "pending"
+    },
+    {
+      "id": "pixpaw",
+      "name": "Pixpaw",
+      "url": "https://getdroppy.app/features/pixpaw",
+      "status": "pending"
+    },
+    {
+      "id": "plane-tasks",
+      "name": "Plane Tasks",
+      "url": "https://getdroppy.app/features/plane-tasks",
+      "status": "pending"
+    },
+    {
+      "id": "playing-next",
+      "name": "Playing Next",
+      "url": "https://getdroppy.app/features/playing-next",
+      "status": "pending"
+    },
+    {
+      "id": "pomodoro",
+      "name": "Pomodoro",
+      "url": "https://getdroppy.app/features/pomodoro",
+      "status": "implemented-core"
+    },
+    {
+      "id": "quick-translate",
+      "name": "Quick Translate",
+      "url": "https://getdroppy.app/features/quick-translate",
+      "status": "pending"
+    },
+    {
+      "id": "ring",
+      "name": "Ring",
+      "url": "https://getdroppy.app/features/ring",
+      "status": "pending"
+    },
+    {
+      "id": "sales",
+      "name": "Sales",
+      "url": "https://getdroppy.app/features/sales",
+      "status": "pending"
+    },
+    {
+      "id": "spotify",
+      "name": "Spotify",
+      "url": "https://getdroppy.app/features/spotify",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "stocks",
+      "name": "Stocks",
+      "url": "https://getdroppy.app/features/stocks",
+      "status": "pending"
+    },
+    {
+      "id": "system-stats",
+      "name": "System Stats",
+      "url": "https://getdroppy.app/features/system-stats",
+      "status": "implemented-core"
+    },
+    {
+      "id": "teleprompter",
+      "name": "Teleprompter",
+      "url": "https://getdroppy.app/features/teleprompter",
+      "status": "implemented-core"
+    },
+    {
+      "id": "termi-notch",
+      "name": "Termi Notch",
+      "url": "https://getdroppy.app/features/termi-notch",
+      "status": "pending"
+    },
+    {
+      "id": "thaw",
+      "name": "Thaw",
+      "url": "https://getdroppy.app/features/thaw",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "things3",
+      "name": "Things3",
+      "url": "https://getdroppy.app/features/things3",
+      "status": "platform-specific-requires-alternative"
+    },
+    {
+      "id": "thunderstorm",
+      "name": "Thunderstorm",
+      "url": "https://getdroppy.app/features/thunderstorm",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "transform",
+      "name": "Transform",
+      "url": "https://getdroppy.app/features/transform",
+      "status": "implemented-core"
+    },
+    {
+      "id": "voice-transcribe",
+      "name": "Voice Transcribe",
+      "url": "https://getdroppy.app/features/voice-transcribe",
+      "status": "pending"
+    },
+    {
+      "id": "weather",
+      "name": "Weather",
+      "url": "https://getdroppy.app/features/weather",
+      "status": "implemented-core"
+    },
+    {
+      "id": "widgets",
+      "name": "Widgets",
+      "url": "https://getdroppy.app/features/widgets",
+      "status": "implemented-core"
+    },
+    {
+      "id": "window-snap",
+      "name": "Window Snap",
+      "url": "https://getdroppy.app/features/window-snap",
+      "status": "existing-shell-integration-to-audit"
+    },
+    {
+      "id": "xcode-builds",
+      "name": "Xcode Builds",
+      "url": "https://getdroppy.app/features/xcode-builds",
+      "status": "platform-specific-requires-alternative"
+    }
+  ]
+}

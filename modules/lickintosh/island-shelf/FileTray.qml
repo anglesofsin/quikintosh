@@ -22,7 +22,7 @@ Item {
    ShelfButton{implicitWidth:36;implicitHeight:36;icon:'notch/folder-plus.svg';iconSize:19;accessibleLabel:qsTr('Copy selection into a new folder');enabled:root.selected.length>0;onClicked:root.act('folder')}
    ShelfButton{implicitWidth:36;implicitHeight:36;icon:'notch/check-circle.svg';iconSize:19;selected:root.selectionMode;accessibleLabel:qsTr('Select multiple files');onClicked:root.selectionMode=!root.selectionMode}
    Item{Layout.fillWidth:true}
-   ShelfButton{visible:!root.floating;implicitWidth:36;implicitHeight:36;icon:'notch/inbox.svg';iconSize:19;accessibleLabel:qsTr('Floating file tray');onClicked:ShelfState.trayOpen=true}
+   ShelfButton{visible:!root.floating;implicitWidth:36;implicitHeight:36;icon:'notch/shopping-basket.svg';iconSize:19;accessibleLabel:qsTr('Floating file tray');onClicked:ShelfState.trayOpen=true}
    ShelfButton{implicitWidth:36;implicitHeight:36;icon:'notch/trash-2.svg';iconSize:19;accessibleLabel:root.selected.length ? qsTr('Remove selection from tray'):qsTr('Clear unpinned files');onClicked:root.selected.length ? root.act('remove'):ShelfState.send({action:'clear'})}
    Item{visible:root.floating;Layout.preferredWidth:30}
   }
@@ -35,14 +35,17 @@ Item {
     id:tile;required property var modelData;required property int index
     width:files.cellWidth;height:files.cellHeight
     readonly property bool picked:root.selected.includes(modelData.path)
-    readonly property string thumbnail:modelData.preview || (modelData.directory ? IconResolver.forFolder():IconResolver.forFile(modelData.path))
+    readonly property string thumbnail:ShelfState.filePreviews[modelData.path] || modelData.preview || (modelData.directory ? IconResolver.forFolder():IconResolver.forFile(modelData.path))
     Rectangle{anchors.fill:parent;anchors.margins:4;radius:18;color:tile.picked ? '#0a84ff':folderDrop.containsDrag ? '#26ffd60a':'transparent';border.width:folderDrop.containsDrag ? 3:0;border.color:'#ffd60a'
-     Image{id:art;anchors.horizontalCenter:parent.horizontalCenter;y:14;width:88;height:88;source:tile.thumbnail;sourceSize:Qt.size(176,176);fillMode:Image.PreserveAspectFit;asynchronous:true;mipmap:true}
+     Image{id:art;anchors.horizontalCenter:parent.horizontalCenter;y:14;width:88;height:88;source:tile.thumbnail;sourceSize:Qt.size(176,176);fillMode:Image.PreserveAspectFit;asynchronous:true;retainWhileLoading:true;mipmap:true}
+     Rectangle{visible:!!tile.modelData.textPreview;anchors.horizontalCenter:parent.horizontalCenter;y:14;width:76;height:88;radius:4;color:'white'
+      Text{anchors.fill:parent;anchors.margins:5;text:tile.modelData.textPreview || '';color:'#202024';font.family:'SF Mono';font.pixelSize:4;wrapMode:Text.Wrap;clip:true;textFormat:Text.PlainText}
+     }
      Rectangle{visible:!!tile.modelData.tracked;anchors.horizontalCenter:parent.horizontalCenter;y:2;width:52;height:18;radius:9;color:'#0a84ff';Text{anchors.centerIn:parent;text:qsTr('tracked');font.family:ShelfStyle.textFamily;font.pixelSize:10;font.weight:Font.DemiBold;color:'white'}}
      Rectangle{visible:!!tile.modelData.pinned;x:parent.width/2+26;y:77;width:20;height:20;radius:10;color:'#ff9f0a';ShelfIcon{anchors.centerIn:parent;size:12;icon:'notch/map-pin.svg'}}
      Text{anchors.left:parent.left;anchors.right:parent.right;anchors.margins:5;y:107;text:tile.modelData.name;color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:14;font.weight:Font.DemiBold;elide:Text.ElideMiddle;horizontalAlignment:Text.AlignHCenter;textFormat:Text.PlainText}
-     Text{anchors.left:parent.left;anchors.right:parent.right;anchors.margins:4;y:128;text:(tile.modelData.pinned ? qsTr('Pinned · '):'')+(tile.modelData.directory ? qsTr('%1 items').arg(tile.modelData.count || 0):root.sizeText(tile.modelData.size));color:tile.picked ? '#d9eeff':'#a1a1a6';font.family:ShelfStyle.textFamily;font.pixelSize:12;horizontalAlignment:Text.AlignHCenter;elide:Text.ElideRight}
-     MouseArea{id:mouse;anchors.fill:parent;acceptedButtons:Qt.LeftButton|Qt.RightButton;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;drag.target:dragProxy;drag.threshold:8
+     Text{anchors.left:parent.left;anchors.right:parent.right;anchors.margins:4;y:128;text:(tile.modelData.pinned ? qsTr('Pinned · '):'')+(tile.modelData.directory ? qsTr('%1 items').arg(tile.modelData.count || 0):root.sizeText(tile.modelData.size)+(tile.modelData.dimensions ? ' · '+tile.modelData.dimensions:''));color:tile.picked ? '#d9eeff':'#a1a1a6';font.family:ShelfStyle.textFamily;font.pixelSize:12;horizontalAlignment:Text.AlignHCenter;elide:Text.ElideRight}
+     MouseArea{id:mouse;objectName:'tray-item-'+tile.index;anchors.fill:parent;acceptedButtons:Qt.LeftButton|Qt.RightButton;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;drag.target:dragProxy;drag.threshold:8
       onPressed:e=>{if(e.button===Qt.RightButton){if(!tile.picked)root.selected=[tile.modelData.path]}else root.choose(tile.modelData.path,!!(e.modifiers&Qt.ControlModifier))}
       onClicked:e=>{if(e.button===Qt.RightButton)fileMenu.popup(mouse,e.x,e.y)}
       onDoubleClicked:Quickshell.execDetached(['xdg-open',tile.modelData.path])
@@ -56,26 +59,27 @@ Item {
       Drag.onDragFinished:{x=0;y=0;reversals=0}
      }
      DropArea{id:folderDrop;anchors.fill:parent;enabled:tile.modelData.directory;keys:['text/uri-list']
-      onDropped:drop=>{const paths=Array.from(drop.urls).map(u=>decodeURIComponent(String(u).replace(/^file:\/\//,'')));ShelfState.add(drop.urls);ShelfState.send({action:'folder',paths:paths,target:tile.modelData.path});drop.acceptProposedAction()}
+      onDropped:drop=>{const paths=Array.from(drop.urls).map(String);ShelfState.add(drop.urls);ShelfState.send({action:'folder',paths:paths,target:tile.modelData.path});drop.acceptProposedAction()}
      }
      ShelfMenu{id:fileMenu
-      ShelfMenuItem{text:qsTr('Quick Look');onTriggered:QuickLookState.show([tile.modelData.path],0,'external')}
-      ShelfMenuItem{text:qsTr('Transform…');onTriggered:root.transform('compress')}
-      ShelfMenuItem{text:qsTr('Create ZIP');onTriggered:root.act('archive')}
+      ShelfMenuItem{symbol:'notch/eye.svg';text:qsTr('Quick Look');onTriggered:QuickLookState.show([tile.modelData.path],0,'external')}
+      ShelfMenuItem{symbol:'notch/refresh-cw.svg';text:qsTr('Transform…');onTriggered:root.transform('compress')}
+      ShelfMenuItem{symbol:'notch/package.svg';text:qsTr('Create ZIP');onTriggered:root.act('archive')}
       ShelfMenuItem{visible:String(tile.modelData.name).toLowerCase().endsWith('.zip');height:visible ? implicitHeight:0;text:qsTr('Unzip');onTriggered:root.act('unzip')}
-      ShelfMenuItem{text:qsTr('Rename…');enabled:!tile.modelData.directory;onTriggered:{root.renamePath=tile.modelData.path;renameInput.text=tile.modelData.name;renameDialog.open()}}
+      ShelfMenuItem{symbol:'notch/edit-3.svg';text:qsTr('Rename…');onTriggered:{root.renamePath=tile.modelData.path;renameInput.text=tile.modelData.name;renameDialog.open()}}
       ShelfMenuSeparator{}
       ShelfMenuItem{text:tile.modelData.pinned ? qsTr('Unpin'):qsTr('Pin');onTriggered:root.act('pin')}
       ShelfMenuItem{visible:tile.modelData.directory;height:visible ? implicitHeight:0;text:tile.modelData.tracked ? qsTr('Stop tracking folder'):qsTr('Track folder');onTriggered:root.act('track')}
-      ShelfMenuItem{text:qsTr('Copy');onTriggered:root.act('copy')}
-      ShelfMenuItem{text:qsTr('Show in Finder');onTriggered:Quickshell.execDetached(['quickintosh-finder','--select',tile.modelData.path])}
-      ShelfMenuItem{text:qsTr('Remove from tray');onTriggered:root.act('remove')}
+      ShelfMenuItem{symbol:'notch/copy.svg';text:qsTr('Copy');onTriggered:root.act('copy')}
+      ShelfMenuItem{symbol:'notch/send.svg';text:qsTr('Share with LocalSend');visible:!!ShelfState.capabilities.share;height:visible ? implicitHeight:0;onTriggered:root.act('share')}
+      ShelfMenuItem{symbol:'notch/folder.svg';text:qsTr('Show in Finder');onTriggered:Quickshell.execDetached(['quickintosh-finder','--select',tile.modelData.path])}
+      ShelfMenuItem{symbol:'notch/trash-2.svg';text:qsTr('Remove from tray');onTriggered:root.act('remove')}
      }
     }
    }
    Text{anchors.centerIn:parent;visible:files.count===0;text:qsTr('Drop files here');color:ShelfStyle.secondary;font.family:ShelfStyle.textFamily;font.pixelSize:16}
   }
-  Text{Layout.fillWidth:true;text:ShelfState.notice;color:'#ffb4aa';visible:!!text;elide:Text.ElideRight;font.family:ShelfStyle.textFamily;font.pixelSize:12}
+  Text{Layout.fillWidth:true;text:ShelfState.notice;color:ShelfState.noticeError ? '#ffb4aa':ShelfStyle.secondary;visible:!!text;elide:Text.ElideRight;font.family:ShelfStyle.textFamily;font.pixelSize:12}
  }
  Popup{id:renameDialog;anchors.centerIn:parent;width:Math.min(root.width,330);padding:16;modal:true
   background:Rectangle{radius:20;color:'#ee242426';border.color:ShelfStyle.outline}
@@ -87,5 +91,6 @@ onAccepted:renameConfirm.clicked()}
   }
  }
  DropArea{z:-1;anchors.fill:parent;keys:['text/uri-list'];onDropped:drop=>{ShelfState.add(drop.urls);drop.acceptProposedAction()}}
+ Connections{target:ShelfState;function onItemsChanged(){root.selected=root.selected.filter(p=>ShelfState.items.some(i=>i.path===p))}}
  Component.onCompleted:ShelfState.send({action:'list'})
 }

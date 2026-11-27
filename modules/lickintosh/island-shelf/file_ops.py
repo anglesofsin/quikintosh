@@ -2,7 +2,9 @@
 from pathlib import Path
 import os,shutil,stat,tempfile,zipfile,json,hashlib,time,subprocess,itertools
 
-class FileOperations:
+from media_ops import MediaOperations
+
+class FileOperations(MediaOperations):
     def output(self,source,suffix,where='downloads'):
         folder=source.parent if where=='beside' else Path.home()/'Downloads'
         folder.mkdir(parents=True,exist_ok=True)
@@ -18,11 +20,37 @@ class FileOperations:
         if src.is_file() and not src.is_symlink():
             os.link(src,dst);src.unlink()
         elif src.is_dir():
-            raise ValueError('Rename folders in Finder')
+            import ctypes
+            libc=ctypes.CDLL(None,use_errno=True)
+            if libc.renameat2(-100,os.fsencode(src),-100,os.fsencode(dst),1)!=0:
+                error=ctypes.get_errno();raise OSError(error,os.strerror(error))
+            for item in self.items:
+                child=Path(item['path'])
+                if child!=src and child.is_relative_to(src):item['path']=str(dst/child.relative_to(src))
+
         else:raise ValueError('Unsupported file type')
         for item in self.items:
             if item['path']==str(src):item['path']=str(dst)
         self.save()
+    def rename_many(self,event):
+        paths=self.managed(event.get('paths',[]));pattern=str(event.get('pattern','{name}-{index}{ext}'));plans=[]
+        if len(paths)>256:raise ValueError('Rename at most 256 files')
+        for index,path in enumerate(paths,1):
+            name=pattern.replace('{name}',path.stem if path.is_file() else path.name).replace('{index}',str(index)).replace('{ext}',path.suffix if path.is_file() else '')
+            if not name or name in ('.','..') or '/' in name or '\\' in name or len(name)>240:raise ValueError('Choose a simple file name pattern')
+            target=path.with_name(name)
+            if target!=path and target.exists():raise ValueError('A destination name already exists: '+name)
+            plans.append((path,target))
+        if len({str(dst) for _,dst in plans})!=len(plans):raise ValueError('Use {index} to make each name unique')
+        done=[]
+        try:
+            for src,dst in plans:
+                if src==dst:continue
+                self.rename([str(src)],dst.name);done.append((src,dst))
+        except BaseException:
+            for src,dst in reversed(done):self.rename([str(dst)],src.name)
+            raise
+        return [str(dst) for _,dst in plans]
     def unpack(self,values):
         outputs=[]
         for src in self.managed(values):
@@ -67,7 +95,30 @@ class FileOperations:
                 with src.open('rb') as a,dest.open('xb') as b:shutil.copyfileobj(a,b)
                 shutil.copystat(src,dest)
         self.add([str(target)])
+    def dimensions(self,p,mime):
+        if not mime.startswith('image/') or p.stat().st_size>100*1024**2:return ''
+        try:
+            from PIL import Image
+            with Image.open(p) as image:return f'{image.width}×{image.height}'
+        except Exception:return ''
+    def text_preview(self,p,mime):
+        if not mime.startswith('text/') or not p.is_file():return ''
+        try:
+            with p.open(errors='replace') as f:return f.read(600)
+        except OSError:return ''
     def thumbnail(self,p,mime):
+        if not getattr(self,'defer_previews',False):return self.make_thumbnail(p,mime)
+        if not p.is_file() or not (mime.startswith(('image/','video/')) or mime=='application/pdf'):return ''
+        key=hashlib.sha256((str(p)+str(p.stat().st_mtime_ns)).encode()).hexdigest();out=self.root/'previews'/(key+'.png')
+        if out.exists():return out.as_uri()
+        if key not in self.preview_pending:
+            self.preview_pending.add(key)
+            def prepare():
+                preview=self.make_thumbnail(p,mime)
+                if preview:self.emit_preview(dict(type='preview',path=str(p),preview=preview))
+            self.preview_executor.submit(prepare)
+        return ''
+    def make_thumbnail(self,p,mime):
         cache=self.root/'previews';cache.mkdir(exist_ok=True)
         if not p.is_file() or p.stat().st_size>100*1024**2:return ''
         key=hashlib.sha256((str(p)+str(p.stat().st_mtime_ns)).encode()).hexdigest()
@@ -78,6 +129,8 @@ class FileOperations:
                 from PIL import Image,ImageOps
                 with Image.open(p) as im:
                     im=ImageOps.exif_transpose(im);im.thumbnail((256,220));im.convert('RGBA').save(out)
+            elif mime.startswith('video/'):
+                subprocess.run(['ffmpeg','-v','error','-nostdin','-y','-threads','1','-i',str(p),'-frames:v','1','-vf','scale=256:220:force_original_aspect_ratio=decrease','-threads','1',str(out)],capture_output=True,timeout=10,check=True)
             elif mime=='application/pdf' and shutil.which('pdftoppm'):
                 subprocess.run(['pdftoppm','-f','1','-singlefile','-scale-to','256','-png',str(p),str(out.with_suffix(''))],capture_output=True,timeout=8,check=True)
             elif mime.startswith('text/') and p.stat().st_size<1000000:
@@ -91,7 +144,11 @@ class FileOperations:
         if not 1<=quality<=100 or side<0 or side>16000:raise ValueError('Invalid image quality or size')
         if op=='zip':return self.archive(event['paths'])
         if op=='unzip':return self.unpack(event['paths'])
-        if op not in ['compress','convert','resize','rotate','metadata','pdf']:raise ValueError('Unsupported transformation')
+        if op not in ['compress','convert','resize','rotate','metadata','pdf','background','split']:raise ValueError('Unsupported transformation')
+        if not paths:raise ValueError('Select files to transform')
+        if any((__import__('mimetypes').guess_type(str(p))[0] or '').startswith('video/') for p in paths):return self.video_transform(paths,event)
+        if all(p.suffix.lower()=='.pdf' for p in paths) or (op=='pdf' and any(p.suffix.lower()=='.pdf' for p in paths)):return self.pdf_transform(paths,event)
+        if op=='background':return self.remove_background(paths,event)
         from PIL import Image,ImageOps
         if len(paths)>32:raise ValueError('Choose at most 32 images')
         if fmt not in ['automatic','png','jpeg','webp']:raise ValueError('Unsupported image format')
@@ -114,7 +171,18 @@ class FileOperations:
                     if op!='metadata' and not event.get('stripMetadata',True):
                         for key in ('exif','icc_profile'):
                             if im.info.get(key):kwargs[key]=im.info[key]
-                    im.save(dst,format=targetfmt.upper(),**kwargs);outputs.append(str(dst))
+                    target=int(event.get('targetBytes',0))
+                    if target<0 or target>2*1024**3:raise ValueError('Choose a valid target file size')
+                    im.save(dst,format=targetfmt.upper(),**kwargs)
+                    if target and targetfmt!='png':
+                        for attempt in range(8):
+                            if dst.stat().st_size<=target:break
+                            kwargs['quality']=max(12,int(kwargs['quality']*.78))
+                            if attempt>=4:im.thumbnail((max(1,int(im.width*.8)),max(1,int(im.height*.8))),Image.Resampling.LANCZOS)
+                            im.save(dst,format=targetfmt.upper(),**kwargs)
+                        if dst.stat().st_size>target:raise ValueError('Cannot reach this size without excessive quality loss')
+                    elif target and dst.stat().st_size>target:raise ValueError('Choose JPEG or WebP for size-based compression')
+                    outputs.append(str(dst))
                 except Exception:dst.unlink(missing_ok=True);raise
             if pages:
                 dst=self.output(paths[0],'.pdf',event.get('destination','downloads'))

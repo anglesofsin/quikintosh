@@ -37,8 +37,8 @@ Item {
     MouseArea{id:area;anchors.fill:parent;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;acceptedButtons:Qt.LeftButton|Qt.RightButton;onClicked:e=>{root.selectedPath=card.modelData.path;if(e.button===Qt.RightButton)clipMenu.popup(area,e.x,e.y);else ShelfState.send({action:'copyClip',path:card.modelData.path})}}
     ShelfMenu{id:clipMenu
      ShelfMenuItem{text:card.modelData.pinned ? qsTr('Unpin'):qsTr('Pin');onTriggered:ShelfState.send({action:'pinClip',path:card.modelData.path})}
-     ShelfMenuItem{text:qsTr('Copy');onTriggered:ShelfState.send({action:'copyClip',path:card.modelData.path})}
-     ShelfMenuItem{text:qsTr('Remove');onTriggered:ShelfState.send({action:'removeClip',path:card.modelData.path})}
+     ShelfMenuItem{symbol:'notch/copy.svg';text:qsTr('Copy');onTriggered:ShelfState.send({action:'copyClip',path:card.modelData.path})}
+     ShelfMenuItem{symbol:'notch/trash-2.svg';text:qsTr('Remove');onTriggered:ShelfState.send({action:'removeClip',path:card.modelData.path})}
     }
     activeFocusOnTab:true;Keys.onReturnPressed:ShelfState.send({action:'copyClip',path:card.modelData.path})
     Accessible.role:Accessible.Button;Accessible.name:qsTr('Copy %1').arg(card.modelData.kind==='image' ? qsTr('image'):String(card.modelData.text).slice(0,100))

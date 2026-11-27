@@ -11,6 +11,10 @@ Item {
  signal openWidget(string key)
  property int selectedSlot:0
  readonly property var widgets:[
+  {key:'breather',title:qsTr('Break Reminders'),icon:'coffee',page:13},
+  {key:'vault',title:qsTr('Obsidian Vault'),icon:'edit-3',page:13},
+  {key:'developer',title:qsTr('Developer Tools'),icon:'clipboard',page:13},
+  {key:'teleprompter',title:qsTr('Teleprompter'),icon:'type',page:13},
   {key:'media',title:qsTr('Now Playing'),icon:'music',page:3},
   {key:'calendar',title:qsTr('Calendar'),icon:'calender',page:13},
   {key:'weather',title:qsTr('Weather'),icon:'cloud',page:1},
@@ -24,14 +28,15 @@ Item {
   {key:'notifications',title:qsTr('Notifications'),icon:'bell',page:4},
   {key:'camera',title:qsTr('Camera'),icon:'camera',page:5},
   {key:'awake',title:qsTr('Stay Awake'),icon:'coffee',page:12},
+  {key:'storage',title:qsTr('Storage'),icon:'hard-drive',page:14},
   {key:'activities',title:qsTr('Live Activities'),icon:'zap',page:11}]
- readonly property var homeKeys:['media','calendar','weather','focus','notes','performance','files']
+ readonly property var homeKeys:['media','calendar','weather','focus','notes','performance','files','clipboard','audio','awake','storage','camera','notifications']
  function widget(key){return widgets.find(w=>w.key===key) || {title:qsTr('Add widget'),icon:'plus'}}
  function choose(item){if(ShelfState.editing)IslandConfig.setStyle('shelfSlot'+(selectedSlot+1),item.key);else if(item.page===13)openWidget(item.key);else openPage(item.page)}
  function swap(direction){const other=selectedSlot+direction;if(other<0 || other>3)return;const a=IslandConfig.s('shelfSlot'+(selectedSlot+1));IslandConfig.setStyle('shelfSlot'+(selectedSlot+1),IslandConfig.s('shelfSlot'+(other+1)));IslandConfig.setStyle('shelfSlot'+(other+1),a);selectedSlot=other}
  ColumnLayout{anchors.fill:parent;spacing:16
   RowLayout{Layout.fillWidth:true
-   Text{Layout.fillWidth:true;text:ShelfState.editing ? qsTr('Edit Home'):qsTr('Widgets');color:'white';font.family:ShelfStyle.displayFamily;font.pixelSize:19;font.weight:Font.DemiBold}
+   Text{Layout.fillWidth:true;text:ShelfState.editing ? qsTr('Edit Home'):qsTr('Command Center');color:'white';font.family:ShelfStyle.displayFamily;font.pixelSize:19;font.weight:Font.DemiBold}
    ShelfButton{visible:!ShelfState.editing;flat:true;icon:'notch/edit-3.svg';accessibleLabel:qsTr('Edit Home');onClicked:ShelfState.editing=true}
    ShelfButton{visible:ShelfState.editing;text:qsTr('Done');selected:true;onClicked:{ShelfState.editing=false;root.openPage(0)}}
   }

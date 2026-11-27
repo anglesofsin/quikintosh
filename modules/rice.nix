@@ -43,6 +43,7 @@ let
   lickintoshQs = (caelestia-shell.inputs.quickshell.packages.${system}.default.override { withX11 = false; withI3 = false; }).withModules [ pkgs.qt6.qtimageformats caelestia-shell.inputs.m3shapes.packages.${system}.default ];
   appleEmojiFont = import ./lickintosh/emoji/font.nix { inherit pkgs; };
   capturePython = pkgs.python3.withPackages (p: [ p.pillow ]);
+  shelfPython = pkgs.python3.withPackages (p: [ p.pillow p.pygobject3 p.pymupdf p.rembg p.onnxruntime ]);
   quickLookPython = pkgs.python3.withPackages (p: [ p.pillow p.pygobject3 ]);
   voicePython = pkgs.python3.withPackages (p: [ p.websockets ]);
   rosaIslandd = pkgs.rustPlatform.buildRustPackage {
@@ -320,7 +321,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/branding.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/i18n}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/island-dashboard/integrate.py} $out ${./lickintosh/island-dashboard} ${./lickintosh/focus}
-      ${pkgs.python3}/bin/python3 ${./lickintosh/island-shelf}/integrate.py $out ${quickLookPython}/bin/python3
+      ${pkgs.python3}/bin/python3 ${./lickintosh/island-shelf}/integrate.py $out ${shelfPython}/bin/python3
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-tahoe}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/emoji}/integrate.py $out ${quickLookPython}/bin/python3
       ${pkgs.python3}/bin/python3 ${./lickintosh/calculator}/integrate.py $out ${quickLookPython}/bin/python3
@@ -337,7 +338,7 @@ let
   };
   lickintoshPackage = (pkgs.writeShellApplication {
     name = "lickintosh";
-    runtimeInputs = [ lickintoshQs rosaIslandd rosaTools pkgs.poppler-utils pkgs.tesseract pkgs.zbar pkgs.wf-recorder pkgs.ffmpeg pkgs.pulseaudio pkgs.libnotify pkgs.cava pkgs.psmisc pkgs.libcanberra-gtk3 pkgs.cups pkgs.python3 pkgs.imagemagick pkgs.brightnessctl pkgs.ddcutil
+    runtimeInputs = [ lickintoshQs rosaIslandd rosaTools pkgs.localsend pkgs.poppler-utils pkgs.tesseract pkgs.zbar pkgs.wf-recorder pkgs.ffmpeg pkgs.pulseaudio pkgs.libnotify pkgs.cava pkgs.psmisc pkgs.libcanberra-gtk3 pkgs.cups pkgs.python3 pkgs.imagemagick pkgs.brightnessctl pkgs.ddcutil
       desktopProfile finder pkgs.glib pkgs.trash-cli pkgs.seahorse pkgs.pika-backup pkgs.networkmanagerapplet pkgs.simple-scan
       pkgs.playerctl pkgs.wl-clipboard pkgs.cliphist pkgs.grim pkgs.slurp
       pkgs.hyprpicker pkgs.jq pkgs.curl pkgs.xdg-utils pkgs.xdg-user-dirs

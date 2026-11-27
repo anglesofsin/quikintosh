@@ -14,7 +14,7 @@ class IslandMorphUI(unittest.TestCase):
     p=root/relative;original=p.resolve();p.unlink();p.mkdir()
     for e in original.iterdir():(p/e.name).symlink_to(e,target_is_directory=e.is_dir())
    p=root/'rosa/overlays/Island.qml';s=p.read_text();p.unlink();s=s.replace('    id: root','    id: root\n    property var qaWindow:null',1).replace('        IslandWindow {','        IslandWindow {\n            Component.onCompleted:root.qaWindow=this',1);p.write_text(s)
-   p=root/'rosa/overlays/IslandWindow.qml';s=p.read_text();p.unlink();s=s.replace('    id: win','    id: win\n    property var qaDashboard:null\n    property int qaUncovered:0\n    FrameAnimation{running:win.visible;onTriggered:{if(win.presentationWanted && !win.blocked && !idleVisibility.fullyHidden && win.dashboardCover && stage.opacity<.01)win.qaUncovered++}}\n    readonly property var qaGeometry:({dashboard:qaDashboard ? qaDashboard.qaBody:null,uncovered:qaUncovered,kind:win.hub.kind,cover:dashboardCover,requested:dashboardRequested,compactOpacity:stage.opacity,morph:morph.value,visible:visible,opened:opened,stageCoverage:stage.opacity,pillOpacity:pill.opacity})',1);s=s.replace('        IslandDashboard {','        IslandDashboard {\n            Component.onCompleted:win.qaDashboard=this',1);p.write_text(s)
+   p=root/'rosa/overlays/IslandWindow.qml';s=p.read_text();p.unlink();s=s.replace('    id: win','    id: win\n    property var qaDashboard:null\n    property int qaUncovered:0\n    FrameAnimation{running:win.visible;onTriggered:{if(win.presentationWanted && !win.blocked && !idleVisibility.fullyHidden && win.dashboardCover && stage.opacity<.01)win.qaUncovered++}}\n    readonly property var qaGeometry:({dashboard:qaDashboard ? qaDashboard.qaBody:null,uncovered:qaUncovered,kind:win.hub.kind,cover:dashboardCover,requested:dashboardRequested,compactOpacity:stage.opacity,morph:morph.value,visible:visible,opened:opened,stageCoverage:stage.opacity,pillOpacity:pill.opacity,bodyWidth:body.width,bodyHeight:body.height,mediaTargetWidth:wideSpan.target-24,mediaTargetHeight:wideTall.target-24,outerStroke:goo.stroke})',1);s=s.replace('        IslandDashboard {','        IslandDashboard {\n            Component.onCompleted:win.qaDashboard=this',1);p.write_text(s)
    p=root/'rosa/overlays/IslandDashboard.qml';s=p.read_text();p.unlink();p.write_text(s.replace('    id: panel','    id: panel\n    readonly property var qaBody:({page:page,collapsed:collapsed,geometryExpanded:geometryExpanded,expanded:expanded,bodyWidth:body.width,bodyHeight:body.height,targetWidth:capsuleWidth,targetHeight:capsuleHeight,windowWidth:width,parentWidth:body.parent.width})',1))
    (root/'shell.qml').write_text('''import QtQuick
 import QtTest
@@ -64,6 +64,14 @@ ShellRoot{
     for _ in range(12):
      ipc('expandIsland','true');time.sleep(.03);ipc('expandIsland','false');time.sleep(.03)
     wait(lambda s:not s.get('cover') and s.get('compactOpacity',0)>.95)
+    ipc('activity','media','true')
+    for frame in range(6):
+     state=json.loads(ipc('state'));self.assertAlmostEqual(state['bodyWidth'],state['mediaTargetWidth'],delta=1);self.assertAlmostEqual(state['bodyHeight'],state['mediaTargetHeight'],delta=1)
+     self.assertEqual(state['outerStroke'],0)
+     opening=Path('/home/pg/.local/state/quickintosh/reviews/player-final-polish');opening.mkdir(parents=True,exist_ok=True)
+     subprocess.run(['grim','-l','1',str(opening/f'media-opening-{frame}.png')],env=env,check=True,timeout=15)
+     time.sleep(.025)
+    ipc('activity','media','false');wait(lambda s:not s.get('opened'))
     for kind in ['media','voice','timer']:
      ipc('activity',kind,'true');wait(lambda s:s.get('opened') and s.get('morph',0)>.9)
      ipc('expandIsland','true');wait(lambda s:s.get('cover') and s.get('compactOpacity',0)>.95)

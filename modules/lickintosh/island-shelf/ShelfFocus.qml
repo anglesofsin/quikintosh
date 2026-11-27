@@ -37,8 +37,8 @@ Item{
    }
   }
   RowLayout{Layout.fillWidth:true;spacing:8
-   ShelfButton{selected:true;selectedColor:'#593a0a';foreground:root.accent;icon:PomodoroState.running ? 'pause.png':'play.png';accessibleLabel:PomodoroState.running ? qsTr('Pause timer'):qsTr('Start timer');onClicked:PomodoroState.running ? PomodoroState.pause():PomodoroState.start()}
-   ShelfButton{flat:true;icon:'notch/rotate-ccw.svg';accessibleLabel:qsTr('Reset timer');onClicked:PomodoroState.reset()}
+   ShelfButton{implicitWidth:36;implicitHeight:36;iconSize:18;selected:true;selectedColor:'#593a0a';foreground:root.accent;icon:PomodoroState.running ? 'pause.png':'play.png';accessibleLabel:PomodoroState.running ? qsTr('Pause timer'):qsTr('Start timer');onClicked:PomodoroState.running ? PomodoroState.pause():PomodoroState.start()}
+   ShelfButton{implicitWidth:36;implicitHeight:36;iconSize:20;flat:true;icon:'notch/rotate-ccw.svg';accessibleLabel:qsTr('Reset timer');onClicked:PomodoroState.reset()}
    Item{Layout.fillWidth:true}
    Text{text:root.time(PomodoroState.remainingMs);color:root.accent;font.family:ShelfStyle.displayFamily;font.pixelSize:30;font.weight:Font.DemiBold}
   }

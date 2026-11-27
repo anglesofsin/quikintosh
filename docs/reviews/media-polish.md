@@ -27,3 +27,9 @@ The real Spotify process was reloaded and playback state restored. Production IP
 - 46 native captures and side-by-side reference comparisons: `/home/pg/.local/state/quickintosh/reviews/media-polish/INDEX.md`.
 
 References: https://getdroppy.app/features/floating-player ; https://getdroppy.app/features/playing-next ; https://spicetify.app/docs/development/api-wrapper/properties/queue . Test fixtures are isolated; a successful screenshot does not establish parity with every Droppy feature or all player/provider combinations.
+
+## Follow-up — prepared only, not activated
+
+User requested no live activation. The follow-up removes the media expansion stroke and glow, fixes expanded media content to its final target geometry throughout the surface morph, and normalizes the transparent margins of existing AI-generated PNGs so tint effects cannot clip translated artwork. ShelfButton fits artwork inside a padded content box. Focus start/reset buttons use explicit equal dimensions and the existing generated reset symbol. The exact supplied laptop bitmap replaces the previous generated laptop; the export's low interior alpha is restored to opaque white while retaining its silhouette. Navigation now correctly selects the already generated bold Tray/Widgets assets.
+
+Floating Player uses the shared live ShelfPanelMaterial with a black-to-transparent covering gradient, instead of a color sampled from album artwork. Private tests can validate composition and interaction; hardware screencopy is unavailable in the software nested compositor and uses the material fallback there. No live shell restart, application restart or system activation was performed for this follow-up.

@@ -21,4 +21,12 @@ def integrate(root):
  edit(root,'rosa/overlays/IslandDashboard.qml',dashboard)
  # A screenshot always opens its transient expanded card, even with other
  # activities configured not to auto-expand. No compact screenshot pill.
- edit(root,'rosa/overlays/IslandWindow.qml',lambda s:s.replace('(win.hub.flashKind !== "" && win.bigEvent && IslandConfig.s("autoWide"))','(win.hub.kind === "shot" || (win.hub.flashKind !== "" && win.bigEvent && IslandConfig.s("autoWide")))'))
+ edit(root,'rosa/overlays/IslandWindow.qml',lambda s:s.replace(
+  '                IslandBody {\n                    anchors.fill: parent\n                    anchors.margins: 12',
+  '                IslandBody {\n                    anchors.centerIn:parent\n                    width:Math.max(0,(win.wideKind === "media" ? wideSpan.target:parent.width)-24)\n                    height:Math.max(0,(win.wideKind === "media" ? wideTall.target:parent.height)-24)')
+  .replace('visible: !win.droppyCompact && IslandConfig.s("glow")', 'visible: win.wideKind!=="media" && !win.droppyCompact && IslandConfig.s("glow")')
+  .replace('visible: !win.droppyCompact && (opacity > 0.01)','visible: win.wideKind!=="media" && !win.droppyCompact && (opacity > 0.01)')
+  .replace('!win.droppyCompact && IslandConfig.s("tintShadow")','win.wideKind!=="media" && !win.droppyCompact && IslandConfig.s("tintShadow")')
+  .replace('stroke: !win.droppyCompact &&', 'stroke: win.wideKind!=="media" && !win.droppyCompact &&')
+  .replace('border.width: !win.droppyCompact &&','border.width: win.wideKind!=="media" && !win.droppyCompact &&')
+  .replace('(win.hub.flashKind !== "" && win.bigEvent && IslandConfig.s("autoWide"))','(win.hub.kind === "shot" || (win.hub.flashKind !== "" && win.bigEvent && IslandConfig.s("autoWide")))'))

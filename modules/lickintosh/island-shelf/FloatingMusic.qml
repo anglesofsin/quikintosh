@@ -4,7 +4,6 @@ import QtQuick.Controls.Basic
 import Quickshell
 import Quickshell.Widgets
 import qs.services
-import qs.rosa.reusables as MediaVisual
 import qs.rosa.services
 FloatingWindow {
  id:root;title:'Quickintosh Floating Player';visible:ShelfState.playerOpen && !IslandBus.locked;color:'transparent'
@@ -13,14 +12,14 @@ FloatingWindow {
  readonly property bool mini:mode==='mini'
  implicitWidth:mini ? 320:360
  implicitHeight:mini ? 244:content==='queue' ? 620:content==='lyrics' ? 600:mode==='expanded' ? 660:554
- MediaVisual.ArtTint{id:playerTint;source:MprisState.artUrl;fallback:'#2c276d'}
  minimumSize:Qt.size(300,230)
  onModeChanged:resizeSoon.restart()
  onContentChanged:resizeSoon.restart()
  onVisibleChanged:{if(!visible)ShelfState.playerOpen=false;else resizeSoon.restart()}
  Timer{id:resizeSoon;interval:60;onTriggered:if(root.visible)Quickshell.execDetached(['hyprctl','eval','for _,w in ipairs(hl.get_windows()) do if w.title=="Quickintosh Floating Player" then if not w.floating then hl.dispatch(hl.dsp.window.float({action="enable",window="address:"..w.address})) end;hl.dispatch(hl.dsp.window.resize({x='+root.implicitWidth+',y='+root.implicitHeight+',window="address:"..w.address})) end end'])}
  ClippingRectangle{anchors.fill:parent;radius:28;antialiasing:true;color:'#ee0b0b0d';layer.enabled:true;layer.samples:4
-  Rectangle{anchors.fill:parent;gradient:Gradient{GradientStop{position:0;color:'transparent'}GradientStop{position:.42;color:'transparent'}GradientStop{position:1;color:Qt.rgba(playerTint.color.r*.45,playerTint.color.g*.45,playerTint.color.b*.45,.85)}}}
+  ShelfPanelMaterial{anchors.fill:parent}
+  Rectangle{anchors.fill:parent;gradient:Gradient{GradientStop{position:0;color:'#ff09090b'}GradientStop{position:.4;color:'#f009090b'}GradientStop{position:1;color:'#1009090b'}}}
   ColumnLayout{anchors.fill:parent;anchors.margins:18;spacing:12
    RowLayout{Layout.fillWidth:true;spacing:6
     Item{Layout.fillWidth:true;implicitHeight:24;MouseArea{anchors.fill:parent;onPressed:root.startSystemMove()}}

@@ -17,19 +17,22 @@ import QtTest
 import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
+import Quickshell.Wayland
 import qs.island-shelf
 import qs.services
 import qs.rosa.services
 ShellRoot{
+ PanelWindow{anchors.top:true;anchors.bottom:true;anchors.left:true;anchors.right:true;exclusiveZone:-1;WlrLayershell.layer:WlrLayer.Background;Image{anchors.fill:parent;source:'file:///tmp/qi-review-dunes.png';fillMode:Image.PreserveAspectCrop}}
  TestCase{id:pointer;name:'PrivateMediaPointer';when:false}
  FloatingMusic{id:floatingPlayer}
  FloatingWindow{id:win;title:'Media Polish Review';visible:true;implicitWidth:560;implicitHeight:360;color:'transparent'
   property string page:'media'
   ClippingRectangle{anchors.fill:parent;radius:40;color:'#050509';antialiasing:true;layer.enabled:true;layer.samples:4
    Rectangle{anchors.fill:parent;gradient:Gradient{GradientStop{position:0;color:'#00000000'}GradientStop{position:1;color:'#3d265e'}}}
-   Loader{id:loader;anchors.fill:parent;anchors.margins:24;sourceComponent:({media:media,queue:queue,calendar:calendar,batteries:batteries,empty:empty,icons:icons})[win.page]}
+   Loader{id:loader;anchors.fill:parent;anchors.margins:24;sourceComponent:({media:media,queue:queue,calendar:calendar,batteries:batteries,empty:empty,icons:icons,focus:focus})[win.page]}
   }
  }
+ Component{id:focus;ShelfFocus{}}
  Component{id:media;ShelfMedia{}}
  Component{id:queue;QueueShelf{}}
  Component{id:calendar;ShelfCalendar{today:new Date(2026,10,27)}}
@@ -38,6 +41,7 @@ ShellRoot{
  Component{id:icons;RowLayout{spacing:24;Repeater{model:['laptop.png','notch/home.svg','notch/inbox.svg','notch/grid.svg'];delegate:ColumnLayout{required property string modelData;spacing:16;ShelfIcon{icon:modelData;size:16}ShelfIcon{icon:modelData;size:24}ShelfIcon{icon:modelData;size:32}}}}}
  IpcHandler{target:'mediaQA'
   function tap(name:string):void{function find(item){if(!item.visible)return null;if(item.objectName===name)return item;for(const child of item.children || []){const hit=find(child);if(hit)return hit}return null}const item=find(floatingPlayer.contentItem);if(!item)throw new Error('Missing control '+name);pointer.mouseClick(item,item.width/2,item.height/2,Qt.LeftButton)}
+  function iconInfo():string{function walk(item,rows){if(item.asset!==undefined)rows.push({icon:item.icon,asset:item.asset,children:(item.children || []).map(c=>({source:String(c.source || ''),status:c.status,visible:c.visible}))});for(const child of item.children || [])walk(child,rows)}const rows=[];walk(win.contentItem,rows);return JSON.stringify(rows)}
   function state():string{return JSON.stringify({floatingContent:floatingPlayer.content,page:win.page,playing:MprisState.isPlaying,has:MprisState.hasPlayer,loaded:loader.status===Loader.Ready,queue:ShelfState.queueData,playerOpen:ShelfState.playerOpen})}
   function page(name:string):void{win.page=name}
   function pause():void{MprisState.togglePlaying()}
@@ -73,10 +77,11 @@ ShellRoot{
     subprocess.run(['hyprctl','eval',command],env=env,capture_output=True,check=True)
    try:
     wait(lambda s:s['has'] and s['loaded']);resize(560,290);capture('media-playing');ipc('pause');wait(lambda s:not s['playing']);capture('media-paused');ipc('pause')
-    for name,size in [('calendar',(620,260)),('batteries',(560,300)),('empty',(560,250)),('icons',(400,220)),('queue',(380,570))]:
+    for name,size in [('calendar',(620,260)),('batteries',(560,300)),('empty',(560,250)),('icons',(400,220)),('focus',(380,220)),('queue',(380,570))]:
      ipc('page',name);wait(lambda s:s['loaded']);resize(*size)
      if name=='queue':wait(lambda s:s['queue'].get('supported') and len(s['queue'].get('items',[]))==2)
      capture(name)
+     if name=='icons':(out/'icon-info.json').write_text(ipc('iconInfo'))
     for mode,content in [('mini','player'),('player','player'),('expanded','player'),('player','queue'),('player','lyrics'),('player','outputs')]:
      ipc('floating',mode,content);wait(lambda s:s['playerOpen']);capture('floating-'+mode+'-'+content)
     ipc('floating','player','player');wait(lambda s:s['floatingContent']=='player');time.sleep(.2)

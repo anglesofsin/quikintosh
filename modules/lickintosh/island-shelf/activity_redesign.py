@@ -12,7 +12,7 @@ def integrate(root):
  generated=ast.literal_eval(re.search(r'generated:\((\{.*?\})\)',(root/'island-shelf/ShelfIcon.qml').read_text(),re.S)[1])
  missing=[icon for icon in spec['icons'] if not ((root/'island-shelf/icons/ai'/(generated[icon]+'.png')).is_file() if icon in generated else (root/'assets/icons/notch'/(icon+'.svg')).is_file())]
  if missing:raise ValueError('Missing activity icon assets: '+', '.join(missing))
- policy=root/'island-shelf/ActivityIconPolicy.qml';policy.write_text(policy.read_text().replace('@ICON_SPEC@',json.dumps(spec)))
+ policy=root/'island-shelf/ActivityIconPolicy.qml';policy.chmod(0o644);policy.write_text(policy.read_text().replace('@ICON_SPEC@',json.dumps(spec)))
  p=root/'island-shelf/qmldir'
  p.write_text(p.read_text()+'\nActivitySurface ActivitySurface.qml\nActivityData ActivityData.qml\nsingleton ActivityIconPolicy ActivityIconPolicy.qml\nIconSettings IconSettings.qml\n')
  p=root/'rosa/overlays/Island.qml';s=p.read_text().replace('    id: root','''    id: root

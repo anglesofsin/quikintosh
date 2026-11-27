@@ -25,6 +25,10 @@ class DeveloperToolsTests(unittest.TestCase):
  def test_limits(self):
   with self.assertRaises(ValueError):transform('x'*1048577,'json')
   with self.assertRaises(ValueError):transform('', 'exec')
+ def test_command_preferences(self):
+  with tempfile.TemporaryDirectory() as root:
+   result=Shelf(root).handle({'action':'utilityPreferences','values':{'commandColumns':5,'commandFavorites':['calculator','notes']}})
+   self.assertEqual(result['values']['commandColumns'],5);self.assertEqual(result['values']['commandFavorites'],['calculator','notes'])
  def test_break_settings_are_bounded(self):
   with tempfile.TemporaryDirectory() as root:
    result=Shelf(root).handle({'action':'utilityPreferences','values':{'breaksEnabled':True,'eyesMinutes':999,'waterMinutes':-4}})

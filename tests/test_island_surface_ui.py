@@ -145,6 +145,8 @@ class IslandSurfaceUI(unittest.TestCase):
     if os.environ.get('QUICKINTOSH_REVIEW_MENU_ONLY')=='1':
      print('NATIVE_CONTEXT_MENU_WIDTH_ANCHOR_AND_CLICK_OK',menu);return
     if os.environ.get('QUICKINTOSH_REVIEW_UTILITIES')=='1':
+     ipc('page','8');wait_state(lambda s:s['page']==8 and abs(s['geometry']['bodyHeight']-310)<.01);time.sleep(.6)
+     subprocess.run(['grim','-l','1',str(out/'command-center.png')],env=env,check=True,timeout=30)
      for key in ['developer','teleprompter','vault','breather']:
       ipc('detail',key);wait_state(lambda s:abs(s['geometry']['bodyWidth']-620)<.01);time.sleep(.5)
       subprocess.run(['grim','-l','1',str(out/('widget-'+key+'.png'))],env=env,check=True,timeout=30)

@@ -10,6 +10,18 @@ Item {
  signal openPage(int page)
  signal openWidget(string key)
  property int selectedSlot:0
+ property string search:''
+ property bool favoritesOnly:false
+ readonly property var favoriteKeys:ShelfState.utilityPreferences.commandFavorites || []
+ readonly property int columns:ShelfState.utilityPreferences.commandColumns || 7
+ function favorite(key){const next=favoriteKeys.slice();const index=next.indexOf(key);if(index<0)next.push(key);else next.splice(index,1);ShelfState.send({action:'utilityPreferences',values:{commandFavorites:next}})}
+ readonly property var launchers:[
+  {key:'calculator',title:qsTr('Calculator'),icon:'grid',command:['quickintosh-calculator']},
+  {key:'emoji',title:qsTr('Emoji Picker'),icon:'type',command:['quickintosh','ipc','call','rice','emoji']},
+  {key:'spotlight',title:qsTr('Spotlight'),icon:'search',command:['quickintosh','ipc','call','rice','spotlight']},
+  {key:'applications',title:qsTr('Applications'),icon:'grid',command:['quickintosh','ipc','call','rice','launchpad']},
+  {key:'settings',title:qsTr('Settings'),icon:'settings',command:['quickintosh','ipc','call','rice','settings']}]
+ readonly property var visibleWidgets:(ShelfState.editing ? widgets.filter(w=>homeKeys.includes(w.key)):widgets.concat(launchers)).filter(w=>(!favoritesOnly || ShelfState.editing || favoriteKeys.includes(w.key)) && (!search || w.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())))
  readonly property var widgets:[
   {key:'breather',title:qsTr('Break Reminders'),icon:'coffee',page:13},
   {key:'vault',title:qsTr('Obsidian Vault'),icon:'edit-3',page:13},
@@ -32,13 +44,18 @@ Item {
   {key:'activities',title:qsTr('Live Activities'),icon:'zap',page:11}]
  readonly property var homeKeys:['media','calendar','weather','focus','notes','performance','files','clipboard','audio','awake','storage','camera','notifications']
  function widget(key){return widgets.find(w=>w.key===key) || {title:qsTr('Add widget'),icon:'plus'}}
- function choose(item){if(ShelfState.editing)IslandConfig.setStyle('shelfSlot'+(selectedSlot+1),item.key);else if(item.page===13)openWidget(item.key);else openPage(item.page)}
+ function choose(item){if(item.command){ShelfState.closeRequested();Quickshell.execDetached(item.command);return}if(ShelfState.editing)IslandConfig.setStyle('shelfSlot'+(selectedSlot+1),item.key);else if(item.page===13)openWidget(item.key);else openPage(item.page)}
  function swap(direction){const other=selectedSlot+direction;if(other<0 || other>3)return;const a=IslandConfig.s('shelfSlot'+(selectedSlot+1));IslandConfig.setStyle('shelfSlot'+(selectedSlot+1),IslandConfig.s('shelfSlot'+(other+1)));IslandConfig.setStyle('shelfSlot'+(other+1),a);selectedSlot=other}
  ColumnLayout{anchors.fill:parent;spacing:16
   RowLayout{Layout.fillWidth:true
    Text{Layout.fillWidth:true;text:ShelfState.editing ? qsTr('Edit Home'):qsTr('Command Center');color:'white';font.family:ShelfStyle.displayFamily;font.pixelSize:19;font.weight:Font.DemiBold}
    ShelfButton{visible:!ShelfState.editing;flat:true;icon:'notch/edit-3.svg';accessibleLabel:qsTr('Edit Home');onClicked:ShelfState.editing=true}
    ShelfButton{visible:ShelfState.editing;text:qsTr('Done');selected:true;onClicked:{ShelfState.editing=false;root.openPage(0)}}
+  }
+  RowLayout{visible:!ShelfState.editing;Layout.fillWidth:true;spacing:8
+   TextField{Layout.fillWidth:true;placeholderText:qsTr('Find a control or widget');text:root.search;onTextEdited:root.search=text;color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:13;leftPadding:12;background:Rectangle{radius:12;color:'#14ffffff';border.color:'#20ffffff'}}
+   ShelfButton{flat:true;text:qsTr('Favorites');selected:root.favoritesOnly;onClicked:root.favoritesOnly=!root.favoritesOnly}
+   ShelfChoice{Layout.preferredWidth:124;model:[qsTr('Compact'),qsTr('Comfortable'),qsTr('Spacious')];currentIndex:root.columns===7 ? 0:root.columns===5 ? 1:2;onActivated:ShelfState.send({action:'utilityPreferences',values:{commandColumns:[7,5,4][currentIndex]}})}
   }
   RowLayout{visible:ShelfState.editing;Layout.fillWidth:true;spacing:10
    Repeater{model:4
@@ -61,15 +78,16 @@ Item {
    Item{Layout.fillWidth:true}
    ShelfButton{flat:true;icon:'notch/trash-2.svg';accessibleLabel:qsTr('Remove widget');onClicked:IslandConfig.setStyle('shelfSlot'+(root.selectedSlot+1),'none')}
   }
-  GridView{id:grid;Layout.fillWidth:true;Layout.fillHeight:true;clip:true;boundsBehavior:Flickable.StopAtBounds;reuseItems:true;cellWidth:Math.floor(width/Math.max(1,Math.floor(width/126)));cellHeight:100
-   model:ShelfState.editing ? root.widgets.filter(w=>root.homeKeys.includes(w.key)):root.widgets
+  GridView{id:grid;Layout.fillWidth:true;Layout.fillHeight:true;clip:true;boundsBehavior:Flickable.StopAtBounds;reuseItems:true;cellWidth:Math.floor(width/Math.max(1,Math.min(root.columns,Math.floor(width/126))));cellHeight:100
+   model:root.visibleWidgets
    ScrollBar.vertical:ScrollBar{policy:ScrollBar.AsNeeded}
    delegate:Item{required property var modelData;width:grid.cellWidth;height:grid.cellHeight
     Rectangle{anchors.horizontalCenter:parent.horizontalCenter;y:3;width:54;height:54;radius:17;color:tileMouse.pressed ? '#42ffffff':tileMouse.containsMouse ? '#24ffffff':'#0dffffff';border.width:1;border.color:'#1cffffff'
      ShelfIcon{anchors.centerIn:parent;size:29;Layout.preferredWidth:29;Layout.preferredHeight:29;icon:'notch/'+modelData.icon+'.svg';color:'white'}
     }
     Text{anchors.left:parent.left;anchors.right:parent.right;y:68;text:modelData.title;horizontalAlignment:Text.AlignHCenter;font.family:ShelfStyle.textFamily;font.pixelSize:12;color:'#d7d7dc';elide:Text.ElideRight}
-    MouseArea{id:tileMouse;anchors.fill:parent;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;onClicked:root.choose(modelData)}
+    MouseArea{id:tileMouse;anchors.fill:parent;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;acceptedButtons:Qt.LeftButton | Qt.RightButton;onClicked:mouse=>{if(mouse.button===Qt.RightButton)root.favorite(modelData.key);else root.choose(modelData)}}
+    Text{visible:root.favoriteKeys.includes(modelData.key);anchors.right:parent.right;anchors.rightMargin:12;y:4;text:'★';color:'#ffd166';font.pixelSize:11}
     Accessible.role:Accessible.Button;Accessible.name:modelData.title;Accessible.onPressAction:root.choose(modelData)
    }
   }

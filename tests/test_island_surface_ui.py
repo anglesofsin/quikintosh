@@ -140,6 +140,7 @@ class IslandSurfaceUI(unittest.TestCase):
      if json.loads(ipc('menuState'))['editing']:break
      time.sleep(.05)
     assert json.loads(ipc('menuState'))['editing'],'Menu click did not activate customization'
+    wait_state(lambda s:abs(s['geometry']['bodyHeight']-316)<.01)
     swapped=json.loads(ipc('reorderReview'));(out/'widget-reorder.json').write_text(json.dumps(swapped));assert swapped['after'][0]==swapped['before'][1] and swapped['after'][1]==swapped['before'][0],swapped
     ipc('editHome','false')
     if os.environ.get('QUICKINTOSH_REVIEW_MENU_ONLY')=='1':

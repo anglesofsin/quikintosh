@@ -8,7 +8,7 @@ Established evidence:
 - 17 temporary-file tests: archive/extraction safety, rename/collision handling,
   folder copies, tracked arrivals, image target size, PDF operations, video FPS,
   presets, transform-job isolation and uninstall guards.
-- 9 offline developer/vault/reminder tests: Unicode, hashes, malformed inputs, bounded
+- 10 offline developer/vault/reminder/preference tests: Unicode, hashes, malformed inputs, bounded
   data, JWT inspection, persisted script, safe vault paths and edit conflicts.
 - Actual native URI drag, five-reversal shake, basket appearance and Transform
   drop: /tmp/qi-native-drag-check4.log.
@@ -29,3 +29,7 @@ Video capture shutdown is allowed 45 seconds to flush the software test encoder.
 The test checks all QML diagnostics for missing assets and runtime exceptions.
 
 No claim is made of full 71-feature parity or pixel identity across all screens.
+
+Notch seam: explicit one-pixel corner overlap, no body border in attached-notch
+mode. Focused native validation passed in /tmp/qi-notch-seam-final-v2.log and
+the screenshot was visually inspected before activation.

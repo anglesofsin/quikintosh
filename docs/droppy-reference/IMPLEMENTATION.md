@@ -17,6 +17,8 @@ Implemented local capabilities:
   removal, presets and batch rename. Originals are preserved.
 - Clipboard category cards, search, pinning, copy and remove.
 - Home inline catalogue, actual slot drag reorder, width adjustment and cancel.
+- Searchable Command Center with favorite controls, three grid densities and
+  actual launch actions for Calculator, Emoji, Spotlight, applications and Settings.
 - Output/input per-application audio, live disk usage and app inventory.
   Explicit uninstall supports user Flatpaks/local shortcuts; Nix apps are read-only.
 - Notifications with images, advertised actions and native freedesktop inline reply.

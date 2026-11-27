@@ -53,7 +53,7 @@ Item {
    ShelfButton{visible:ShelfState.editing;text:qsTr('Done');selected:true;onClicked:{ShelfState.editing=false;root.openPage(0)}}
   }
   RowLayout{visible:!ShelfState.editing;Layout.fillWidth:true;spacing:8
-   TextField{Layout.fillWidth:true;placeholderText:qsTr('Find a control or widget');text:root.search;onTextEdited:root.search=text;color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:13;leftPadding:12;background:Rectangle{radius:12;color:'#14ffffff';border.color:'#20ffffff'}}
+   TextField{Layout.fillWidth:true;placeholderText:qsTr('Find a control or widget');placeholderTextColor:'#9999a3';text:root.search;onTextEdited:root.search=text;color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:13;leftPadding:12;background:Rectangle{radius:12;color:'#14ffffff';border.color:'#20ffffff'}}
    ShelfButton{flat:true;text:qsTr('Favorites');selected:root.favoritesOnly;onClicked:root.favoritesOnly=!root.favoritesOnly}
    ShelfChoice{Layout.preferredWidth:124;model:[qsTr('Compact'),qsTr('Comfortable'),qsTr('Spacious')];currentIndex:root.columns===7 ? 0:root.columns===5 ? 1:2;onActivated:ShelfState.send({action:'utilityPreferences',values:{commandColumns:[7,5,4][currentIndex]}})}
   }

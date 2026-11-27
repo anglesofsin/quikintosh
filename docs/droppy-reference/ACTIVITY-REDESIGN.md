@@ -103,3 +103,9 @@ including volume, mute, microphone, microphone mute, brightness, keyboard-light
 visual fixture, and volume at 0/100/200%. Player seek and application mixer were
 also inspected in source: their dedicated centered/full-row layouts do not use
 the old lower-text-column track. Their existing presentation was left intact.
+
+Right satellite spacing follow-up: the default minimalGap is now 6px, matching
+Discord's left-side gap, instead of the previous 14px. Explicit saved user values
+remain respected. Private tests checked 6px rendered right-side separation with
+both satellites, three alignments and offsets; privacy separation remained valid.
+This source-only update was activated in the user's shell on explicit request.

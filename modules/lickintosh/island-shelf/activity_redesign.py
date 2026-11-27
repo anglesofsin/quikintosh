@@ -8,6 +8,7 @@ def write(path,text):
 
 def integrate(root):
  root=Path(root)
+ config=root/'rosa/services/IslandConfig.qml';text=config.read_text();text=text.replace('minimalGap:  { type: "int", def: 14,','minimalGap:  { type: "int", def: 6,');write(config,text)
  spec=json.loads((root/'island-shelf/icon_policy.json').read_text())
  generated=ast.literal_eval(re.search(r'generated:\((\{.*?\})\)',(root/'island-shelf/ShelfIcon.qml').read_text(),re.S)[1])
  missing=[icon for icon in spec['icons'] if not ((root/'island-shelf/icons/ai'/(generated[icon]+'.png')).is_file() if icon in generated else (root/'assets/icons/notch'/(icon+'.svg')).is_file())]

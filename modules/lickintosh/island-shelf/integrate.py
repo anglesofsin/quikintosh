@@ -175,3 +175,5 @@ Item {
  ShelfMedia{id:player;anchors.fill:parent;demo:root.demo}
 }
 ''')
+
+runpy.run_path(str(source / 'interaction.py'))['integrate'](root)

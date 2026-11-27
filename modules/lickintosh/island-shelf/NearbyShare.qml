@@ -15,7 +15,6 @@ Item {
  Process{id:discover;command:['kdeconnect-cli','--list-available','--id-name-only'];stdout:StdioCollector{onStreamFinished:{root.devices=text.split('\n').map(line=>{const parts=line.trim().split(/\s+/);return {id:parts.shift(),name:parts.join(' ')}}).filter(d=>/^[A-Za-z0-9_-]+$/.test(d.id) && d.name)}} onExited:(code,status)=>{root.loading=false;if(code!==0)root.error=qsTr('KDE Connect is unavailable. Open its settings to pair a device.')}}
  ColumnLayout{anchors.fill:parent;spacing:8
   RowLayout{Layout.fillWidth:true
-   ShelfIcon{icon:'notch/send.svg';size:28;color:'#64b7b4'}
    Text{Layout.fillWidth:true;text:qsTr('Send with KDE Connect');font.family:ShelfStyle.displayFamily;font.pixelSize:18;font.weight:Font.DemiBold;color:ShelfStyle.primary}
    ShelfButton{implicitWidth:28;implicitHeight:28;iconSize:13;icon:'notch/x.svg';accessibleLabel:qsTr('Close');flat:false;onClicked:root.finished()}
   }
@@ -25,7 +24,7 @@ Item {
    ShelfButton{implicitWidth:28;implicitHeight:28;iconSize:17;flat:false;icon:'notch/refresh-cw.svg';accessibleLabel:qsTr('Refresh');enabled:!root.loading;onClicked:root.refresh()}
   }
   ListView{Layout.fillWidth:true;Layout.fillHeight:true;spacing:6;clip:true;model:root.devices;ScrollBar.vertical:ScrollBar{policy:ScrollBar.AsNeeded}
-   delegate:ItemDelegate{required property var modelData;width:ListView.view.width;height:54;text:modelData.name
+   delegate:ItemDelegate{required property var modelData;width:ListView.view.width;height:54;text:modelData.name;leftPadding:16;rightPadding:10
     contentItem:RowLayout{spacing:12
      ShelfIcon{Layout.preferredWidth:26;Layout.preferredHeight:26;icon:'notch/smartphone.svg';size:24;color:'#64b7b4'}
      ColumnLayout{Layout.fillWidth:true;spacing:2

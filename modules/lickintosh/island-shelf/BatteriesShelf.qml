@@ -39,8 +39,8 @@ Item{
        ShelfIcon{anchors.centerIn:parent;size:38;icon:modelData.kind==='laptop' ? 'laptop.png':modelData.kind==='phone' ? 'notch/smartphone.svg':modelData.kind==='headphones' ? 'notch/headphones.svg':'notch/battery.svg'}
        ShelfIcon{visible:ringVisual.charging;x:48+42*Math.SQRT1_2-width/2;y:48+42*Math.SQRT1_2-height/2;icon:'notch/zap.svg';size:20;color:'#ffd60a'}
       }
-      Text{Layout.fillWidth:true;text:modelData.percent+'%';horizontalAlignment:Text.AlignHCenter;font.family:ShelfStyle.displayFamily;font.pixelSize:22;font.weight:Font.DemiBold;color:ShelfStyle.primary}
-      Text{Layout.fillWidth:true;text:modelData.name;textFormat:Text.PlainText;elide:Text.ElideRight;horizontalAlignment:Text.AlignHCenter;font.family:ShelfStyle.textFamily;font.pixelSize:13;color:ShelfStyle.secondary}
+      Text{Layout.fillWidth:true;text:modelData.percent+'%';horizontalAlignment:Text.AlignHCenter;font.family:ShelfStyle.displayFamily;font.pixelSize:24;font.weight:Font.Bold;font.features:({tnum:1});color:ShelfStyle.primary}
+      Text{Layout.fillWidth:true;text:modelData.name;textFormat:Text.PlainText;elide:Text.ElideRight;horizontalAlignment:Text.AlignHCenter;font.family:ShelfStyle.textFamily;font.pixelSize:16;font.weight:Font.Medium;color:'#d1d1d6'}
      }
     }
    }

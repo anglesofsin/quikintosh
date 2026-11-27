@@ -183,7 +183,36 @@ end
 -- 1. Window Management
 hl.bind(m .. " + Q", hl.dsp.window.close(), { description = "Close window" })
 hl.bind(m .. " + F", hl.dsp.window.fullscreen(), { description = "Toggle fullscreen" })
-configurableBind("ALT + F", hl.dsp.window.fullscreen({mode="maximized",action="toggle",layout_aware=false}), {description="Toggle maximize"})
+-- Decorated zoom is intentionally independent of the fullscreen controller:
+-- clients must not hide their titlebar and the glass must retain its rounded edge.
+local zoomedWindows = {}
+local function toggleDecoratedZoom()
+    local w = hl.get_active_window()
+    if not w or not w.address or not w.monitor then return end
+    local selector = "address:" .. w.address
+    local saved = zoomedWindows[w.address]
+    if saved then
+        zoomedWindows[w.address] = nil
+        if w.fullscreen ~= 0 then hl.dispatch(hl.dsp.window.fullscreen({action="unset",layout_aware=false, window=selector})) end
+        if saved.floating then
+            hl.dispatch(hl.dsp.window.resize({x=saved.width,y=saved.height,window=selector}))
+            hl.dispatch(hl.dsp.window.move({x=saved.x,y=saved.y,window=selector}))
+        else
+            hl.dispatch(hl.dsp.window.float({action="disable",window=selector}))
+        end
+        return
+    end
+    -- Snapshot before changing layout; floating and tiled windows restore differently.
+    zoomedWindows[w.address] = {floating=w.floating,x=w.at.x,y=w.at.y,width=w.size.x,height=w.size.y}
+    local mon = w.monitor
+    local area = mon.reserved
+    local inset = 10
+    if w.fullscreen ~= 0 then hl.dispatch(hl.dsp.window.fullscreen({action="unset",layout_aware=false,window=selector})) end
+    hl.dispatch(hl.dsp.window.float({action="enable",window=selector}))
+    hl.dispatch(hl.dsp.window.resize({x=math.max(80,mon.mode.width-area.left-area.right-2*inset),y=math.max(80,mon.mode.height-area.top-area.bottom-2*inset),window=selector}))
+    hl.dispatch(hl.dsp.window.move({x=mon.x+area.left+inset,y=mon.y+area.top+inset,window=selector}))
+end
+configurableBind("ALT + F", toggleDecoratedZoom, {description="Toggle maximize"})
 hl.bind(m .. " + T", hl.dsp.exec_cmd("/home/pg/scripts/infinite-desktop-focus-toggle.sh"), { description = "Toggle float / canvas focus mode" })
 hl.bind(m .. " + Z", hl.dsp.window.pin({ action = "toggle" }), { description = "Toggle pin" })
 hl.bind(m .. " + SHIFT + left",  hl.dsp.exec_cmd("/home/pg/scripts/infinite-desktop-move-window.sh left"), { description = "Move window left" })

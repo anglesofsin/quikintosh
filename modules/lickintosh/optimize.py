@@ -83,7 +83,10 @@ s=s[:start]+'''        ListView {
             Layout.fillHeight: true
             clip: true
             reuseItems: true
-            cacheBuffer: 100
+            // Prepare two viewports asynchronously instead of constructing
+            // whole rows of icons on the first wheel event that exposes them.
+            cacheBuffer: Math.max(200, height * 2)
+            pixelAligned: true
             boundsBehavior: Flickable.StopAtBounds
             model: root.rowModel
             delegate: Item {

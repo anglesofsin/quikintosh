@@ -95,3 +95,11 @@ pill width to their measured contents; equal label/value strings render only onc
 Native tests assert meter/icon/value centerlines, recording subtitle/dot alignment,
 and duplicate-percentage normalization. The 31 native scenarios and ten assembled
 expansions were rendered again after these changes.
+
+Meter audit: all inline activity HUD bars use the single activity-meter row.
+Native geometry assertions now check icon/track/value vertical centers in BOTH
+compact and expanded presentations, with 0.5px tolerance. The 37-case run passed,
+including volume, mute, microphone, microphone mute, brightness, keyboard-light
+visual fixture, and volume at 0/100/200%. Player seek and application mixer were
+also inspected in source: their dedicated centered/full-row layouts do not use
+the old lower-text-column track. Their existing presentation was left intact.

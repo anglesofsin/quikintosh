@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import qs.components
 import qs.services
@@ -6,6 +7,7 @@ import qs.rosa.services
 ColumnLayout {
  id:root
  property bool settingsPage:false
+ property bool showAdvancedSections:true
  property color ink:settingsPage ? Theme.textPrimary:'white'
  property color muted:settingsPage ? Theme.textSecondary:'#9999a3'
  spacing:16
@@ -55,9 +57,12 @@ ColumnLayout {
  }
  RowLayout{Layout.fillWidth:true
   Text{Layout.fillWidth:true;text:qsTr('Shake dragged files to open basket');color:root.ink;font.family:ShelfStyle.textFamily;font.pixelSize:13}
-  Switch{checked:IslandConfig.s('trayShakeEnabled')!==false;onToggled:IslandConfig.setStyle('trayShakeEnabled',checked)}
+  Switch{id:shakeToggle;checked:IslandConfig.s('trayShakeEnabled')!==false;onToggled:IslandConfig.setStyle('trayShakeEnabled',checked);padding:0;implicitWidth:38;implicitHeight:23;Accessible.name:qsTr('Shake dragged files to open basket')
+   indicator:Rectangle{width:38;height:23;radius:12;color:shakeToggle.checked ? Theme.accent:'#62636a';Rectangle{x:shakeToggle.checked ? 17:2;y:2;width:19;height:19;radius:10;color:'white'}}
+   contentItem:Item{}
+  }
  }
 
- IconSettings{Layout.fillWidth:true;settingsPage:root.settingsPage}
- NavigationSettings{Layout.fillWidth:true;settingsPage:root.settingsPage}
+ IconSettings{visible:root.showAdvancedSections;Layout.fillWidth:true;settingsPage:root.settingsPage}
+ NavigationSettings{visible:root.showAdvancedSections;Layout.fillWidth:true;settingsPage:root.settingsPage}
 }

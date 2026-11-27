@@ -14,7 +14,7 @@ class IslandMorphUI(unittest.TestCase):
     p=root/relative;original=p.resolve();p.unlink();p.mkdir()
     for e in original.iterdir():(p/e.name).symlink_to(e,target_is_directory=e.is_dir())
    p=root/'rosa/overlays/Island.qml';s=p.read_text();p.unlink();s=s.replace('    id: root','    id: root\n    property var qaWindow:null',1).replace('        IslandWindow {','        IslandWindow {\n            Component.onCompleted:root.qaWindow=this',1);p.write_text(s)
-   p=root/'rosa/overlays/IslandWindow.qml';s=p.read_text();p.unlink();s=s.replace('    id: win','    id: win\n    property var qaDashboard:null\n    readonly property var qaGeometry:({dashboard:qaDashboard ? qaDashboard.qaBody:null,kind:win.hub.kind,cover:dashboardCover,requested:dashboardRequested,compactOpacity:stage.opacity,morph:morph.value,visible:visible,opened:opened})',1);s=s.replace('        IslandDashboard {','        IslandDashboard {\n            Component.onCompleted:win.qaDashboard=this',1);p.write_text(s)
+   p=root/'rosa/overlays/IslandWindow.qml';s=p.read_text();p.unlink();s=s.replace('    id: win','    id: win\n    property var qaDashboard:null\n    property int qaUncovered:0\n    FrameAnimation{running:win.visible;onTriggered:{if(win.presentationWanted && !win.blocked && !idleVisibility.fullyHidden && win.dashboardCover && stage.opacity<.01)win.qaUncovered++}}\n    readonly property var qaGeometry:({dashboard:qaDashboard ? qaDashboard.qaBody:null,uncovered:qaUncovered,kind:win.hub.kind,cover:dashboardCover,requested:dashboardRequested,compactOpacity:stage.opacity,morph:morph.value,visible:visible,opened:opened,stageCoverage:stage.opacity,pillOpacity:pill.opacity})',1);s=s.replace('        IslandDashboard {','        IslandDashboard {\n            Component.onCompleted:win.qaDashboard=this',1);p.write_text(s)
    p=root/'rosa/overlays/IslandDashboard.qml';s=p.read_text();p.unlink();p.write_text(s.replace('    id: panel','    id: panel\n    readonly property var qaBody:({collapsed:collapsed,geometryExpanded:geometryExpanded,expanded:expanded,bodyWidth:body.width,bodyHeight:body.height,targetWidth:capsuleWidth,targetHeight:capsuleHeight,windowWidth:width,parentWidth:body.parent.width})',1))
    (root/'shell.qml').write_text('''import QtQuick
 import QtTest
@@ -26,7 +26,7 @@ import qs.services as Native
 ShellRoot{
  TestCase{id:pointer;name:'PrivatePointer';when:false}
  Island{id:hub;demoKind:'clock'}
- IpcHandler{target:'morphQA';function state():string{return JSON.stringify(hub.qaWindow?.qaGeometry || {})}function prepareEvent():void{hub.showDemo('power');hub.demoWide=false;hub.qaWindow.forced=false;hub.qaWindow.hushed=true}function clearEvent():void{hub.qaWindow.forced=false;hub.endDemo();hub.dismiss();Native.ShelfState.activities=[];Native.ShelfState.items=[];hub.qaWindow.hushed=false}function liveActivity():void{Native.ShelfState.activities=[{id:'fixture-transfer',kind:'share',title:'KDE Connect',progress:.8,expires:Date.now()/1000+60}]}function trayReview():void{Native.ShelfState.items=[{name:'Review',path:'/tmp/qi-review-art.png'}]}function clickEvent():void{function named(item){if(item.objectName==='activity-compact')return item;for(const child of item.children || []){const found=named(child);if(found)return found}return null}const item=named(hub.qaWindow.contentItem);pointer.mouseClick(item,item.width/2,item.height/2,Qt.LeftButton)}function rightClick():void{const item=hub.qaWindow.contentItem;pointer.mouseClick(item,item.width/2,10,Qt.RightButton)}function expandIsland(on:bool):void{hub.qaWindow.dashboardRequested=on}function activity(kind:string,on:bool):void{hub.demoKind=kind;hub.demoWide=on;hub.qaWindow.forced=on}function dashboardEnabled(on:bool):void{IslandConfig.setStyle("dashboardEnabled",on)}}
+ IpcHandler{target:'morphQA';function state():string{return JSON.stringify(hub.qaWindow?.qaGeometry || {})}function prepareEvent():void{IslandConfig.setStyle('autoWide',false);hub.showDemo('power');hub.demoWide=false;hub.qaWindow.collapseActivity()}function clearEvent():void{hub.qaWindow.forced=false;hub.endDemo();hub.dismiss();Native.ShelfState.activities=[];Native.ShelfState.items=[];hub.qaWindow.hushed=false}function liveActivity():void{Native.ShelfState.activities=[{id:'fixture-transfer',kind:'share',title:'KDE Connect',progress:.8,expires:Date.now()/1000+60}]}function trayReview():void{Native.ShelfState.items=[{name:'Review',path:'/tmp/qi-review-art.png'}]}function clickEvent():void{function named(item){if(item.objectName==='activity-compact')return item;for(const child of item.children || []){const found=named(child);if(found)return found}return null}const item=named(hub.qaWindow.contentItem);pointer.mouseClick(item,item.width/2,item.height/2,Qt.LeftButton)}function rightClick():void{const item=hub.qaWindow.contentItem;pointer.mouseClick(item,item.width/2,10,Qt.RightButton)}function expandIsland(on:bool):void{hub.qaWindow.dashboardRequested=on}function activity(kind:string,on:bool):void{hub.demoKind=kind;hub.demoWide=on;hub.qaWindow.forced=on}function dashboardEnabled(on:bool):void{IslandConfig.setStyle("dashboardEnabled",on)}}
 }''')
    env=dict(os.environ,HOME=tmp,XDG_CONFIG_HOME=tmp+'/.config',XDG_CACHE_HOME=tmp+'/.cache',XDG_STATE_HOME=tmp+'/.state',XDG_RUNTIME_DIR=str(runtime),WAYLAND_DISPLAY=os.environ[REQUIRED[3]],HYPRLAND_INSTANCE_SIGNATURE=os.environ[REQUIRED[4]],DBUS_SESSION_BUS_ADDRESS='unix:path=/nonexistent');env.pop('DISPLAY',None)
    qs=os.environ[REQUIRED[1]]
@@ -53,8 +53,11 @@ ShellRoot{
     ipc('rightClick');wait(lambda s:s.get('cover') and s.get('requested'))
     time.sleep(.6);self.assertTrue(json.loads(ipc('state'))['requested'],'Right click shelf disappeared')
     ipc('rightClick');wait(lambda s:not s.get('cover') and not s.get('requested'))
+    review=Path('/home/pg/.local/state/quickintosh/reviews/settings-tahoe-audit/transitions');review.mkdir(exist_ok=True)
+    for index,(on,delay) in enumerate([(True,.06),(True,.3),(False,.03),(False,.16),(False,.4)]):
+     ipc('expandIsland',str(on).lower());time.sleep(delay);subprocess.run(['grim','-l','1',str(review/f'frame-{index}.png')],env=env,check=True,timeout=15)
     for _ in range(20):
-     ipc('expandIsland','true');wait(lambda s:s.get('cover') and s.get('compactOpacity')==0)
+     ipc('expandIsland','true');wait(lambda s:s.get('cover') and s.get('compactOpacity',0)>.95)
      time.sleep(.08)
      ipc('expandIsland','false');wait(lambda s:not s.get('cover') and s.get('compactOpacity',0)>.95)
     # Reverse an unfinished morph repeatedly; the last request owns the surface.
@@ -63,13 +66,14 @@ ShellRoot{
     wait(lambda s:not s.get('cover') and s.get('compactOpacity',0)>.95)
     for kind in ['media','voice','timer']:
      ipc('activity',kind,'true');wait(lambda s:s.get('opened') and s.get('morph',0)>.9)
-     ipc('expandIsland','true');wait(lambda s:s.get('cover') and s.get('compactOpacity')==0)
+     ipc('expandIsland','true');wait(lambda s:s.get('cover') and s.get('compactOpacity',0)>.95)
      ipc('activity',kind,'false');ipc('expandIsland','false')
      wait(lambda s:not s.get('cover') and s.get('compactOpacity',0)>.95)
     ipc('dashboardEnabled','false');ipc('expandIsland','true')
     wait(lambda s:not s.get('cover') and not s.get('requested') and s.get('compactOpacity',0)>.95)
     ipc('dashboardEnabled','true')
-    print('ISLAND_REAL_OWNER_20_MORPH_HANDOFFS_AND_DISABLED_DASHBOARD_OK')
+    self.assertEqual(json.loads(ipc('state'))['uncovered'],0,'Both surfaces lost coverage during collapse')
+    print('ISLAND_REAL_OWNER_20_MORPH_HANDOFFS_ZERO_UNCOVERED_CLOSE_FRAMES_OK')
    finally:
     if p.poll() is None:
      os.killpg(p.pid,signal.SIGTERM)

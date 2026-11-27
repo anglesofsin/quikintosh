@@ -135,6 +135,19 @@ class IslandSurfaceUI(unittest.TestCase):
       if native.poll() is None:
        pointer_command('up');native.stdin.write('quit\n');native.stdin.flush();native.wait(timeout=5)
       native.stdin.close();native.stdout.close()
+    if os.environ.get('QUICKINTOSH_REVIEW_TEXTBOXES')=='1':
+     for key in ['teleprompter','terminal','transcribe','vault']:
+      ipc('detail',key);wait_state(lambda s:s['page']==13 and 'shelf-'+key in s['names']);time.sleep(.5)
+      if key=='terminal':
+       ipc('terminalReview')
+       for attempt in range(100):
+        if 'QUICK_TERMINAL_OK' in ipc('terminalState'):break
+        time.sleep(.1)
+       assert 'QUICK_TERMINAL_OK' in ipc('terminalState')
+      subprocess.run(['grim','-l','1',str(out/('widget-'+key+'.png'))],env=env,check=True,timeout=30)
+     diagnostics=(root/'log').read_text()
+     for issue in ['ReferenceError:','TypeError:','Cannot assign','Failed to load configuration']:assert issue not in diagnostics,diagnostics[-8000:]
+     print('FOUR_TEXTBOX_SURFACES_AND_TERMINAL_INPUT_OUTPUT_OK');return
     if os.environ.get('QUICKINTOSH_REVIEW_MENU_TOGGLE')=='1':
      ipc('page','0');time.sleep(.5);ipc('menuOpen');time.sleep(.4)
      assert json.loads(ipc('menuState'))['visible']

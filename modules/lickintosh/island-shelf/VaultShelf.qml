@@ -29,8 +29,8 @@ Item{
      background:Rectangle{radius:9;color:root.note===parent.modelData.name ? '#307aff':'#15ffffff'}
     }
    }
-   ScrollView{Layout.fillWidth:true;Layout.fillHeight:true
-    TextArea{id:editor;enabled:root.note!=='';wrapMode:TextEdit.Wrap;selectByMouse:true;placeholderText:ShelfState.vaultInfo.path ? qsTr('Choose a note'):qsTr('Choose a vault. Files remain in your existing Markdown folder.');color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:14;background:Rectangle{radius:12;color:'#151518'} onTextChanged:if(root.note)root.dirty=true}
+   ScrollView{clip:true;Layout.fillWidth:true;Layout.fillHeight:true
+    ShelfTextArea{id:editor;enabled:root.note!=='';wrapMode:TextEdit.Wrap;selectByMouse:true;placeholderText:ShelfState.vaultInfo.path ? qsTr('Choose a note'):qsTr('Choose a vault. Files remain in your existing Markdown folder.');color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:14; onTextChanged:if(root.note)root.dirty=true}
    }
   }
   RowLayout{Layout.fillWidth:true

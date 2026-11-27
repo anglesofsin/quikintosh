@@ -68,3 +68,8 @@ Lyrics badge follows the rendered title width with a 7 px gap and vertically cen
 ## Reference glyph and typography correction
 
 Time labels use 13 px SF Pro Text Medium with tabular figures; artist uses 16 px SF Pro Display Medium. Re-generated laptop and inbox from the user-supplied reference crops using built-in image_gen, preserving transparent negative space and measuring alpha bounds for centering. Unselected navigation glyphs and the floating-player laptop use secondary foreground. Native player/menu test passed in 27.088 s; player/navigation comparison images visually reviewed. No live activation.
+
+
+## Textbox-only refinement
+
+Teleprompter, Quick Terminal, transcription and Markdown vault share ShelfTextArea: translucent neutral fill, fine rounded border, 14/12 px horizontal/vertical padding, explicit legible placeholders, focus/selection states. Existing terminal monospace and all widget actions remain. A focused native isolated test captured all four surfaces and executed the terminal input/output fixture successfully (11.534 s). The broader utility run encountered an editor state left open after the context-menu trigger sequence; that unrelated sequence is not claimed as passing in this revision. Preview: textboxes-refined.png. Reference consulted: https://getdroppy.app/docs/droplets/teleprompter (documentation does not supply pixel specifications for these four textboxes).

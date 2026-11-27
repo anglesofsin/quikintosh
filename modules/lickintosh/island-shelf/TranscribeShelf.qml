@@ -32,8 +32,8 @@ Item{
    ShelfButton{flat:true;text:qsTr('Audio file');enabled:!job.running;onClicked:audio.open()}
    ShelfButton{text:root.phase==='recording' ? qsTr('Stop & transcribe'):job.running ? qsTr('Cancel'):qsTr('Record');selected:true;icon:'notch/mic.svg';onClicked:{if(root.phase==='recording'){job.write('stop\n');root.phase='processing'}else if(job.running)job.running=false;else root.begin({action:'record'})}}
   }
-  ScrollView{Layout.fillWidth:true;Layout.fillHeight:true
-   TextArea{text:root.transcript;readOnly:true;selectByMouse:true;wrapMode:TextEdit.Wrap;color:'white';placeholderTextColor:'#9999a3';placeholderText:root.phase==='recording' ? qsTr('Listening… up to 60 seconds'):root.phase==='processing' ? qsTr('Transcribing on this computer…'):qsTr('Record your voice or choose an audio file. Audio stays on this computer.');font.family:ShelfStyle.textFamily;font.pixelSize:14;background:Rectangle{radius:14;color:'#151518'}}
+  ScrollView{clip:true;Layout.fillWidth:true;Layout.fillHeight:true
+   ShelfTextArea{text:root.transcript;readOnly:true;selectByMouse:true;wrapMode:TextEdit.Wrap;color:'white';placeholderText:root.phase==='recording' ? qsTr('Listening… up to 60 seconds'):root.phase==='processing' ? qsTr('Transcribing on this computer…'):qsTr('Record your voice or choose an audio file. Audio stays on this computer.');font.family:ShelfStyle.textFamily;font.pixelSize:14;}
   }
   RowLayout{Layout.fillWidth:true
    Text{Layout.fillWidth:true;text:root.error || qsTr('Local multilingual model · audio files up to 5 minutes');elide:Text.ElideRight;color:root.error ? '#ff827b':'#9999a3';font.family:ShelfStyle.textFamily;font.pixelSize:11}

@@ -20,8 +20,8 @@ Item {
    ShelfButton{flat:true;icon:'notch/edit-3.svg';accessibleLabel:qsTr('Edit script');visible:root.reading;onClicked:{root.playing=false;root.reading=false}}
    ShelfButton{text:root.reading ? root.playing ? qsTr('Pause'):qsTr('Play'):qsTr('Read');selected:true;enabled:editor.text.trim().length>0;onClicked:{if(!root.reading){root.reading=true;scroller.contentY=0}root.playing=!root.playing}}
   }
-  ScrollView{visible:!root.reading;Layout.fillWidth:true;Layout.fillHeight:true
-   TextArea{id:editor;objectName:'teleprompter-script';text:ShelfState.utilityPreferences.teleprompterText || '';placeholderText:qsTr('Paste your script…');wrapMode:TextEdit.Wrap;color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:16;selectByMouse:true;background:Rectangle{radius:14;color:'#151518'} onTextChanged:save.restart()}
+  ScrollView{clip:true;visible:!root.reading;Layout.fillWidth:true;Layout.fillHeight:true
+   ShelfTextArea{id:editor;objectName:'teleprompter-script';text:ShelfState.utilityPreferences.teleprompterText || '';placeholderText:qsTr('Paste your script…');wrapMode:TextEdit.Wrap;color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:16;selectByMouse:true; onTextChanged:save.restart()}
   }
   Flickable{id:scroller;visible:root.reading;Layout.fillWidth:true;Layout.fillHeight:true;clip:true;contentWidth:width;contentHeight:script.height+height;boundsBehavior:Flickable.StopAtBounds
    Text{id:script;width:scroller.width;text:editor.text;textFormat:Text.PlainText;wrapMode:Text.Wrap;horizontalAlignment:Text.AlignHCenter;color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:root.fontSize;lineHeight:1.45;topPadding:16;transform:Scale{origin.x:script.width/2;xScale:root.mirrored ? -1:1}}

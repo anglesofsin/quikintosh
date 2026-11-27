@@ -127,7 +127,7 @@ PanelWindow {
     }
     property int pendingPage: 0
     function selectPage(index) {
-        if (index < 0 || index > 12 || (page === index && !pageArrival.running)) return
+        if (index < 0 || index > 13 || (page === index && !pageArrival.running)) return
         pendingPage = index
         pageArrival.restart()
     }

@@ -14,7 +14,7 @@ def configure_layers(name):
         result = subprocess.run(['hyprctl', 'eval',
             'if hl.plugin.hyprglass then hl.plugin.hyprglass.config({windows={background_cache=false,live_resample=true,live_resample_fps=0}}); hl.plugin.hyprglass.preset("quickintosh-dock", {inherits="pomme",blur_strength=0.65,bevel_strength=0.18,specular_strength=0.22,dark={brightness=1.0,contrast=1.0,tint_color=0x00000000},light={brightness=1.0,contrast=1.0,tint_color=0x00000000}}); hl.plugin.hyprglass.layer("quickshell:dock", '
             '{preset="quickintosh-dock",mask_mode="contour",mask_threshold=0.015,live_resample=true}); '+
-            ';'.join('hl.plugin.hyprglass.layer('+json.dumps(ns)+',{mask_mode="contour",mask_threshold=0.18})' for ns in ['quickintosh-quickshot-controls','quickintosh-island-dashboard','quickintosh-sharing-panel','quickintosh-status-popover'])+' end'],
+            ';'.join('hl.plugin.hyprglass.layer('+json.dumps(ns)+',{mask_mode="contour",mask_threshold=0.18})' for ns in ['quickintosh-quickshot-controls','quickintosh-sharing-panel','quickintosh-status-popover'])+ ';hl.plugin.hyprglass.preset("quickintosh-island", {inherits="pomme",blur_strength=0.65,bevel_strength=0.18,specular_strength=0.22,dark={brightness=1.0,contrast=1.0,tint_color=0},light={brightness=1.0,contrast=1.0,tint_color=0}});hl.plugin.hyprglass.layer("quickintosh-island-dashboard",{preset="quickintosh-island",mask_mode="contour",mask_threshold=0.004,live_resample=true}) end'],
             capture_output=True, text=True, timeout=3)
         if len(sys.argv)>3 and result.returncode==0 and 'error' not in result.stdout.lower():
             spec=importlib.util.spec_from_file_location('native_glass',sys.argv[3])

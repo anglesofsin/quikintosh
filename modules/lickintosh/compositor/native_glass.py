@@ -12,7 +12,7 @@ TARGETS=[
  {'id':'spotlight','label':'Spotlight and Launchpad','namespaces':['quickshell:spotlight']},
  {'id':'widgets','label':'Desktop widgets','namespaces':['quickshell:desktop']},
  {'id':'editor','label':'Widget editor and gallery','namespaces':['quickintosh:widget-editor','lickintosh:widget-gallery']},
- {'id':'island','label':'Dynamic Island panels','namespaces':['quickintosh-island-dashboard']},
+ {'id':'island','label':'Dynamic Island panels','namespaces':['quickintosh-island-dashboard'],'base':'quickintosh-island','threshold':.004},
  {'id':'quickshot','label':'QuickShot controls','namespaces':['quickintosh-quickshot-controls']},
  {'id':'assistant','label':'Assistant','namespaces':['quickshell:ai']},
  {'id':'power','label':'Power and about panels','namespaces':['quickshell:power','quickshell:about']},
@@ -64,9 +64,11 @@ def commands(api,values,previous=()):
  profiles=validate(values)
  if not profiles and not previous:return ''
  commands=['hl.plugin.hyprglass.preset("quickintosh-dock",'+api.lua({'inherits':'pomme','blur_strength':.65,'bevel_strength':.18,'specular_strength':.22,'dark':{'brightness':1.,'contrast':1.,'tint_color':0},'light':{'brightness':1.,'contrast':1.,'tint_color':0}})+')']
+ commands.append('hl.plugin.hyprglass.preset("quickintosh-island",'+api.lua({'inherits': 'pomme', 'blur_strength': 0.65, 'bevel_strength': 0.18, 'specular_strength': 0.22, 'dark': {'brightness': 1.0, 'contrast': 1.0, 'tint_color': 0}, 'light': {'brightness': 1.0, 'contrast': 1.0, 'tint_color': 0}})+')')
  # hyprglass.layer replaces the whole namespace registry at commit time. Always
  # submit the complete Quickintosh baseline and all currently customized areas.
- layers={ns:{'mask_mode':'contour','mask_threshold':.18,'live_resample':True} for ns in ['quickintosh-quickshot-controls','quickintosh-island-dashboard','quickintosh-sharing-panel','quickintosh-status-popover']}
+ layers={ns:{'mask_mode':'contour','mask_threshold':.18,'live_resample':True} for ns in ['quickintosh-quickshot-controls','quickintosh-sharing-panel','quickintosh-status-popover']}
+ layers['quickintosh-island-dashboard']={'preset':'quickintosh-island','mask_mode':'contour','mask_threshold':.004,'live_resample':True}
  layers['quickshell:dock']={'preset':'quickintosh-dock','mask_mode':'contour','mask_threshold':.015,'live_resample':True}
  for t in TARGETS:
   target=t['id'];p=profiles.get(target);base=t.get('base','pomme');name='quickintosh-ui-'+target

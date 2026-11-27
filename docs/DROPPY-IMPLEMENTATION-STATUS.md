@@ -18,7 +18,7 @@ times on a private compositor, checks the GlobalMenuService state on every
 transition, and requires 60 actual `activespecialv2` events. The regression passed.
 It has not yet been activated on the user's installed shell.
 
-## Stage A — candidate implemented
+## Stage A — first review rejected; revision in validation
 
 - Home, File Tray and Widgets share the existing dashboard window. A compact
   three-icon navigator follows its geometry below the island; its input region
@@ -32,9 +32,18 @@ It has not yet been activated on the user's installed shell.
 - Page changes fade out before switching content and fade in afterwards.
 - The editor owns an explicit open hold. Leaving the editor releases that hold;
   merely moving the pointer outside while configuring does not collapse it.
-- Home's media controls use the existing Tahoe symbolic icon bank, at larger sizes.
+  Browsing the catalogue alone no longer pins the island open.
+- Home's media controls use filled variants of the existing licensed Feather
+  playback artwork. Progress and elapsed/remaining times share one row.
   Artwork is clipped to its rounded silhouette. Unavailable weather is shown
   explicitly, without a fabricated condition or temperature.
+
+The user rejected the first review: the Fade lacked a convincing glass finish,
+icons, item shapes and organization differed. Do not ask for approval of that
+same candidate again. The revised material removes the gray base and inherited
+dark tint, uses a dedicated native preset and a lower contour threshold. The
+catalogue is now separate from Edit Home. Calendar event blocks and a compact
+weather layout are included in the revision.
 
 ## Evidence and limits
 
@@ -42,22 +51,24 @@ Private UI regressions:
 
 - `test_island_surface_ui.py`: native plugin, Home/Tray/Widgets, unscaled content,
   editor hold/release, return to the 92 × 26 compact silhouette, and native
-  resampling counters (418 draws, 418 cache misses, zero cache hits in the
-  last isolated run).
+  resampling counters (677 draws, 677 cache misses, zero cache hits in the
+  last completed revised-material run).
 - `test_island_morph_ui.py`: the actual Island/IslandWindow owners, 20 repeated
   compact/dashboard handoffs, with no compact surface visible while covered,
   plus disabling the dashboard without losing the compact island.
 - `test_island_live_glass.py`: per-frame native resampling and plugin reload.
-- `test_native_glass.py`: seven registry/config regressions.
+- `test_native_glass.py`: eight registry/config regressions.
 - `island-shelf/test_backend.py`: ten file operation/persistence regressions.
 
 Review artifacts are generated outside the repository, under
 `~/.local/state/quickintosh/reviews/droppy-a/`: real captures, a reference/candidate
 comparison, logs and a 60 fps encoded compositor recording. The isolated render
 uses software graphics; the recording's frame rate is **not** a measurement of
-hardware responsiveness. Test screenshots have no music, calendar events or
-weather data. Populated media/calendar/weather designs still require stage B/D
-comparison. Overall pixel parity has not passed and must not be asserted.
+hardware responsiveness. The first screenshots were empty states; the revised
+`droppy-a-v2` captures use an explicitly private MPRIS service and marked sample
+calendar/weather data. These are test fixtures, not a live forecast or calendar.
+The test verifies playback/pause against the real D-Bus service. Reference
+artwork/background crops are temporary research artifacts, not shipped assets. Overall pixel parity has not passed and must not be asserted.
 
 The ordinary portable shell build also exposed an omitted `caelestia-shell`
 argument in the NixOS module; this is fixed. That build then encountered inode
@@ -67,7 +78,8 @@ modules substituted. A normal portable build is still required before release.
 
 ## Remaining milestones
 
-A review: approve or revise this direction before replacing the installed UI.
+A review: the first candidate was rejected. The revised candidate needs a new
+visual comparison and approval before replacing the installed UI.
 
 B: populated media, filled playback controls, floating player, capability-aware queue/lyrics, concurrent
 live activities, and their reference/candidate interaction tests.

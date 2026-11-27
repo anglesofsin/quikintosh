@@ -19,7 +19,7 @@ Flickable {
     id:slot;required property string modelData;required property int index
     visible:modelData!=='none'
     Layout.fillWidth:true;Layout.fillHeight:true
-    Layout.horizontalStretchFactor:IslandConfig.s('shelfWeight'+(index+1))
+    Layout.horizontalStretchFactor:IslandConfig.s('shelfWeight'+(index+1))*(modelData==='media' ? 115:modelData==='weather' ? 90:100)
     Layout.minimumWidth:140
     Rectangle{anchors.fill:parent;radius:20;color:IslandConfig.s('shelfWidgetCards') ? '#151518':'transparent';border.color:IslandConfig.s('shelfWidgetCards') ? '#25252b':'transparent'}
     Rectangle{anchors.fill:parent;anchors.margins:-1;radius:20;color:'transparent';border.width:1;border.color:Theme.accent;visible:ShelfState.editing}
@@ -41,37 +41,38 @@ Flickable {
    }
   }
  }
- Component {id:music
-  ColumnLayout {id:musicCard;spacing:10
+ Component{id:music
+  ColumnLayout{id:musicCard;spacing:12
    function timeText(seconds){const n=Math.max(0,Math.floor(seconds || 0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
-   RowLayout {spacing:12;Layout.fillWidth:true
-    ClippingRectangle {Layout.preferredWidth:72;Layout.preferredHeight:72;radius:15;color:'#222225';clip:true
+   RowLayout{Layout.fillWidth:true;spacing:14
+    ClippingRectangle{Layout.preferredWidth:76;Layout.preferredHeight:76;radius:17;color:'#1c1c1e'
      Image{anchors.fill:parent;source:MprisState.artUrl;fillMode:Image.PreserveAspectCrop;asynchronous:true}
-     TintedIcon{anchors.centerIn:parent;size:28;visible:!MprisState.artUrl;source:Quickshell.shellPath('assets/icons_desktop/MacTahoe/actions/symbolic/music-note-symbolic.svg');tint:'#cfcfd3'}
+     TintedIcon{anchors.centerIn:parent;size:30;visible:!MprisState.artUrl;source:Quickshell.shellPath('assets/icons_desktop/MacTahoe/actions/symbolic/music-note-symbolic.svg');tint:'#dddddf'}
     }
-    ColumnLayout {Layout.fillWidth:true;spacing:4
-     Text{Layout.fillWidth:true;text:MprisState.trackTitle || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:'SF Pro Display';font.pixelSize:16;font.weight:Font.DemiBold;color:'white';elide:Text.ElideRight}
-     Text{Layout.fillWidth:true;text:MprisState.trackArtist || MprisState.identity;textFormat:Text.PlainText;font.family:'SF Pro Text';font.pixelSize:12;color:'#99999e';elide:Text.ElideRight}
+    ColumnLayout{Layout.fillWidth:true;spacing:5
+     Text{Layout.fillWidth:true;text:MprisState.trackTitle || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:'SF Pro Display';font.pixelSize:19;font.weight:Font.DemiBold;color:'white';elide:Text.ElideRight}
+     Text{Layout.fillWidth:true;text:MprisState.trackArtist || MprisState.identity;textFormat:Text.PlainText;font.family:'SF Pro Text';font.pixelSize:15;color:'#a9a9ad';elide:Text.ElideRight}
     }
    }
-   Slider {id:seek;Layout.fillWidth:true;implicitHeight:16;from:0;to:Math.max(1,MprisState.length);value:MprisState.position;enabled:MprisState.canSeek;onMoved:MprisState.seek(value)
-    background:Rectangle{y:seek.height/2-2;width:seek.width;height:4;radius:2;color:'#333336';Rectangle{height:4;radius:2;width:parent.width*seek.visualPosition;color:'#d9d9de'}}
-    handle:Item{}
+   RowLayout{Layout.fillWidth:true;spacing:10
+    Text{Layout.preferredWidth:34;text:musicCard.timeText(MprisState.position);color:'#99999f';font.family:'SF Pro Text';font.pixelSize:12}
+    Slider{id:seek;Layout.fillWidth:true;implicitHeight:22;from:0;to:Math.max(1,MprisState.length);value:MprisState.position;enabled:MprisState.canSeek;onMoved:MprisState.seek(value)
+     background:Rectangle{y:seek.height/2-6;width:seek.width;height:12;radius:6;color:'#29292e';Rectangle{height:parent.height;radius:6;width:parent.width*seek.visualPosition;color:'#c1c1c5'}}
+     handle:Item{}
+    }
+    Text{Layout.preferredWidth:42;text:MprisState.length>0 ? '−'+musicCard.timeText(Math.max(0,MprisState.length-MprisState.position)):'—:—';horizontalAlignment:Text.AlignRight;color:'#99999f';font.family:'SF Pro Text';font.pixelSize:12}
    }
-   RowLayout{Layout.fillWidth:true
-    Text{text:musicCard.timeText(MprisState.position);color:'#8d8d93';font.family:'SF Pro Text';font.pixelSize:10}
+   RowLayout{Layout.fillWidth:true;spacing:24
     Item{Layout.fillWidth:true}
-    Text{text:'−'+musicCard.timeText(Math.max(0,MprisState.length-MprisState.position));visible:MprisState.length>0;color:'#8d8d93';font.family:'SF Pro Text';font.pixelSize:10}
-   }
-   RowLayout {Layout.alignment:Qt.AlignHCenter;spacing:20
-    CtrlButton{icon:'../icons_desktop/MacTahoe/actions/symbolic/media-seek-backward-symbolic.svg';size:30;active:MprisState.canGoPrevious;onClicked:MprisState.previous()}
-    CtrlButton{icon:'../icons_desktop/MacTahoe/actions/symbolic/media-playback-'+(MprisState.isPlaying ? 'pause':'start')+'-symbolic.svg';size:36;active:MprisState.canTogglePlaying;onClicked:MprisState.togglePlaying()}
-    CtrlButton{icon:'../icons_desktop/MacTahoe/actions/symbolic/media-seek-forward-symbolic.svg';size:30;active:MprisState.canGoNext;onClicked:MprisState.next()}
-    ShelfButton{icon:'notch/external-link.svg';accessibleLabel:qsTr('Floating player');onClicked:ShelfState.playerOpen=true}
+    CtrlButton{icon:'../../island-shelf/icons/backward.svg';size:30;active:MprisState.canGoPrevious;onClicked:MprisState.previous()}
+    CtrlButton{icon:'../../island-shelf/icons/'+(MprisState.isPlaying ? 'pause':'play')+'.svg';size:34;active:MprisState.canTogglePlaying;onClicked:MprisState.togglePlaying()}
+    CtrlButton{icon:'../../island-shelf/icons/forward.svg';size:30;active:MprisState.canGoNext;onClicked:MprisState.next()}
+    Item{Layout.fillWidth:true}
+    ShelfButton{flat:true;icon:'notch/monitor.svg';accessibleLabel:qsTr('Floating player');onClicked:ShelfState.playerOpen=true}
    }
   }
  }
- Component{id:calendar;CalendarModule{}}
+ Component{id:calendar;ShelfCalendar{}}
  Component{id:focus;FocusModule{}}
  Component{id:notes;NotesModule{}}
  Component{id:stats;ColumnLayout{spacing:12
@@ -83,29 +84,7 @@ Flickable {
   Text{Layout.alignment:Qt.AlignHCenter;text:qsTr('%1 files in tray').arg(ShelfState.items.length);font.family:'SF Pro Text';font.pixelSize:14;color:'white'}
   ShelfButton{Layout.alignment:Qt.AlignHCenter;text:qsTr('Open tray');onClicked:root.openPage(6)}
  }}
- Component {id:weather
-  Rectangle {radius:20;color:IslandConfig.s('shelfWidgetCards') ? '#15171c':'transparent'
-   ColumnLayout {anchors.fill:parent;anchors.margins:16;spacing:7
-    RowLayout{Layout.fillWidth:true
-     ColumnLayout{Layout.fillWidth:true;spacing:3
-      Text{Layout.fillWidth:true;text:IslandConfig.s('dashboardWeatherLocation') ? WeatherState.city:qsTr('Weather');font.family:'SF Pro Text';font.pixelSize:12;color:'#c4c4cc';elide:Text.ElideRight}
-      Text{text:WeatherState.available ? Math.round(WeatherState.tempC)+'°':'—°';font.family:'SF Pro Display';font.pixelSize:36;font.weight:Font.Light;color:'white'}
-     }
-     Image{Layout.preferredWidth:52;Layout.preferredHeight:52;visible:WeatherState.available;source:Quickshell.shellPath('rosa/overlays/assets/weather-'+(WeatherState.weatherCode>=95 ? 'storm':WeatherState.weatherCode>=51 ? 'rain':WeatherState.weatherCode>=3 ? 'clouds':WeatherState.weatherCode===2 ? 'partly':WeatherState.isDay ? 'sun':'night')+'.png');fillMode:Image.PreserveAspectFit;sourceSize:Qt.size(128,128)}
-    }
-    Text{visible:!WeatherState.available;Layout.fillWidth:true;text:qsTr('Weather unavailable');color:'#9999a0';font.family:'SF Pro Text';font.pixelSize:12}
-    RowLayout {Layout.fillWidth:true
-     Repeater {model:WeatherState.hourly.slice(0,4)
-      delegate:ColumnLayout {required property var modelData;Layout.fillWidth:true;spacing:8
-       Text{Layout.alignment:Qt.AlignHCenter;text:modelData.time ? String(modelData.time).slice(-5):'';font.family:'SF Pro Text';font.pixelSize:10;color:'#9999a0'}
-       Text{Layout.alignment:Qt.AlignHCenter;text:Math.round(modelData.temp)+'°';font.family:'SF Pro Text';font.pixelSize:13;font.weight:Font.DemiBold;color:'white'}
-      }
-     }
-    }
-    TapHandler{onTapped:root.openPage(1)}
-   }
-  }
- }
+ Component{id:weather;ShelfWeather{onActivated:root.openPage(1)}}
  ColumnLayout{anchors.centerIn:parent;visible:root.slots.every(key=>key==='none');spacing:10
   Text{Layout.alignment:Qt.AlignHCenter;text:qsTr('Make this space yours');font.family:'SF Pro Display';font.pixelSize:18;font.weight:Font.DemiBold;color:'white'}
   ShelfButton{Layout.alignment:Qt.AlignHCenter;text:qsTr('Add widgets');icon:'notch/plus.svg';onClicked:root.openPage(8)}

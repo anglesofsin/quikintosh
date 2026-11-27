@@ -16,6 +16,12 @@ class GlassTests(unittest.TestCase):
   cmd=glass.commands(Api,{'native-glass:menus:blur_strength':.7})
   for ns in ['quickshell:dock','quickintosh-island-dashboard','quickintosh-quickshot-controls','quickintosh-sharing-panel','quickshell:applemenu']:self.assertIn(json.dumps(ns),cmd)
   self.assertNotIn('quickshell:desktop',cmd)
+ def test_island_fade_keeps_transparent_native_material(self):
+  cmd=glass.commands(Api,{'native-glass:menus:blur_strength':.7})
+  self.assertIn('"quickintosh-island"',cmd)
+  self.assertIn('"mask_threshold"]=0.004',cmd)
+  self.assertIn('"tint_color"]=0',cmd)
+  self.assertEqual(next(t for t in glass.TARGETS if t['id']=='island')['base'],'quickintosh-island')
  def test_removing_windows_profile_restores_live_default(self):
   cmd=glass.commands(Api,{},['windows','menus'])
   self.assertIn('background_cache=false',cmd)

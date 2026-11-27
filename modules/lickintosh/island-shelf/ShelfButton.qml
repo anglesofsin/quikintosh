@@ -8,9 +8,10 @@ Rectangle {
  property string accessibleLabel:text
  property int badge:0
  property bool selected:false
+ property bool flat:false
  signal clicked()
  implicitWidth:Math.max(badge>0 ? 48:32,label.implicitWidth+(icon && text ? 48:24));implicitHeight:32;radius:16
- color:selected ? '#353538':mouse.pressed ? '#454548':mouse.containsMouse ? '#29292c':'#19191b'
+ color:selected ? '#353538':mouse.pressed ? '#454548':mouse.containsMouse ? '#29292c':flat ? 'transparent':'#19191b'
  opacity:enabled ? 1:.35
  CFVI {visible:!!root.icon;anchors.left:parent.left;anchors.leftMargin:root.text ? 10:(root.width-size)/2;anchors.verticalCenter:parent.verticalCenter;size:16;icon:root.icon;color:'white'}
  Text{visible:root.badge>0;anchors.right:parent.right;anchors.rightMargin:5;anchors.verticalCenter:parent.verticalCenter;text:root.badge;font.family:'SF Pro Text';font.pixelSize:10;font.weight:Font.DemiBold;color:'#c9c9ce'}

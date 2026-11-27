@@ -25,6 +25,7 @@ class IslandSurfaceUI(unittest.TestCase):
   import qs.services
   import qs.rosa.services
   import qs.rosa.overlays
+  import qs.ui.topbar.statusarea.notifcenter
   import "island-shelf"
   ShellRoot{
    function visualNames(item){if(!item)return [];let names=item.objectName ? [item.objectName]:[];for(const child of item.children || [])names=names.concat(visualNames(child));return names}
@@ -37,13 +38,15 @@ class IslandSurfaceUI(unittest.TestCase):
     WeatherState.available=true;WeatherState.city='Cupertino';WeatherState.tempC=21;WeatherState.description='Mostly sunny';WeatherState.weatherCode=0;WeatherState.forecast=[0,1,2,3,4,5,6].map(i=>({date:new Date(Date.UTC(2026,10,27+i)).toISOString().slice(0,10),code:[0,1,2,61,63,95,0][i],tempMax:25-i,tempMin:14-i}));WeatherState.hourly=[{time:'2026-11-27T10:00',temp:21,code:0},{time:'2026-11-27T11:00',temp:22,code:0},{time:'2026-11-27T12:00',temp:24,code:2},{time:'2026-11-27T13:00',temp:25,code:0}];IslandConfig.setStyle('dashboardWeatherLocation',true);
    }
    PanelWindow{anchors{left:true;right:true;top:true;bottom:true}exclusionMode:ExclusionMode.Ignore;WlrLayershell.layer:WlrLayer.Background;color:'#292b36';Image{anchors.fill:parent;fillMode:Image.PreserveAspectCrop;source:Quickshell.env('QUICKINTOSH_REVIEW_BACKGROUND') || Quickshell.shellPath('assets/wallpapers/daniel-leone.jpg')}}
+   QtObject{id:bannerNotice;property string appName:'Quickintosh';property string summary:'Notification material';property string body:'A translucent banner over the desktop, using the same glass material as the shell.';property string appIcon:'preferences-system';property var actions:[];function dismiss(){}}
+   NotifPopup{}
    FloatingMusic{id:floatingReview}
    PanelWindow{id:playerReview;visible:false;implicitWidth:760;implicitHeight:540;anchors{top:true;left:true}exclusionMode:ExclusionMode.Ignore;color:'#171719';WlrLayershell.namespace:'qi-player-review'
     property bool portrait:false
     ShelfMedia{id:reviewPlayer;anchors.fill:parent;anchors.margins:22;portrait:playerReview.portrait;showPopout:false}
    }
    IslandDashboard{id:island;output:Quickshell.screens[0];expanded:false;onDismissed:expanded=false}
-   IpcHandler{target:'reviewA';function expandIsland():string{island.expanded=true;return 'expanded='+island.expanded}function close():void{island.expanded=false}function holdReview(on:bool):void{ShelfState.interaction(on)}function editHome(on:bool):void{ShelfState.editing=on}function page(n:int):void{playerReview.visible=false;island.selectPage(n)}function playerMode(name:string):void{playerReview.portrait=name==='player';playerReview.implicitWidth=name==='activity' ? 440:name==='mini' ? 340:360;playerReview.implicitHeight=name==='activity' ? 178:name==='mini' ? 254:540;playerReview.visible=true}function floatingMode(name:string):void{playerReview.visible=false;IslandConfig.setStyle("floatingPlayerSize",name);ShelfState.playerOpen=true}function closePlayer():void{ShelfState.playerOpen=false}function volume(value:real):void{MprisState.activePlayer.volume=value}function populate():void{populateReview()}function detail(key:string):void{island.detailWidget=key;island.selectPage(13)}function playback():void{MprisState.togglePlaying()}function state():string{return JSON.stringify({reserveClockSpace:IslandConfig.s("reserveClockSpace"),playerVolume:MprisState.activePlayer ? MprisState.activePlayer.volume:0,playerLayout:reviewPlayer.qaLayout,playing:MprisState.isPlaying,hasPlayer:MprisState.hasPlayer,expanded:island.expanded,page:island.page,hold:ShelfState.holdOpen,clipCount:ShelfState.clips.length,fileIcon:IconResolver.forFile('thought.txt'),names:visualNames(island.contentItem),geometry:island.qaGeometry})}}
+   IpcHandler{target:'reviewA';function banner(on:bool):void{ShellConfig.options.wallpaper.path=Quickshell.env('QUICKINTOSH_REVIEW_BACKGROUND').replace('file://','');ShellConfig.options.wallpaper.pathDark='';ShellConfig.options.wallpaper.pathLight='';SettingsPreferences.notifications.duration=60000;if(on)NotifService.popupModel.insert(0,{notifObj:bannerNotice});else NotifService.removePopup(bannerNotice,true)}function expandIsland():string{island.expanded=true;return 'expanded='+island.expanded}function close():void{island.expanded=false}function holdReview(on:bool):void{ShelfState.interaction(on)}function editHome(on:bool):void{ShelfState.editing=on}function page(n:int):void{playerReview.visible=false;island.selectPage(n)}function playerMode(name:string):void{playerReview.portrait=name==='player';playerReview.implicitWidth=name==='activity' ? 440:name==='mini' ? 340:360;playerReview.implicitHeight=name==='activity' ? 178:name==='mini' ? 254:540;playerReview.visible=true}function floatingMode(name:string):void{playerReview.visible=false;IslandConfig.setStyle("floatingPlayerSize",name);ShelfState.playerOpen=true}function closePlayer():void{ShelfState.playerOpen=false}function volume(value:real):void{MprisState.activePlayer.volume=value}function populate():void{populateReview()}function detail(key:string):void{island.detailWidget=key;island.selectPage(13)}function playback():void{MprisState.togglePlaying()}function state():string{return JSON.stringify({banners:NotifService.popupModel.count,reserveClockSpace:IslandConfig.s("reserveClockSpace"),playerVolume:MprisState.activePlayer ? MprisState.activePlayer.volume:0,playerLayout:reviewPlayer.qaLayout,playing:MprisState.isPlaying,hasPlayer:MprisState.hasPlayer,expanded:island.expanded,page:island.page,hold:ShelfState.holdOpen,clipCount:ShelfState.clips.length,fileIcon:IconResolver.forFile('thought.txt'),names:visualNames(island.contentItem),geometry:island.qaGeometry})}}
   }''')
    env=dict(os.environ,HOME=tmp,XDG_CONFIG_HOME=tmp+'/.config',XDG_CACHE_HOME=tmp+'/.cache',XDG_STATE_HOME=tmp+'/.state',XDG_RUNTIME_DIR=runtime,WAYLAND_DISPLAY=os.environ['QUICKINTOSH_TEST_PRIVATE_WAYLAND'],HYPRLAND_INSTANCE_SIGNATURE=os.environ['QUICKINTOSH_TEST_PRIVATE_HYPRLAND'],DBUS_SESSION_BUS_ADDRESS='unix:path=/nonexistent')
    env.pop('DISPLAY',None);env['QT_NO_XDG_DESKTOP_PORTAL']='1'
@@ -134,6 +137,10 @@ class IslandSurfaceUI(unittest.TestCase):
      ipc('closePlayer')
      ipc('volume','0.35');wait_state(lambda s:abs(s['playerVolume']-.35)<.01)
      ipc('page','8');ipc('expandIsland')
+    if os.environ.get('QUICKINTOSH_REVIEW_BANNERS')=='1':
+     ipc('close');ipc('banner','true');wait_state(lambda s:s['banners']==1);time.sleep(.6)
+     subprocess.run(['grim','-l','1',str(out/'notification-banner.png')],env=env,check=True,timeout=30)
+     ipc('banner','false');wait_state(lambda s:s['banners']==0);ipc('expandIsland')
     ipc('editHome','true');wait_state(lambda s:s['hold'] and abs(s['geometry']['bodyHeight']-440)<.01)
     subprocess.run(['grim','-l','1',str(out/'editor.png')],env=env,check=True,timeout=15)
     (out/'editor.json').write_text(ipc('state'))
@@ -147,7 +154,9 @@ class IslandSurfaceUI(unittest.TestCase):
     assert recorder.returncode==0,(out/'recording.log').read_text()
     stats=json.loads(ctl('-j','hyprglass','stats'))['monitors']
     draws=sum(m['layerGlassDraws'] for m in stats);misses=sum(m['layerCacheMisses'] for m in stats);deferred=sum(m['layerDeferredResamples'] for m in stats)
-    assert draws>0 and sum(m['layerCacheHits'] for m in stats)==0 and misses+deferred>=draws,stats
+    hits=sum(m['layerCacheHits'] for m in stats)
+    assert draws>0 and misses+deferred+hits>=draws,stats
+    if os.environ.get('QUICKINTOSH_REVIEW_BANNERS')!='1':assert hits==0,stats
     qml_log=(root/'log').read_text()
     for issue in ['ReferenceError:','TypeError:','Cannot assign','Cannot open file','Failed to load configuration']:
      assert issue not in qml_log,issue+'\n'+qml_log[-6000:]

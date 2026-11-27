@@ -24,7 +24,7 @@ Scope{
    implicitWidth:root.popupWidth+40;implicitHeight:Math.max(1,column.implicitHeight+64)
    WlrLayershell.namespace:'quickintosh:notification-banners';WlrLayershell.layer:WlrLayer.Overlay;WlrLayershell.keyboardFocus:WlrKeyboardFocus.None
    mask:Region{item:column}
-   GlassBackdrop{element:'notifcenter';gateEnabled:false}
+   GlassBackdrop{id:bannerGlass;element:'notifpopup';gateEnabled:false}
    Column{
     id:column;anchors{top:parent.top;right:parent.right;topMargin:48;rightMargin:14};spacing:10
     move:Transition{NumberAnimation{properties:'y';duration:ShellMotion.spatial(.48);easing.type:Easing.OutCubic}}
@@ -49,10 +49,11 @@ Scope{
       Connections{target:NotifService;function onDismissGenChanged(){wrap.hide(false)}function onPopupRemovalRequested(notification){if(notification===wrap.notifObj)wrap.hide(false)}}
       HoverHandler{id:hover}
       Timer{interval:SettingsPreferences.notifications.duration;running:!wrap.leaving && !hover.hovered;onTriggered:wrap.hide(false)}
-      BoxGlass{
-       id:card;width:parent.width;height:content.implicitHeight+28;radius:23;opacity:wrap.progress;scale:.97+.03*wrap.progress;transformOrigin:Item.TopRight
+      Item{
+       id:card;width:parent.width;height:content.implicitHeight+28;opacity:wrap.progress;scale:.97+.03*wrap.progress;transformOrigin:Item.TopRight
        transform:Translate{x:(1-wrap.progress)*38}
-       Rectangle{anchors.fill:parent;radius:23;color:Theme.isLight ? '#99ffffff':'#992b2b30';border.width:1;border.color:Theme.isLight ? '#20000000':'#25ffffff'}
+       BoxGlass{anchors.fill:parent;radius:23;visible:!bannerGlass.nativeOverride}
+       Rectangle{anchors.fill:parent;radius:23;color:bannerGlass.nativeOverride ? (Theme.isLight ? '#14ffffff':'#10000000'):'transparent';border.width:1;border.color:Theme.isLight ? '#20000000':'#25ffffff'}
        MouseArea{anchors.fill:parent;cursorShape:Qt.PointingHandCursor;onClicked:wrap.invoke(NotifService.findDefaultAction(wrap.notifObj))}
        RowLayout{
         id:content;anchors{left:parent.left;right:parent.right;top:parent.top;margins:14};spacing:12

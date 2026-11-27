@@ -26,7 +26,9 @@ ShellRoot{
  Item{id:canvas;width:180;height:100;Rectangle{anchors.fill:parent;color:'#ff0000'}MenuBarBackground{id:bar;width:180;height:32}}
  }
  IpcHandler{target:'barQA';function capture():void{canvas.grabToImage(result=>result.saveToFile(Quickshell.env('QI_BAR_CAPTURE')))}function fullscreen():void{bar.fullscreen=true}
- function precision():string{let queue=[page];while(queue.length){let c=queue.shift();if(c.text==='Opacity' && typeof c.decimals==='number'){const control=c.children[0];const values=[];for(let value of [.13,.37,.82]){control.committed(value);values.push(ShellConfig.options.topbar.backgroundOpacity)}return JSON.stringify({decimals:c.decimals,step:control.step,values:values})}for(let child of (c.children || []))queue.push(child)}return '{}'}}
+ function clearTint():void{ShellConfig.options.topbar.backgroundOpacity=0;ShellConfig.options.topbar.blurEnabled=true}
+ function clearMaterial():void{ShellConfig.options.topbar.blurEnabled=false}
+ function precision():string{let queue=[page];while(queue.length){let c=queue.shift();if(c.text==='Color opacity' && typeof c.decimals==='number'){const control=c.children[0];const values=[];for(let value of [.13,.37,.82]){control.committed(value);values.push(ShellConfig.options.topbar.backgroundOpacity)}return JSON.stringify({decimals:c.decimals,step:control.step,values:values})}for(let child of (c.children || []))queue.push(child)}return '{}'}}
 }''')
    env=dict(os.environ,HOME=tmp,XDG_CONFIG_HOME=tmp+'/.config',XDG_CACHE_HOME=tmp+'/.cache',XDG_STATE_HOME=tmp+'/.state',XDG_RUNTIME_DIR=runtime,WAYLAND_DISPLAY=os.environ['QUICKINTOSH_TEST_PRIVATE_WAYLAND'],HYPRLAND_INSTANCE_SIGNATURE=os.environ['QUICKINTOSH_TEST_PRIVATE_HYPRLAND'],QI_BAR_CAPTURE=tmp+'/capture.png',QT_QUICK_BACKEND='software',QSG_RENDER_LOOP='basic',DBUS_SESSION_BUS_ADDRESS='unix:path=/nonexistent')
    qs=os.environ['QUICKINTOSH_TEST_QS'];log=root/'qa.log'
@@ -60,6 +62,14 @@ ShellRoot{
     errors=subprocess.check_output(['hyprctl','configerrors'],env=env,text=True,timeout=5);self.assertFalse(errors.strip(),errors)
     self.assertNotIn('ReferenceError',log.read_text());self.assertNotIn('TypeError',log.read_text())
     precision=json.loads(ipc('precision'));self.assertEqual(precision['decimals'],2);self.assertAlmostEqual(precision['step'],.01);self.assertEqual(precision['values'],[.13,.37,.82])
+    for action,expected in [('clearTint',250),('clearMaterial',255)]:
+     capture.unlink();ipc(action);time.sleep(.1);ipc('capture')
+     for _ in range(100):
+      try:
+       with Image.open(capture) as image:image.verify()
+       break
+      except (OSError,SyntaxError):time.sleep(.05)
+     with Image.open(capture) as image:self.assertAlmostEqual(image.convert('RGB').getpixel((90,10))[0],expected,delta=1)
     print('MENUBAR_OPAQUE_AND_EXTERNAL_CORNERS_PIXELS_OK')
    finally:
     if log.exists():shutil.copyfile(log,'/tmp/qi-menubar-qa-last.log')

@@ -21,7 +21,7 @@ Item {
   {key:'spotlight',title:qsTr('Spotlight'),icon:'search',command:['quickintosh','ipc','call','rice','spotlight']},
   {key:'applications',title:qsTr('Applications'),icon:'grid',command:['quickintosh','ipc','call','rice','launchpad']},
   {key:'settings',title:qsTr('Settings'),icon:'settings',command:['quickintosh','ipc','call','rice','settings']}]
- readonly property var visibleWidgets:ShelfState.orderWidgets((ShelfState.editing ? widgets.filter(w=>homeKeys.includes(w.key)):widgets.concat(launchers)).filter(w=>(!favoritesOnly || ShelfState.editing || favoriteKeys.includes(w.key)) && (!search || w.title.toLocaleLowerCase().includes(search.toLocaleLowerCase()))))
+ readonly property var visibleWidgets:ShelfState.orderWidgets(widgets.concat(launchers)).filter(w=>(!favoritesOnly || ShelfState.editing || favoriteKeys.includes(w.key)) && (!search || w.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())))
  readonly property var widgets:[
   {key:'queue',title:qsTr('Playing Next'),icon:'list',page:13},
   {key:'selection',title:qsTr('Selection Actions'),icon:'copy',page:13},
@@ -53,7 +53,7 @@ Item {
  function swap(direction){const other=selectedSlot+direction;if(other<0 || other>3)return;const a=IslandConfig.s('shelfSlot'+(selectedSlot+1));IslandConfig.setStyle('shelfSlot'+(selectedSlot+1),IslandConfig.s('shelfSlot'+(other+1)));IslandConfig.setStyle('shelfSlot'+(other+1),a);selectedSlot=other}
  ColumnLayout{anchors.fill:parent;spacing:16
   RowLayout{Layout.fillWidth:true
-   Text{Layout.fillWidth:true;text:ShelfState.editing ? qsTr('Edit Home'):qsTr('Command Center');color:'white';font.family:ShelfStyle.displayFamily;font.pixelSize:19;font.weight:Font.DemiBold}
+   Text{Layout.fillWidth:true;text:qsTr('Command Center');color:'white';font.family:ShelfStyle.displayFamily;font.pixelSize:19;font.weight:Font.DemiBold}
    ShelfButton{visible:!ShelfState.editing;flat:true;icon:'notch/edit-3.svg';accessibleLabel:qsTr('Edit Home');onClicked:ShelfState.beginEditing()}
    ShelfButton{visible:ShelfState.editing;text:qsTr('Done');selected:true;onClicked:{ShelfState.editing=false;root.openPage(0)}}
   }
@@ -61,27 +61,6 @@ Item {
    TextField{Layout.fillWidth:true;placeholderText:qsTr('Find a control or widget');placeholderTextColor:'#9999a3';text:root.search;onTextEdited:root.search=text;color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:13;leftPadding:12;background:Rectangle{radius:12;color:'#14ffffff';border.color:'#20ffffff'}}
    ShelfButton{flat:true;text:qsTr('Favorites');selected:root.favoritesOnly;onClicked:root.favoritesOnly=!root.favoritesOnly}
    ShelfChoice{Layout.preferredWidth:124;model:[qsTr('Compact'),qsTr('Comfortable'),qsTr('Spacious')];currentIndex:root.columns===7 ? 0:root.columns===5 ? 1:2;onActivated:ShelfState.send({action:'utilityPreferences',values:{commandColumns:[7,5,4][currentIndex]}})}
-  }
-  RowLayout{visible:ShelfState.editing;Layout.fillWidth:true;spacing:10
-   Repeater{model:4
-    delegate:Rectangle{required property int index;readonly property var info:root.widget(IslandConfig.s('shelfSlot'+(index+1)));Layout.fillWidth:true;implicitHeight:76;radius:16;color:root.selectedSlot===index ? '#29ffffff':'#0dffffff';border.width:1;border.color:root.selectedSlot===index ? '#a0ffffff':'#1cffffff'
-     ColumnLayout{anchors.centerIn:parent;spacing:7
-      ShelfIcon{Layout.alignment:Qt.AlignHCenter;size:25;Layout.preferredWidth:25;Layout.preferredHeight:25;icon:'notch/'+info.icon+'.svg';color:'white'}
-      Text{text:info.title;font.family:ShelfStyle.textFamily;font.pixelSize:12;color:'white'}
-     }
-     TapHandler{onTapped:root.selectedSlot=index}
-    }
-   }
-  }
-  RowLayout{visible:ShelfState.editing;Layout.fillWidth:true;spacing:7
-   ShelfButton{flat:true;icon:Quickshell.shellPath('quicklook/icons/chevron-left.svg');accessibleLabel:qsTr('Move left');enabled:root.selectedSlot>0;onClicked:root.swap(-1)}
-   ShelfButton{flat:true;icon:Quickshell.shellPath('quicklook/icons/chevron-right.svg');accessibleLabel:qsTr('Move right');enabled:root.selectedSlot<3;onClicked:root.swap(1)}
-   Item{Layout.fillWidth:true}
-   Repeater{model:[qsTr('Small'),qsTr('Medium'),qsTr('Large')]
-    delegate:ShelfButton{required property string modelData;required property int index;text:modelData;flat:true;selected:IslandConfig.s('shelfWeight'+(root.selectedSlot+1))===index+1;onClicked:IslandConfig.setStyle('shelfWeight'+(root.selectedSlot+1),index+1)}
-   }
-   Item{Layout.fillWidth:true}
-   ShelfButton{flat:true;icon:'notch/trash-2.svg';accessibleLabel:qsTr('Remove widget');onClicked:IslandConfig.setStyle('shelfSlot'+(root.selectedSlot+1),'none')}
   }
   GridView{id:grid;Layout.fillWidth:true;Layout.fillHeight:true;clip:true;boundsBehavior:Flickable.StopAtBounds;reuseItems:true;cellWidth:Math.floor(width/Math.max(1,Math.min(root.columns,Math.floor(width/126))));cellHeight:100
    model:root.visibleWidgets

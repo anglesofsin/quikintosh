@@ -183,6 +183,7 @@ end
 -- 1. Window Management
 hl.bind(m .. " + Q", hl.dsp.window.close(), { description = "Close window" })
 hl.bind(m .. " + F", hl.dsp.window.fullscreen(), { description = "Toggle fullscreen" })
+configurableBind("ALT + F", hl.dsp.window.fullscreen({mode="maximized",action="toggle",layout_aware=false}), {description="Toggle maximize"})
 hl.bind(m .. " + T", hl.dsp.exec_cmd("/home/pg/scripts/infinite-desktop-focus-toggle.sh"), { description = "Toggle float / canvas focus mode" })
 hl.bind(m .. " + Z", hl.dsp.window.pin({ action = "toggle" }), { description = "Toggle pin" })
 hl.bind(m .. " + SHIFT + left",  hl.dsp.exec_cmd("/home/pg/scripts/infinite-desktop-move-window.sh left"), { description = "Move window left" })

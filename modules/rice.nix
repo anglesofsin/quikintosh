@@ -175,6 +175,7 @@ let
 
   quickintoshGeometry = pkgs.callPackage ./lickintosh/rendering/geometry {};
   quickintoshRendering = pkgs.callPackage ./lickintosh/rendering/native {};
+  quickintoshAnima = pkgs.callPackage ./lickintosh/live-backdrop/anima {};
   lickintoshRoot = pkgs.stdenvNoCC.mkDerivation {
     pname = "lickintosh-source";
     version = "unstable-${builtins.substring 0 8 (lickintosh-src.rev or "6e8f51b8")}";
@@ -408,6 +409,15 @@ let
       exec qs -p ${lickintoshRoot}/calculator.qml --no-duplicate
     '';
   };
+  wallpaperBenchmark = pkgs.writeShellApplication {
+    name = "quickintosh-wallpaper-benchmark";
+    runtimeInputs = [ lickintoshQs pkgs.ffmpeg pkgs.hyprland ];
+    text = ''
+      export QML_IMPORT_PATH="${quickintoshRendering}/lib/qt-6/qml:${lib.makeSearchPath "lib/qt-6/qml" (with pkgs.qt6; [ qtmultimedia qt5compat ])}:''${QML_IMPORT_PATH:-}"
+      export QT_PLUGIN_PATH="${lib.makeSearchPath "lib/qt-6/plugins" (with pkgs.qt6; [ qtmultimedia ])}:''${QT_PLUGIN_PATH:-}"
+      exec ${pkgs.python3}/bin/python3 ${./lickintosh/live-backdrop/benchmark.py} --qs ${lickintoshQs}/bin/qs --qt-root ${lickintoshRoot} --daemon ${quickintoshAnima}/bin/quickintosh-animad --cli ${quickintoshAnima}/bin/quickintosh-anima "$@"
+    '';
+  };
   calculatorDesktop = pkgs.makeDesktopItem {
     name = "org.quickintosh.Calculator";
     desktopName = "Calculator";
@@ -629,7 +639,7 @@ in
   services.dbus.packages = [ pkgs.gvfs ];
   systemd.packages = [ pkgs.gvfs ];
   services.udisks2.enable = true;
-  environment.systemPackages = [ desktopProfile finder finderDesktop riceFileManager quickLookOpener quickLookDesktop calculatorLauncher calculatorDesktop
+  environment.systemPackages = [ desktopProfile finder finderDesktop riceFileManager quickLookOpener quickLookDesktop calculatorLauncher calculatorDesktop quickintoshAnima wallpaperBenchmark
     pkgs.noctalia-shell
     noctaliaLegacyPackage
     lickintoshPackage

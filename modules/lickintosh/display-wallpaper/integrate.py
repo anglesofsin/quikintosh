@@ -18,6 +18,7 @@ edit('services/ShellConfig.qml','            property JsonObject wallpaper: Json
                 property string backgroundColor:'#000000'
                 property real dim:0
                 property bool pauseFullscreen:true
+                property bool pauseMaximized:false
                 property bool videoEnabled:true
                 property bool videoPauseBattery:false
                 property bool shuffleEnabled:false
@@ -38,7 +39,7 @@ edit(p,'import QtQuick','import Quickshell.Services.UPower\nimport QtQuick')
 edit(p,'color: "#000000"','color: ShellConfig.options.wallpaper.backgroundColor')
 edit(p,'active: GlassWallpaper.videoActive','active: bgWin.screenVideo!==""')
 edit(p,'item.source = Qt.binding(function() { return ShellConfig.options.wallpaper.videoPath })','item.source = Qt.binding(function() { return bgWin.screenVideo })')
-edit(p,'item.paused = Qt.binding(function() { return GameMode.enabled })',"item.paused = Qt.binding(function() { return GameMode.enabled || !ShellConfig.options.wallpaper.videoEnabled || (ShellConfig.options.wallpaper.videoPauseBattery && UPower.onBattery) || (ShellConfig.options.wallpaper.pauseFullscreen && GlassTracker.clientsSnapshot.some(c=>c.monitor===GlassTracker.monitorSnapshots.find(m=>m.name===bgWin.screen.name)?.id && c.fullscreen>0)) })")
+edit(p,'item.paused = Qt.binding(function() { return GameMode.enabled })',"item.paused = Qt.binding(function() { return WallpaperVideo.pauseReason(bgWin.screen.name)!=='' })")
 edit(p,'fillMode: Image.PreserveAspectCrop',"fillMode: ShellConfig.options.wallpaper.fit==='fit' ? Image.PreserveAspectFit:ShellConfig.options.wallpaper.fit==='stretch' ? Image.Stretch:ShellConfig.options.wallpaper.fit==='center' ? Image.Pad:Image.PreserveAspectCrop")
 edit(p,'duration: 350','duration: ShellConfig.options.wallpaper.transitionMs')
 edit(p,'interval: 360','interval: ShellConfig.options.wallpaper.transitionMs+10')
@@ -89,10 +90,12 @@ s=s[:a]+'''  RowLayout{Layout.fillWidth:true
     RowLayout{Layout.fillWidth:true;Text{text:'Video resolution';color:Theme.textPrimary;Layout.fillWidth:true}TahoeCombo{model:['Original','720p HD','1080p Full HD','1440p QHD','2160p 4K'];currentIndex:Math.max(0,[0,720,1080,1440,2160].indexOf(root.prefs.videoHeight));onActivated:i=>root.prefs.videoHeight=[0,720,1080,1440,2160][i]}}
     RowLayout{Layout.fillWidth:true;Text{text:'Video frame rate';color:Theme.textPrimary;Layout.fillWidth:true}TahoeCombo{model:['Original','15 FPS','24 FPS','30 FPS','60 FPS','120 FPS'];currentIndex:Math.max(0,[0,15,24,30,60,120].indexOf(root.prefs.videoFps));onActivated:i=>root.prefs.videoFps=[0,15,24,30,60,120][i]}}
     Text{visible:WallpaperVideo.busy || WallpaperVideo.error!=='';Layout.fillWidth:true;wrapMode:Text.WordWrap;text:WallpaperVideo.busy ? I18n.tr('Preparing optimized wallpaper…'):WallpaperVideo.error;color:Theme.textSecondary;font.pixelSize:12}
+    WallpaperDiagnostics{}
     ConfigSwitch{text:'Play animated wallpapers';checked:root.prefs.videoEnabled;onToggled:v=>root.prefs.videoEnabled=v}
     ConfigSwitch{text:'Pause videos on battery';checked:root.prefs.videoPauseBattery;onToggled:v=>root.prefs.videoPauseBattery=v}
+    ConfigSwitch{text:'Pause videos when maximized';checked:root.prefs.pauseMaximized;onToggled:v=>root.prefs.pauseMaximized=v}
     ConfigSwitch{text:'Pause videos in full screen';checked:root.prefs.pauseFullscreen;onToggled:v=>root.prefs.pauseFullscreen=v}
-    TahoeButton{text:'Restore playback defaults';onClicked:{root.prefs.videoHeight=0;root.prefs.videoFps=0;root.prefs.videoEnabled=true;root.prefs.videoPauseBattery=false;root.prefs.pauseFullscreen=true}}
+    TahoeButton{text:'Restore playback defaults';onClicked:{root.prefs.videoHeight=0;root.prefs.videoFps=0;root.prefs.videoEnabled=true;root.prefs.videoPauseBattery=false;root.prefs.pauseFullscreen=true;root.prefs.pauseMaximized=false}}
     RowLayout{ConfigSwitch{text:'Change wallpaper';checked:root.prefs.shuffleEnabled;onToggled:v=>root.prefs.shuffleEnabled=v}TahoeCombo{model:['15 seconds','1 minute','15 minutes','1 hour','1 day'];currentIndex:Math.max(0,[15,60,900,3600,86400].indexOf(root.prefs.shuffleSeconds));onActivated:i=>root.prefs.shuffleSeconds=[15,60,900,3600,86400][i]}}
     RowLayout{ConfigSwitch{text:'Random order';checked:root.prefs.shuffleRandom;onToggled:v=>root.prefs.shuffleRandom=v}ConfigSwitch{text:'Favorites only';checked:root.prefs.shuffleFavorites;onToggled:v=>root.prefs.shuffleFavorites=v}}
     Repeater{model:root.prefs.folders;delegate:RowLayout{required property string modelData;Text{text:modelData;elide:Text.ElideMiddle;color:Theme.textSecondary;Layout.fillWidth:true}TahoeButton{text:'Remove';onClicked:WallpaperSettings.removeFolder(modelData)}}}

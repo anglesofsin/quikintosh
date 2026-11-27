@@ -23,9 +23,11 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
 import qs.services
+import "ui/topbar/statusarea/spotlight"
 ShellRoot{
- FloatingWindow{visible:true;title:'Wallpaper Controls QA';implicitWidth:600;implicitHeight:500;color:'#202022';WallpaperDiagnostics{id:diagnostics;ipcPrefix:[Quickshell.env('QUICKINTOSH_TEST_QS'),'-p',Quickshell.shellDir,'ipc','call','wallpaperVideo'];anchors{left:parent.left;right:parent.right;top:parent.top;margins:20}enabledByUser:true}}
- IpcHandler{target:'wallpaperControls';function state():string{return JSON.stringify({rows:diagnostics.snapshot.length,received:diagnostics.received})}function stop():void{diagnostics.enabledByUser=false}}
+ FloatingWindow{visible:true;title:'Wallpaper Controls QA';implicitWidth:600;implicitHeight:500;color:'#202022';WallpaperDiagnostics{id:diagnostics;ipcPrefix:[Quickshell.env('QUICKINTOSH_TEST_QS'),'-p',Quickshell.shellDir,'ipc','call','wallpaperVideo'];anchors{left:parent.left;right:parent.right;top:parent.top;margins:20}enabledByUser:true}SpotlightCategoryGrid{id:appGrid;anchors.fill:parent;visible:false;items:Array.from({length:400},(_,index)=>({name:"Scroll fixture "+index,icon:"folder"}));categoryOrder:[];fontFamily:'SF Pro';fontFamilyMedium:'SF Pro';mode:'apps'}}
+ IpcHandler{target:'wallpaperControls';function state():string{return JSON.stringify({rows:diagnostics.snapshot.length,received:diagnostics.received})}function stop():void{diagnostics.enabledByUser=false}
+ function scroll():string{appGrid.visible=true;diagnostics.visible=false;let queue=[appGrid];while(queue.length){let c=queue.shift();if(typeof c.contentY==='number' && c.contentHeight>c.height && c.height>100){c.contentY=Math.min(c.contentHeight-c.height,c.contentY+120);return JSON.stringify({position:c.contentY,total:c.contentHeight,height:c.height})}for(let child of (c.children || []))queue.push(child)}return '{}'}}
  PanelWindow{anchors{left:true;right:true;top:true}implicitHeight:28;color:'#303033';exclusiveZone:28;WlrLayershell.keyboardFocus:WlrKeyboardFocus.None}
 }''')
    env=dict(os.environ,HOME=tmp,XDG_CONFIG_HOME=tmp+'/.config',XDG_CACHE_HOME=tmp+'/.cache',XDG_STATE_HOME=tmp+'/.state',XDG_RUNTIME_DIR=runtime,WAYLAND_DISPLAY=os.environ['QUICKINTOSH_TEST_PRIVATE_WAYLAND'],HYPRLAND_INSTANCE_SIGNATURE=os.environ['QUICKINTOSH_TEST_PRIVATE_HYPRLAND'],QSG_RENDER_LOOP='basic',DBUS_SESSION_BUS_ADDRESS='unix:path=/nonexistent')
@@ -59,6 +61,14 @@ ShellRoot{
      if floating:self.assertEqual(after['at'],before['at']);self.assertEqual(after['size'],before['size'])
     ipc('settings.qml','wallpaperControls','stop');time.sleep(.4)
     self.assertFalse(json.loads(ipc('shell.qml','wallpaperVideo','state'))['measuring'])
+    positions=[]
+    for _ in range(15):
+     row=json.loads(ipc('settings.qml','wallpaperControls','scroll'))
+     if 'position' in row:positions.append(row['position'])
+     time.sleep(.03)
+    self.assertTrue(positions,'Launchpad scroll view was not created: '+str(row)+'\n'+'\n'.join(p.read_text() for p in logs))
+    self.assertGreater(positions[-1],0)
+    print('LAUNCHPAD_SCROLL_VIEW_OK',positions[-1])
     print('DECORATED_ZOOM_RESTORE_AND_DIAGNOSTICS_OK')
    finally:
     for p in reversed(players):

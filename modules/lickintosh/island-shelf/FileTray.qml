@@ -2,20 +2,38 @@ import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 import qs.services
 import qs.components
 import qs.rosa.services
 Item {
  id:root
+ objectName:"shelf-file-tray"
+ property alias nearbyPanel:nearby
+ property alias nearbyPopup:sharePopup
  property bool floating:false
  property var selected:[]
  property bool selectionMode:false
  property string renamePath:''
  readonly property var chosen:ShelfState.items.filter(item=>selected.includes(item.path))
  function choose(path,ctrl){selected=ctrl || selectionMode ? (selected.includes(path) ? selected.filter(p=>p!==path):selected.concat([path])):[path]}
- function act(action){ShelfState.send({action:action,paths:selected});if(action==='remove')selected=[]}
+ function act(action){if(action==='share' && ShelfState.capabilities.kdeconnect){nearby.refresh();sharePopup.open();return}ShelfState.send({action:action,paths:selected});if(action==='remove')selected=[]}
  function sizeText(n){if(n<1024)return n+' bytes';if(n<1048576)return Math.round(n/1024)+' KB';if(n<1073741824)return (n/1048576).toFixed(1)+' MB';return (n/1073741824).toFixed(1)+' GB'}
  function transform(operation){ShelfState.transformPaths=selected;ShelfState.transformOperation=operation || 'compress';ShelfState.closeRequested();ShelfState.transformOpen=true}
+ PanelWindow{id:sharePopup;objectName:'nearby-share-popup';visible:false;color:'transparent';implicitWidth:424;implicitHeight:470;exclusionMode:ExclusionMode.Ignore
+  WlrLayershell.namespace:'quickintosh-nearby-share';WlrLayershell.layer:WlrLayer.Overlay;WlrLayershell.keyboardFocus:visible ? WlrKeyboardFocus.OnDemand:WlrKeyboardFocus.None
+  mask:Region{item:shareBody;radius:22}
+  function open(){visible=true}
+  function close(){visible=false}
+  property bool held:false
+  onVisibleChanged:{if(held!==visible){held=visible;ShelfState.interaction(held)}}
+  Component.onDestruction:if(held)ShelfState.interaction(false)
+  Item{id:shareBody;anchors.fill:parent
+   ShelfPanelMaterial{anchors.fill:parent}
+   NearbyShare{id:nearby;objectName:'nearby-share-content';anchors.fill:parent;anchors.margins:20;paths:root.selected;onFinished:sharePopup.close()}
+  }
+ }
+
  ColumnLayout{anchors.fill:parent;spacing:12
   RowLayout{Layout.fillWidth:true;spacing:8
    ShelfButton{implicitWidth:36;implicitHeight:36;icon:'notch/package.svg';iconSize:19;accessibleLabel:qsTr('Create ZIP');enabled:root.selected.length>0;onClicked:root.act('archive')}
@@ -71,7 +89,7 @@ Item {
       ShelfMenuItem{symbol:'notch/check.svg';text:tile.modelData.pinned ? qsTr('Unpin'):qsTr('Pin');onTriggered:root.act('pin')}
       ShelfMenuItem{visible:tile.modelData.directory;height:visible ? implicitHeight:0;symbol:'notch/eye.svg';text:tile.modelData.tracked ? qsTr('Stop tracking folder'):qsTr('Track folder');onTriggered:root.act('track')}
       ShelfMenuItem{symbol:'notch/copy.svg';text:qsTr('Copy');onTriggered:root.act('copy')}
-      ShelfMenuItem{symbol:'notch/send.svg';text:qsTr('Share with LocalSend');visible:!!ShelfState.capabilities.share;height:visible ? implicitHeight:0;onTriggered:root.act('share')}
+      ShelfMenuItem{symbol:'notch/send.svg';text:ShelfState.capabilities.kdeconnect ? qsTr('Share with KDE Connect'):qsTr('Share with LocalSend');visible:!!ShelfState.capabilities.share;height:visible ? implicitHeight:0;onTriggered:root.act('share')}
       ShelfMenuItem{symbol:'notch/folder.svg';text:qsTr('Show in Finder');onTriggered:Quickshell.execDetached(['quickintosh-finder','--select',tile.modelData.path])}
       ShelfMenuItem{symbol:'notch/trash-2.svg';text:qsTr('Remove from tray');onTriggered:root.act('remove')}
      }

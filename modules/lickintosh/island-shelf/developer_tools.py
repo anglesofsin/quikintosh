@@ -3,11 +3,24 @@ import base64
 import hashlib
 import json
 import uuid
+import html
+import datetime
 from urllib.parse import quote,unquote
 
 
 def transform(text,operation):
     if not isinstance(text,str) or len(text)>1024*1024:raise ValueError('Input is limited to 1 MiB')
+    if operation=='html':return html.escape(text)
+    if operation=='unhtml':return html.unescape(text)
+    if operation=='hex':return text.encode().hex()
+    if operation=='unhex':return bytes.fromhex(text).decode()
+    if operation=='lines':return '\n'.join(sorted(text.splitlines()))
+    if operation=='unique':return '\n'.join(dict.fromkeys(text.splitlines()))
+    if operation=='count':return json.dumps(dict(characters=len(text),words=len(text.split()),lines=len(text.splitlines())),indent=2)
+    if operation=='timestamp':
+        value=float(text.strip())
+        if abs(value)>100000000000:value/=1000
+        return datetime.datetime.fromtimestamp(value,datetime.timezone.utc).isoformat()
     if operation=='json':return json.dumps(json.loads(text),ensure_ascii=False,indent=2)
     if operation=='minify':return json.dumps(json.loads(text),ensure_ascii=False,separators=(',',':'))
     if operation=='base64':return base64.b64encode(text.encode()).decode()

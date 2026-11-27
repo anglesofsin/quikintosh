@@ -113,6 +113,9 @@ class Shelf(FileOperations,AppOperations,VaultOperations,MediaQueue):
             values=event.get('values',{})
             if 'teleprompterText' in values:state['teleprompterText']=str(values['teleprompterText'])[:100000]
             if values.get('voiceLanguage') in ('auto','pt','en','es','fr','de','it','ja','ko','zh','ru'):state['voiceLanguage']=values['voiceLanguage']
+            if 'teleprompterWpm' in values:state['teleprompterWpm']=max(60,min(300,float(values['teleprompterWpm'])))
+            if 'teleprompterFontSize' in values:state['teleprompterFontSize']=max(14,min(48,float(values['teleprompterFontSize'])))
+            if 'teleprompterMirrored' in values:state['teleprompterMirrored']=values['teleprompterMirrored'] is True
             if 'selectionActionsEnabled' in values:state['selectionActionsEnabled']=values['selectionActionsEnabled'] is True
             if 'widgetRecent' in values:state['widgetRecent']=list(dict.fromkeys(key[:64] for key in values['widgetRecent'][:40] if isinstance(key,str)))
             if 'ringCount' in values:state['ringCount']=max(1,min(3,int(values['ringCount'])))

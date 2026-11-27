@@ -7,7 +7,7 @@ class AppOperations:
         local=bool(shutil.which('localsend'))
         if not local and shutil.which('flatpak'):
             local=subprocess.run(['flatpak','info','--show-ref','org.localsend.localsend_app'],capture_output=True,timeout=10).returncode==0
-        return {'share':local,'video':bool(shutil.which('ffmpeg')),'pdf':True,'background':True}
+        return {'kdeconnect':bool(shutil.which('kdeconnect-cli')),'share':local or bool(shutil.which('kdeconnect-cli')),'video':bool(shutil.which('ffmpeg')),'pdf':True,'background':True}
     def applications(self,event=None):
         rows=[]
         if shutil.which('flatpak'):
@@ -86,9 +86,21 @@ class AppOperations:
         return self.applications()
     def sharing(self,event):
         paths=self.managed(event.get('paths',[]))
+        provider=event.get('provider','auto')
+        if provider not in ('auto','kdeconnect','localsend'):raise ValueError('Unknown sharing provider')
+        if provider!='localsend' and shutil.which('kdeconnect-cli'):
+            result=subprocess.run(['kdeconnect-cli','--list-available','--id-only'],capture_output=True,text=True,check=True,timeout=10)
+            devices=[line.strip() for line in result.stdout.splitlines() if re.fullmatch(r'[A-Za-z0-9_-]+',line.strip())]
+            device=event.get('device')
+            if device and device not in devices:raise ValueError('Choose a paired and reachable device')
+            if not device and len(devices)==1:device=devices[0]
+            if device:
+                for path in paths:subprocess.run(['kdeconnect-cli','--device',device,'--share',str(path)],capture_output=True,text=True,check=True,timeout=20)
+                return dict(type='shared',count=len(paths),provider='kdeconnect')
+            if devices or provider=='kdeconnect':raise ValueError('Select a paired reachable device explicitly before sharing')
         if shutil.which('localsend'):
             subprocess.Popen(['localsend',*[str(p) for p in paths]],start_new_session=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
         elif shutil.which('flatpak') and subprocess.run(['flatpak','info','--show-ref','org.localsend.localsend_app'],capture_output=True,timeout=10).returncode==0:
             subprocess.Popen(['flatpak','run','org.localsend.localsend_app',*[str(p) for p in paths]],start_new_session=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-        else:raise ValueError('Install LocalSend to share with nearby devices')
-        return dict(type='shared',count=len(paths))
+        else:raise ValueError('Pair a reachable KDE Connect device or install LocalSend')
+        return dict(type='shared',count=len(paths),provider='localsend')

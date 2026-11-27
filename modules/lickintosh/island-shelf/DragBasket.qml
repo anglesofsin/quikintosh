@@ -16,7 +16,7 @@ PanelWindow {
  margins.top:Math.max(4,Math.min(screen.height-height-4,ShelfState.basketPosition.y-screen.y-height/2))
  Rectangle{id:basketBody;anchors.fill:parent;radius:28;color:'#f508080a';border.color:'#35ffffff'
   Grid{anchors.fill:parent;anchors.margins:12;columns:2;spacing:8
-   Repeater{model:[{label:qsTr('Drop'),icon:'inbox',action:'drop'},{label:qsTr('Transform'),icon:'refresh-cw',action:'transform'},{label:qsTr('Files'),icon:'folder',action:'files'},{label:ShelfState.capabilities.share ? qsTr('LocalSend'):qsTr('Copy'),icon:ShelfState.capabilities.share ? 'send':'copy',action:ShelfState.capabilities.share ? 'share':'copy'}]
+   Repeater{model:[{label:qsTr('Drop'),icon:'inbox',action:'drop'},{label:qsTr('Transform'),icon:'refresh-cw',action:'transform'},{label:qsTr('Files'),icon:'folder',action:'files'},{label:ShelfState.capabilities.share ? (ShelfState.capabilities.kdeconnect ? qsTr('KDE Connect'):qsTr('LocalSend')):qsTr('Copy'),icon:ShelfState.capabilities.share ? 'send':'copy',action:ShelfState.capabilities.share ? 'share':'copy'}]
     Rectangle{required property var modelData;width:114;height:99;radius:16;color:target.containsDrag ? '#403a3a40':'#141416'
      Column{anchors.centerIn:parent;spacing:12
       ShelfIcon{anchors.horizontalCenter:parent.horizontalCenter;size:26;icon:'notch/'+modelData.icon+'.svg'}

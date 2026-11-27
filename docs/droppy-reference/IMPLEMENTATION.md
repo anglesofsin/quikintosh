@@ -73,3 +73,6 @@ Use `quickintosh-run --title "Build" -- your-command`; progress appears in Live
 Activities. Interactive agents keep their caller TTY. It does not scrape private
 Claude/Codex histories or claim model-token/cost statistics. Exit summaries store
 only a chosen title, duration, status and completion timestamp (last 200 jobs).
+
+
+2026-11-27 follow-up (isolated source; not activated): KDE Connect paired/available device selection and explicit recipient validation with LocalSend fallback; separate 424×470 glass share surface. Backend recipient tests use mocks and never transmit files. Teleprompter imports bounded TXT/MD/PDF/DOCX locally, supports persisted 60–300 WPM, text size/mirroring, and Wayland display idle inhibition while reading. Voice-following/fullscreen exception remains pending. Developer transformations now include HTML/hex, sort/deduplicate lines, counts and UTC timestamps. This is incremental work, not complete feature or visual parity.

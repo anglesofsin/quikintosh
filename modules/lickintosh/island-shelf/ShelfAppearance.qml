@@ -33,6 +33,10 @@ ColumnLayout {
   Text{Layout.fillWidth:true;text:qsTr('Other displays');color:root.ink;font.family:'SF Pro Text';font.pixelSize:13}
   ShelfChoice{manageHold:!root.settingsPage;Layout.preferredWidth:170;model:[qsTr('Dynamic Island'),qsTr('Notch')];currentIndex:IslandConfig.s('externalSurfaceMode')==='notch' ? 1:0;onActivated:i=>IslandConfig.setStyle('externalSurfaceMode',i ? 'notch':'island')}
  }
+ RowLayout{Layout.fillWidth:true
+ Text{Layout.fillWidth:true;text:qsTr('Interaction');color:root.ink;font.family:'SF Pro Text';font.pixelSize:13}
+ ShelfChoice{manageHold:!root.settingsPage;Layout.preferredWidth:200;model:[qsTr('Droppy · hover and click'),qsTr('Classic · click activity'),qsTr('Custom')];currentIndex:['droppy','classic','custom'].indexOf(IslandConfig.s('interactionPreset'));onActivated:i=>IslandConfig.setStyle('interactionPreset',['droppy','classic','custom'][i])}
+ }
  Text{text:qsTr('Shelf material');color:root.ink;font.family:'SF Pro Text';font.pixelSize:14;font.weight:Font.DemiBold}
  RowLayout{Layout.fillWidth:true;spacing:8
   Repeater{model:[{key:'black',title:qsTr('Black'),icon:'notch/moon.svg'},{key:'glass',title:qsTr('Liquid Glass'),icon:'notch/droplet.svg'},{key:'dynamic',title:qsTr('Fade'),icon:'notch/layers.svg'}]
@@ -46,7 +50,7 @@ ColumnLayout {
  }
  RowLayout{Layout.fillWidth:true
   Text{Layout.fillWidth:true;text:qsTr('Height');color:root.ink;font.family:'SF Pro Text';font.pixelSize:13}
-  ShelfSlider{manageHold:!root.settingsPage;Layout.preferredWidth:180;from:240;to:520;stepSize:10;value:IslandConfig.s('shelfHeight');onMoved:IslandConfig.setStyle('shelfHeight',value)}
+  ShelfSlider{manageHold:!root.settingsPage;Layout.preferredWidth:180;from:200;to:520;stepSize:10;value:IslandConfig.s('shelfHeight');onMoved:IslandConfig.setStyle('shelfHeight',value)}
   Text{Layout.preferredWidth:42;text:IslandConfig.s('shelfHeight')+' px';color:root.muted;font.family:'SF Pro Text';font.pixelSize:11}
  }
 }

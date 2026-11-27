@@ -125,10 +125,17 @@ PanelWindow {
                 for (const item of group.items) entries.push(item)
         return entries
     }
+    property int pendingPage: 0
     function selectPage(index) {
-        if (page === index) return
-        page = index
+        if (index < 0 || index > 12 || (page === index && !pageArrival.running)) return
+        pendingPage = index
         pageArrival.restart()
+    }
+    SequentialAnimation {
+        id: pageArrival
+        NumberAnimation { target: pageContent; property: "opacity"; to: 0; duration: SettingsPreferences.accessibility.reduceMotion ? 0:65 }
+        ScriptAction { script: panel.page = panel.pendingPage }
+        NumberAnimation { target: pageContent; property: "opacity"; to: 1; duration: SettingsPreferences.accessibility.reduceMotion ? 0:130; easing.type: Easing.OutCubic }
     }
     property var selectedHour: null
     readonly property int displayedCode: selectedHour?.code ?? WeatherState.weatherCode
@@ -241,12 +248,6 @@ PanelWindow {
                     height: pageFrame.height / scale
                     transformOrigin: Item.TopLeft
                     sourceComponent: [overview, forecast, performance, media, notifications, cameraFull][panel.page]
-                    NumberAnimation on opacity {
-                        id: pageArrival
-                        from: .35; to: 1
-                        duration: ShellMotion.fade()
-                        easing.type: Easing.OutCubic
-                    }
                 }
             }
         }

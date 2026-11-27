@@ -10,17 +10,19 @@ p=root/'services/qmldir';p.write_text(p.read_text()+'\nsingleton ShelfState Shel
 (root/'island-shelf/qmldir').write_text('\n'.join(name+' '+name+'.qml' for name in ['ShelfButton','ShelfHome','FileTray','ClipboardShelf','LyricsShelf','AudioShelf','WidgetLibrary','ActivitiesShelf','FloatingMusic','ShelfChoice','ShelfSlider','StayAwakeShelf','NotificationShelf','FloatingTray','ShelfAppearance'])+'\n')
 base=root/'rosa'
 p=base/'services/IslandConfig.qml';s=p.read_text();spec={
+ 'interactionPreset':dict(type='pick',def_='droppy',values=['droppy','classic','custom']),
  'floatingPlayerSize':dict(type='pick',def_='player',values=['mini','player','expanded']),
  'surfaceMode':dict(type='pick',def_='island',values=['island','notch']),
  'externalSurfaceMode':dict(type='pick',def_='island',values=['island','notch']),
  'shelfMaterial':dict(type='pick',def_='dynamic',values=['black','glass','dynamic']),
- 'shelfWidgetCards':dict(type='bool',def_=True),
+ 'shelfWidgetCards':dict(type='bool',def_=False),
  'shelfExpandedTabs':dict(type='bool',def_=False),
  'shelfAnimationMs':dict(type='int',def_=220,min=0,max=600),
- 'shelfWidth':dict(type='int',def_=1000,min=600,max=1400),
- 'shelfHeight':dict(type='int',def_=310,min=240,max=520),
- 'shelfOpenOnHover':dict(type='bool',def_=False),
- 'shelfHoverDelay':dict(type='int',def_=350,min=100,max=2000),
+ 'shelfAdaptiveWidth':dict(type='bool',def_=True),
+ 'shelfWidth':dict(type='int',def_=1140,min=600,max=1400),
+ 'shelfHeight':dict(type='int',def_=216,min=200,max=520),
+ 'shelfOpenOnHover':dict(type='bool',def_=True),
+ 'shelfHoverDelay':dict(type='int',def_=250,min=100,max=2000),
  'shelfCollapseDelay':dict(type='int',def_=350,min=100,max=2000),
  'shelfLyricsBlank':dict(type='bool',def_=True),
 }
@@ -33,18 +35,18 @@ for key,value in spec.items():
 s=s.replace('        enabled:     {', '        '+('\n        '.join(lines))+'\n        enabled:     {',1)
 s=s.replace('readonly property var groups: [','readonly property var groups: [\n        {key:"shelf",names:'+json.dumps(list(spec))+'},',1)
 p.write_text(s)
-labels={'shelfWidgetCards':'Widget cards','floatingPlayerSize':'Floating player size','surfaceMode':'Display shape','externalSurfaceMode':'External display shape','shelfMaterial':'Expanded shelf material','shelfExpandedTabs':'Show expanded navigation tabs','shelfAnimationMs':'Shelf animation duration (ms)','shelfWidth':'Expanded shelf width','shelfHeight':'Expanded shelf height','shelfOpenOnHover':'Open shelf on hover','shelfHoverDelay':'Hover delay (ms)','shelfCollapseDelay':'Collapse delay (ms)','shelfLyricsBlank':'Keep lyrics blank when unavailable'}
+labels={'interactionPreset':'Interaction preset','shelfAdaptiveWidth':'Fit width to Home widgets','shelfWidgetCards':'Widget cards','floatingPlayerSize':'Floating player size','surfaceMode':'Display shape','externalSurfaceMode':'External display shape','shelfMaterial':'Expanded shelf material','shelfExpandedTabs':'Show expanded navigation tabs','shelfAnimationMs':'Shelf animation duration (ms)','shelfWidth':'Expanded shelf width','shelfHeight':'Expanded shelf height','shelfOpenOnHover':'Open shelf on hover','shelfHoverDelay':'Hover delay (ms)','shelfCollapseDelay':'Collapse delay (ms)','shelfLyricsBlank':'Keep lyrics blank when unavailable'}
 for i in range(1,5):labels['shelfSlot'+str(i)]=f'Shelf widget {i}';labels['shelfWeight'+str(i)]=f'Widget {i} width'
-p=base/'lang/en.json';d=json.loads(p.read_text());d['isle.sec.shelf']='Shelf behavior and motion';d.update({'isle.o.'+k:v for k,v in labels.items()});d.update({'isle.v.'+x:x.title() for x in ['island','notch','calendar','notes','performance','files','none','black','glass','dynamic','weather','focus','media']});p.write_text(json.dumps(d,ensure_ascii=False,indent=2))
+p=base/'lang/en.json';d=json.loads(p.read_text());d['isle.sec.shelf']='Shelf behavior and motion';d.update({'isle.o.'+k:v for k,v in labels.items()});d.update({'isle.v.'+x:x.title() for x in ['droppy','classic','custom','island','notch','calendar','notes','performance','files','none','black','glass','dynamic','weather','focus','media']});p.write_text(json.dumps(d,ensure_ascii=False,indent=2))
 p=base/'overlays/IslandDashboard.qml';s=p.read_text().replace('import qs.services','import "../../island-shelf"\nimport qs.services',1)
-s=s.replace('implicitWidth: Math.min(output.width - 32, 1120)','implicitWidth: Math.min(output.width - 32, IslandConfig.s("shelfWidth"))')
+s=s.replace('implicitWidth: Math.min(output.width - 32, 1120)','implicitWidth: Math.min(output.width - 32, panel.page===0 && IslandConfig.s("shelfAdaptiveWidth") ? Math.min(IslandConfig.s("shelfWidth"),Math.max(380,[1,2,3,4].filter(i=>IslandConfig.s("shelfSlot"+i)!=="none").length*380)):IslandConfig.s("shelfWidth"))')
 s=s.replace('        Layout.maximumWidth: parent ? parent.width : implicitWidth','')
 s=s.replace('ShellMotion.fade()', 'SettingsPreferences.accessibility.reduceMotion ? 0:IslandConfig.s("shelfAnimationMs")')
-s=s.replace('implicitHeight: 306','implicitHeight: bodyHeight+20')
+s=s.replace('implicitHeight: 306','implicitHeight: bodyHeight+64')
 s=s.replace('readonly property int bodyHeight: 236','readonly property int bodyHeight: panel.page===8 ? Math.min(output.height-80,560):IslandConfig.s("shelfHeight")')
 s=s.replace('property real capsuleTop: 3', 'readonly property bool attachedNotch:(output.name===Quickshell.screens[0]?.name ? IslandConfig.s("surfaceMode"):IslandConfig.s("externalSurfaceMode"))==="notch"\n    property real capsuleTop: 3')
 s=s.replace('        HoverHandler { id: dashboardHover;', '        Rectangle{visible:panel.attachedNotch;anchors.top:parent.top;width:parent.width;height:30;color:body.color}\n        HoverHandler { id: dashboardHover;')
-s=s.replace('mask: Region { item: body; radius: 30 }', 'mask: Region { item: body; radius: panel.attachedNotch ? 0:30 }')
+s=s.replace('mask: Region { item: body; radius: 30 }', 'mask: Region { item: body; radius: panel.attachedNotch ? 0:48; Region { item: navigation; radius: 22 } }')
 s=s.replace('            Rectangle{anchors.fill:parent;', '            Rectangle{anchors.fill:parent;')
 s=s.replace('property int page: 0','property var hub:null\n    property int page: 0')
 s=s.replace('    property int page: 0', '    property int page: 0\n    readonly property bool editorActive:page===8 && expanded && visible\n    onEditorActiveChanged:ShelfState.setEditor(output.name,editorActive)\n    Component.onDestruction:ShelfState.setEditor(output.name,false)\n')
@@ -53,7 +55,9 @@ s=s.replace('if (!monitor || !panel.expanded) return', 'if (!monitor || !panel.e
 s=s.replace('onActivated: panel.dismissed()', 'onActivated: {ShelfState.editing=false;panel.dismissed()}')
 
 s=s.replace("qsTr('Camera')]", "qsTr('Camera'),qsTr('Files'),qsTr('Clipboard'),qsTr('Widgets'),qsTr('Lyrics'),qsTr('Audio'),qsTr('Activities'),qsTr('Stay Awake')]")
-s=s.replace('width: Math.max(1050,pageFrame.width)','width: panel.page===0 || panel.page>=6 ? pageFrame.width:Math.max(1050,pageFrame.width)')
+s=s.replace('width: Math.max(1050,pageFrame.width)','width: pageFrame.width')
+s=s.replace('scale: Math.min(1,pageFrame.width / width)','scale: 1')
+s=s.replace('id: pageFrame','id: pageFrame;clip:true')
 s=s.replace('[overview, forecast, performance, media, notifications, cameraFull]', '[overview, forecast, performance, media, notifications, cameraFull, tray, clipboard, library, lyrics, audioApps, activities, awake]')
 a=s.index('    Component {\n        id: overview');b=s.index('    Component { id: performance;',a)
 s=s[:a]+'''    Component {id:overview;ShelfHome{onOpenPage:page=>panel.selectPage(page)}}
@@ -69,21 +73,33 @@ s=s[:a]+'''    Component {id:overview;ShelfHome{onOpenPage:page=>panel.selectPag
 a=s.index('    Component {\n        id: notifications');b=s.index('    component ForecastCell:',a)
 s=s[:a]+'    Component{id:notifications;NotificationShelf{notices:panel.notices}}\n\n'+s[b:]
 s=s.replace('color: "#ff000000"', 'color: IslandConfig.s("shelfMaterial")==="black" || !RenderingState.glassEnabled ? "#ff000000":"#45202024"')
-s=s.replace('        HoverHandler { id: dashboardHover;', '        Rectangle{anchors.fill:parent;radius:30;visible:IslandConfig.s("shelfMaterial")==="dynamic" && RenderingState.glassEnabled;gradient:Gradient{GradientStop{position:0;color:"#ff000000"}GradientStop{position:.48;color:"#a0000000"}GradientStop{position:1;color:"#10000000"}}}\n        HoverHandler { id: dashboardHover;')
+s=s.replace('        HoverHandler { id: dashboardHover;', '        Rectangle{anchors.fill:parent;radius:48;visible:IslandConfig.s("shelfMaterial")==="dynamic" && RenderingState.glassEnabled;gradient:Gradient{GradientStop{position:0;color:"#ff000000"}GradientStop{position:.48;color:"#a0000000"}GradientStop{position:1;color:"#10000000"}}}\n        HoverHandler { id: dashboardHover;')
+s=s.replace('radius: Math.min(30, height / 2)', 'radius: Math.min(48, height / 2)')
 s=s.replace('                Layout.preferredHeight: tabs.implicitHeight', '                visible:IslandConfig.s("shelfExpandedTabs")\n                Layout.preferredHeight: visible ? tabs.implicitHeight:0')
-s=s.replace('            anchors.margins: 18', '            anchors.margins: 18\n            anchors.bottomMargin:54',1)
-# Navigation is kept inside the animated silhouette, avoiding a separate popup.
+s=s.replace('            anchors.margins: 18', '            anchors.margins: 22',1)
+# The navigation belongs to the same window and input mask as the island. It
+# follows the morph, so the gap never creates a second popup or focus owner.
 pos=s.index('    Component {id:overview;')
-body_end=s.rfind('    }',0,pos)
-s=s[:body_end]+'''        RowLayout {
-            anchors.bottom:parent.bottom;anchors.bottomMargin:12;anchors.horizontalCenter:parent.horizontalCenter;spacing:5
+s=s[:pos]+'''    Rectangle {
+        id:navigation
+        anchors.horizontalCenter:parent.horizontalCenter
+        y:body.height+10
+        implicitWidth:navigationRow.implicitWidth+12;implicitHeight:44
+        radius:22;color:"#eb151517";border.width:1;border.color:"#26ffffff"
+        opacity:panel.expandedBody && body.height>panel.bodyHeight-4 ? 1:0
+        visible:opacity>0.001;enabled:panel.expandedBody
+        Behavior on opacity{NumberAnimation{duration:SettingsPreferences.accessibility.reduceMotion ? 0:120}}
+        HoverHandler{onHoveredChanged:panel.pointerChanged(hovered)}
+        RowLayout{id:navigationRow;anchors.centerIn:parent;spacing:3
+            ShelfButton{implicitWidth:44;implicitHeight:36;icon:"notch/home.svg";accessibleLabel:qsTr("Home");selected:panel.page===0;onClicked:panel.selectPage(0)}
+            ShelfButton{implicitWidth:44;implicitHeight:36;icon:"notch/inbox.svg";accessibleLabel:qsTr("File tray");badge:ShelfState.items.length;selected:panel.page===6;onClicked:panel.selectPage(6)}
+            ShelfButton{implicitWidth:44;implicitHeight:36;icon:"notch/grid.svg";accessibleLabel:qsTr("Widgets");selected:panel.page===8;onClicked:panel.selectPage(8)}
             ShelfButton{visible:ShelfState.editing;text:qsTr("Done");icon:"notch/check.svg";onClicked:ShelfState.editing=false}
-            ShelfButton{text:qsTr("Home");icon:"notch/home.svg";selected:panel.page===0;onClicked:panel.selectPage(0)}
-            ShelfButton{text:qsTr("Files")+(ShelfState.items.length ? " · "+ShelfState.items.length:"");icon:"notch/inbox.svg";selected:panel.page===6;onClicked:panel.selectPage(6)}
-            ShelfButton{text:qsTr("Widgets");icon:"notch/grid.svg";selected:panel.page===8;onClicked:panel.selectPage(8)}
-            ShelfButton{text:qsTr("Media");icon:"notch/music.svg";selected:panel.page===3;onClicked:panel.selectPage(3)}
         }
-'''+s[body_end:]
+    }
+'''+s[pos:]
+s=s.replace('y > body.height)', 'y > body.height+58)')
+
 s=s.replace('    Shortcut { sequence:', '''    Connections{target:ShelfState;function onReveal(page){panel.selectPage(page)}}
     DropArea{anchors.fill:parent;keys:['text/uri-list'];onEntered:{panel.pointerChanged(true);panel.selectPage(6)}\n    onExited:panel.pointerChanged(false)\n    onDropped:drop=>{ShelfState.add(drop.urls);drop.acceptProposedAction()}}
     Shortcut { sequence:''',1)
@@ -99,14 +115,16 @@ s=s.replace('        interval: 180' ,'        interval: IslandConfig.s("shelfCol
 s=s.replace('readonly property int gap: win.inBar','readonly property int gap: win.attachedNotch ? 0 : win.inBar',1)
 needle='''                color: Colors.alpha(win.bodyColor, IslandConfig.s("fill") / 100)'''
 s=s.replace(needle,needle+'''\n                Rectangle{visible:win.attachedNotch;anchors.top:parent.top;width:parent.width;height:Math.min(parent.height/2,18);color:parent.color}''',1)
-s=s.replace('    property bool forced: false','''    Timer{id:shelfHover;interval:IslandConfig.s("shelfHoverDelay");onTriggered:if(win.pointerIn && IslandConfig.s("shelfOpenOnHover"))win.dashboardRequested=true}
-    onPointerInChanged:{if(win.pointerIn && IslandConfig.s("shelfOpenOnHover"))shelfHover.restart();else shelfHover.stop()}
+s=s.replace('                onTapped: {\n                    if (win.wide) {', '                onTapped: {\n                    if(IslandConfig.s("interactionPreset")==="droppy" && IslandConfig.s("dashboardEnabled")){\n                        win.dashboardRequested=!win.dashboardRequested;\n                        return;\n                    }\n                    if (win.wide) {',1)
+s=s.replace('    property bool forced: false','''    Connections{target:IslandConfig;function onStyleChanged(){if(!IslandConfig.s("dashboardEnabled"))win.dashboardRequested=false}}
+    Timer{id:shelfHover;interval:IslandConfig.s("shelfHoverDelay");onTriggered:if(IslandConfig.s("dashboardEnabled") && win.pointerIn && (IslandConfig.s("interactionPreset")==="droppy" || (IslandConfig.s("interactionPreset")==="custom" && IslandConfig.s("shelfOpenOnHover"))))win.dashboardRequested=true}
+    onPointerInChanged:{if(win.pointerIn && (IslandConfig.s("interactionPreset")==="droppy" || (IslandConfig.s("interactionPreset")==="custom" && IslandConfig.s("shelfOpenOnHover"))))shelfHover.restart();else shelfHover.stop()}
     Connections{target:NativeSettings.ShelfState;function onHoldOpenChanged(){if(!NativeSettings.ShelfState.holdOpen && win.dashboardRequested)pointerLeave.restart()}\n    function onCloseRequested(){NativeSettings.ShelfState.editing=false;win.dashboardRequested=false}
     function onReveal(page){if(win.presentationWanted){win.dashboardRequested=true}}}
     DropArea{ x:stage.x; y:stage.y; width:stage.width;height:stage.height;keys:['text/uri-list'];onEntered:{pointerLeave.stop();win.dashboardRequested=true;NativeSettings.ShelfState.reveal(6)}\n    onDropped:drop=>{NativeSettings.ShelfState.add(drop.urls);drop.acceptProposedAction()}}
     property bool forced: false''',1)
 # Keep the compact surface covered until both morphs have reached their rest.
-s=s.replace('    onDashboardRequestedChanged: if (dashboardRequested) dashboardClose.stop(); else dashboardClose.restart()', '    property bool dashboardCover:false\n    function collapseActivity(){force.stop();windupHold.stop();win.forced=false;win.hub.mediaBig=false;win.hub.voicePeek=false;win.hub.pinned=false;win.hushed=true;win.opened=false}\n    onDashboardRequestedChanged:{\n        if(dashboardRequested){dashboardCover=true;collapseActivity();dashboardClose.stop()}\n        else dashboardClose.restart()\n    }\n')
+s=s.replace('    onDashboardRequestedChanged: if (dashboardRequested) dashboardClose.stop(); else dashboardClose.restart()', '    property bool dashboardCover:false\n    function collapseActivity(){force.stop();windupHold.stop();win.forced=false;win.hub.mediaBig=false;win.hub.voicePeek=false;win.hub.pinned=false;win.hushed=true;win.opened=false}\n    onDashboardRequestedChanged:{\n        if(dashboardRequested && !IslandConfig.s("dashboardEnabled")){dashboardRequested=false;return}\n        if(dashboardRequested){dashboardCover=true;collapseActivity();dashboardClose.stop()}\n        else dashboardClose.restart()\n    }\n')
 s=s.replace('id: dashboardClose; interval: NativeSettings.SettingsPreferences.accessibility.reduceMotion ? 1:IslandConfig.s("shelfAnimationMs")+50', 'id: dashboardClose; interval: NativeSettings.SettingsPreferences.accessibility.reduceMotion ? 1:IslandConfig.s("shelfAnimationMs")+50;onTriggered:{if(Math.abs(morph.value)>.015){dashboardClose.restart();return}win.dashboardCover=false}')
 s=s.replace('win.dashboardRequested || dashboardClose.running','win.dashboardCover')
 s=s.replace('win.wideKind !== "" && !win.seeking','win.wideKind !== "" && !win.seeking && !win.dashboardCover')

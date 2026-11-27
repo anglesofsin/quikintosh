@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Widgets
 import qs.services
 import qs.components
 import qs.rosa.services
@@ -11,7 +12,7 @@ Flickable {
  signal openPage(int page)
  property var slots:[IslandConfig.s('shelfSlot1'),IslandConfig.s('shelfSlot2'),IslandConfig.s('shelfSlot3'),IslandConfig.s('shelfSlot4')]
  RowLayout {
-  width:root.contentWidth;height:root.height;spacing:18
+  width:root.contentWidth;height:root.height;spacing:24
   Repeater {
    model:root.slots
    delegate:Item {
@@ -36,32 +37,37 @@ Flickable {
      property real startX:0;property int original:1
      MouseArea{anchors.fill:parent;cursorShape:Qt.SizeHorCursor;onPressed:e=>{parent.startX=mapToGlobal(e.x,e.y).x;parent.original=IslandConfig.s('shelfWeight'+(slot.index+1))};onPositionChanged:e=>{if(pressed){const change=Math.round((mapToGlobal(e.x,e.y).x-parent.startX)/100);IslandConfig.setStyle('shelfWeight'+(slot.index+1),Math.max(1,Math.min(3,parent.original+change)))}}}
     }
-    Rectangle {visible:slot.index>0 && !IslandConfig.s('shelfWidgetCards');anchors.left:parent.left;anchors.leftMargin:-9;width:1;height:parent.height;color:'#242426'}
+    Rectangle {visible:slot.index>0 && !IslandConfig.s('shelfWidgetCards');anchors.left:parent.left;anchors.leftMargin:-12;width:1;height:parent.height;color:'#242426'}
    }
   }
  }
  Component {id:music
-  ColumnLayout {id:musicCard;spacing:12
+  ColumnLayout {id:musicCard;spacing:10
+   function timeText(seconds){const n=Math.max(0,Math.floor(seconds || 0));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')}
    RowLayout {spacing:12;Layout.fillWidth:true
-    Rectangle {Layout.preferredWidth:64;Layout.preferredHeight:64;radius:13;color:'#222225';clip:true
+    ClippingRectangle {Layout.preferredWidth:72;Layout.preferredHeight:72;radius:15;color:'#222225';clip:true
      Image{anchors.fill:parent;source:MprisState.artUrl;fillMode:Image.PreserveAspectCrop;asynchronous:true}
      TintedIcon{anchors.centerIn:parent;size:28;visible:!MprisState.artUrl;source:Quickshell.shellPath('assets/icons_desktop/MacTahoe/actions/symbolic/music-note-symbolic.svg');tint:'#cfcfd3'}
     }
     ColumnLayout {Layout.fillWidth:true;spacing:4
-     Text{Layout.fillWidth:true;text:MprisState.trackTitle || qsTr('Nothing playing');font.family:'SF Pro Display';font.pixelSize:15;font.weight:Font.DemiBold;color:'white';elide:Text.ElideRight}
-     Text{Layout.fillWidth:true;text:MprisState.trackArtist || MprisState.identity;font.family:'SF Pro Text';font.pixelSize:12;color:'#99999e';elide:Text.ElideRight}
+     Text{Layout.fillWidth:true;text:MprisState.trackTitle || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:'SF Pro Display';font.pixelSize:16;font.weight:Font.DemiBold;color:'white';elide:Text.ElideRight}
+     Text{Layout.fillWidth:true;text:MprisState.trackArtist || MprisState.identity;textFormat:Text.PlainText;font.family:'SF Pro Text';font.pixelSize:12;color:'#99999e';elide:Text.ElideRight}
     }
    }
    Slider {id:seek;Layout.fillWidth:true;implicitHeight:16;from:0;to:Math.max(1,MprisState.length);value:MprisState.position;enabled:MprisState.canSeek;onMoved:MprisState.seek(value)
     background:Rectangle{y:seek.height/2-2;width:seek.width;height:4;radius:2;color:'#333336';Rectangle{height:4;radius:2;width:parent.width*seek.visualPosition;color:'#d9d9de'}}
     handle:Item{}
    }
-   RowLayout {Layout.alignment:Qt.AlignHCenter;spacing:8
-    CtrlButton{icon:'music/backward.svg';size:20;active:MprisState.canGoPrevious;onClicked:MprisState.previous()}
-    CtrlButton{icon:MprisState.isPlaying ? 'music/pause.svg':'music/play.svg';size:25;active:MprisState.canTogglePlaying;onClicked:MprisState.togglePlaying()}
-    CtrlButton{icon:'music/forward.svg';size:20;active:MprisState.canGoNext;onClicked:MprisState.next()}
-    ShelfButton{visible:musicCard.width>240;text:qsTr('Lyrics');onClicked:root.openPage(9)}
-    ShelfButton{icon:'notch/external-link.svg';onClicked:ShelfState.playerOpen=true}
+   RowLayout{Layout.fillWidth:true
+    Text{text:musicCard.timeText(MprisState.position);color:'#8d8d93';font.family:'SF Pro Text';font.pixelSize:10}
+    Item{Layout.fillWidth:true}
+    Text{text:'−'+musicCard.timeText(Math.max(0,MprisState.length-MprisState.position));visible:MprisState.length>0;color:'#8d8d93';font.family:'SF Pro Text';font.pixelSize:10}
+   }
+   RowLayout {Layout.alignment:Qt.AlignHCenter;spacing:20
+    CtrlButton{icon:'../icons_desktop/MacTahoe/actions/symbolic/media-seek-backward-symbolic.svg';size:30;active:MprisState.canGoPrevious;onClicked:MprisState.previous()}
+    CtrlButton{icon:'../icons_desktop/MacTahoe/actions/symbolic/media-playback-'+(MprisState.isPlaying ? 'pause':'start')+'-symbolic.svg';size:36;active:MprisState.canTogglePlaying;onClicked:MprisState.togglePlaying()}
+    CtrlButton{icon:'../icons_desktop/MacTahoe/actions/symbolic/media-seek-forward-symbolic.svg';size:30;active:MprisState.canGoNext;onClicked:MprisState.next()}
+    ShelfButton{icon:'notch/external-link.svg';accessibleLabel:qsTr('Floating player');onClicked:ShelfState.playerOpen=true}
    }
   }
  }
@@ -78,15 +84,16 @@ Flickable {
   ShelfButton{Layout.alignment:Qt.AlignHCenter;text:qsTr('Open tray');onClicked:root.openPage(6)}
  }}
  Component {id:weather
-  Rectangle {radius:20;color:'#15171c'
+  Rectangle {radius:20;color:IslandConfig.s('shelfWidgetCards') ? '#15171c':'transparent'
    ColumnLayout {anchors.fill:parent;anchors.margins:16;spacing:7
     RowLayout{Layout.fillWidth:true
      ColumnLayout{Layout.fillWidth:true;spacing:3
       Text{Layout.fillWidth:true;text:IslandConfig.s('dashboardWeatherLocation') ? WeatherState.city:qsTr('Weather');font.family:'SF Pro Text';font.pixelSize:12;color:'#c4c4cc';elide:Text.ElideRight}
       Text{text:WeatherState.available ? Math.round(WeatherState.tempC)+'°':'—°';font.family:'SF Pro Display';font.pixelSize:36;font.weight:Font.Light;color:'white'}
      }
-     Image{Layout.preferredWidth:52;Layout.preferredHeight:52;source:Quickshell.shellPath('rosa/overlays/assets/weather-'+(WeatherState.weatherCode>=95 ? 'storm':WeatherState.weatherCode>=51 ? 'rain':WeatherState.weatherCode>=3 ? 'clouds':WeatherState.weatherCode===2 ? 'partly':WeatherState.isDay ? 'sun':'night')+'.png');fillMode:Image.PreserveAspectFit;sourceSize:Qt.size(128,128)}
+     Image{Layout.preferredWidth:52;Layout.preferredHeight:52;visible:WeatherState.available;source:Quickshell.shellPath('rosa/overlays/assets/weather-'+(WeatherState.weatherCode>=95 ? 'storm':WeatherState.weatherCode>=51 ? 'rain':WeatherState.weatherCode>=3 ? 'clouds':WeatherState.weatherCode===2 ? 'partly':WeatherState.isDay ? 'sun':'night')+'.png');fillMode:Image.PreserveAspectFit;sourceSize:Qt.size(128,128)}
     }
+    Text{visible:!WeatherState.available;Layout.fillWidth:true;text:qsTr('Weather unavailable');color:'#9999a0';font.family:'SF Pro Text';font.pixelSize:12}
     RowLayout {Layout.fillWidth:true
      Repeater {model:WeatherState.hourly.slice(0,4)
       delegate:ColumnLayout {required property var modelData;Layout.fillWidth:true;spacing:8
@@ -99,8 +106,12 @@ Flickable {
    }
   }
  }
+ ColumnLayout{anchors.centerIn:parent;visible:root.slots.every(key=>key==='none');spacing:10
+  Text{Layout.alignment:Qt.AlignHCenter;text:qsTr('Make this space yours');font.family:'SF Pro Display';font.pixelSize:18;font.weight:Font.DemiBold;color:'white'}
+  ShelfButton{Layout.alignment:Qt.AlignHCenter;text:qsTr('Add widgets');icon:'notch/plus.svg';onClicked:root.openPage(8)}
+ }
  property bool held:false
- readonly property bool watching:visible && !!QsWindow.window && QsWindow.window.visible
+ readonly property bool watching:slots.includes("media") && visible && !!QsWindow.window && QsWindow.window.visible
  function syncWatch(){if(held!==watching){held=watching;MprisState.watchPosition(held)}}
  onWatchingChanged:syncWatch()
  Component.onCompleted:syncWatch()

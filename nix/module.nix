@@ -21,7 +21,7 @@ let cfg = config.quickintosh; in {
         rev = (builtins.fromJSON (builtins.readFile ../upstream/SOURCES.json)).lickintosh.revision;
       };
     }))
-    ({ config, lib, pkgs, ... }: lib.mkIf config.quickintosh.enable (import ../modules/hyprland.nix { inherit config lib pkgs; }))
+    ({ config, lib, pkgs, ... }: lib.mkIf config.quickintosh.enable (import ../modules/hyprland.nix { inherit config lib pkgs; inherit (inputs) caelestia-shell; }))
     ({ config, pkgs, ... }: lib.mkIf config.quickintosh.enable ((import ./overlay.nix { inherit inputs; }) { inherit pkgs; }))
   ];
   config = lib.mkIf cfg.enable {

@@ -4,6 +4,7 @@ import qs.services
 import qs.components.glass
 Item{
   id:material
+  property real cornerRadius:22
   readonly property bool captureReady:backdrop.captureSettled
   readonly property var materialState:({wallpaper:backdrop.wallpaperPath,tint:String(backdrop.tint),dim:ShellConfig.options.wallpaper.dim,host:!!host,ready:backdrop.ready,warm:backdrop.warm,settled:backdrop.captureSettled,region:backdrop.captureRegion,quads:backdrop.quads.length,screen:backdrop.screenSize,position:backdrop.windowPosition})
   readonly property var host:material.parent?.QsWindow.window || null
@@ -18,15 +19,18 @@ Item{
   FrameAnimation{running:material.visible;onTriggered:material.syncPosition()}
 
   LiquidGlassBackdrop{
+   excludedPid:Quickshell.processId
    id:backdrop;element:'menus';ready:!!material.host && (material.visible || (false && material.parent?.visible));instantReveal:true
    wallpaperPath:GlassWallpaper.path
    screenSize:material.host?.screen ? Qt.size(material.host.screen.width,material.host.screen.height):Qt.size(1920,1080)
    monitorName:material.host?.screen?.name || ''
    windowPosition:Qt.point(0,0)
    captureWindows:ShellConfig.options.glass.captureWindows;captureInterval:ShellConfig.options.glass.captureIntervalMs
+   aa:Math.max(1,GlassTracker.backdropScale)
+   blurDownscale:Math.max(.5,RenderingState.blurScale)
    blurRadius:32
   }
-  Rectangle{anchors.fill:parent;radius:22;color:'#d92b2b32';visible:!backdrop.captureSettled}
-  TahoeGlass{anchors.fill:parent;backdrop:backdrop.ready ? backdrop:null;cornerRadius:22;autoDarken:false;refractionWidth:1.5;highlightStrength:.15;materialOpacity:1;centerOpacity:1}
-  Rectangle{anchors.fill:parent;radius:22;color:'#b21c1c20';border.width:1;border.color:'#27ffffff'}
+  Rectangle{anchors.fill:parent;radius:material.cornerRadius;color:'#d92b2b32';visible:!backdrop.captureSettled}
+  TahoeGlass{anchors.fill:parent;backdrop:backdrop.ready ? backdrop:null;cornerRadius:material.cornerRadius;autoDarken:false;refractionWidth:1.5;highlightStrength:.15;materialOpacity:1;centerOpacity:1}
+  Rectangle{anchors.fill:parent;radius:material.cornerRadius;color:'#b21c1c20';border.width:1;border.color:'#27ffffff'}
  }

@@ -10,6 +10,6 @@ class IconBounds(unittest.TestCase):
    with self.subTest(asset=asset):
     im=Image.open(ROOT/'icons/ai'/(asset+'-bounded.png'));im.load();im.close();box=bounds[asset]
     self.assertEqual(list(im.size),box[:2]);self.assertEqual(box[2:4],[0,0]);self.assertEqual(box[:2],box[4:6])
- def test_supplied_laptop_is_white_inside(self):
-  source=Image.open(ROOT/'icons/ai/laptop-user-bounded.png');im=source.convert('RGBA');source.close();self.assertEqual(im.getpixel((im.width//2,im.height//3)),(255,255,255,255))
+ def test_supplied_laptop_retains_translucent_screen(self):
+  source=Image.open(ROOT/'icons/ai/laptop-user-bounded.png');im=source.convert('RGBA');source.close();self.assertEqual(im.getpixel((im.width//2,im.height//3))[:3],(255,255,255));self.assertLess(im.getpixel((im.width//2,im.height//3))[3],128)
 if __name__=='__main__':unittest.main()

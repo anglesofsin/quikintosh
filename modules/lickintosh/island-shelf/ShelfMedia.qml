@@ -32,7 +32,7 @@ Item {
  readonly property real position:sample ? sample.progress*sample.length:MprisState.position
  readonly property bool hasVolume:!sample && !!MprisState.activePlayer && MprisState.activePlayer.volumeSupported && MprisState.activePlayer.canControl
  readonly property Item hero:portrait ? cover:smallCover
- readonly property var qaLayout:({width:width,height:height,portrait:portrait,coverWidth:cover.width,titleWidth:metadata.width,seekWidth:seek.width,transportWidth:transport.width,volume:hasVolume,title:title,titleElided:trackTitle.truncated,lyricsGap:lyricsBadge.x-(trackTitle.x+trackTitle.width),lyricsCenter:lyricsBadge.y+lyricsBadge.height/2,titleCenter:trackTitle.y+trackTitle.height/2})
+ readonly property var qaLayout:({width:width,height:height,portrait:portrait,coverWidth:cover.width,titleWidth:metadata.width,seekWidth:seek.width,transportWidth:transport.width,volume:hasVolume,title:title,titleElided:trackTitle.truncated,lyricsGap:lyricsBadge.x-titleViewport.width,lyricsCenter:lyricsBadge.y+lyricsBadge.height/2,titleCenter:trackTitle.y+trackTitle.height/2})
  property bool held:false
  readonly property bool watching:visible && !!QsWindow.window && QsWindow.window.visible
  function syncWatch(){if(held!==watching){held=watching;MprisState.watchPosition(held)}}
@@ -88,8 +88,19 @@ Item {
     id:metadata;Layout.fillWidth:true;spacing:4
     Item{
      Layout.fillWidth:true;implicitHeight:Math.max(trackTitle.implicitHeight,18)
-     Text{id:trackTitle;width:Math.min(implicitWidth,Math.max(0,parent.width-(lyricsBadge.visible ? lyricsBadge.width+7:0)));anchors.verticalCenter:parent.verticalCenter;text:root.title || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:18;font.weight:Font.DemiBold;color:ShelfStyle.primary;elide:Text.ElideRight;wrapMode:Text.NoWrap}
-     Rectangle{id:lyricsBadge;objectName:"player-lyrics-button";visible:root.showPopout;x:trackTitle.x+trackTitle.width+7;anchors.verticalCenter:trackTitle.verticalCenter;width:16;height:18;radius:4;color:'#ededf0'
+     Item{id:titleViewport;objectName:"player-title-viewport";width:Math.min(titleMeasure.width,Math.max(0,parent.width-(lyricsBadge.visible ? lyricsBadge.width+7:0)));height:parent.height;anchors.verticalCenter:parent.verticalCenter;clip:true
+      TextMetrics{id:titleMeasure;font:trackTitle.font;text:trackTitle.text}
+      Text{id:trackTitle;objectName:"player-title-text";width:titleHover.containsMouse && titleMeasure.width>titleViewport.width ? titleMeasure.width:titleViewport.width;anchors.verticalCenter:parent.verticalCenter;text:root.title || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:18;font.weight:Font.DemiBold;color:ShelfStyle.primary;elide:Text.ElideRight;wrapMode:Text.NoWrap
+       SequentialAnimation on x{running:titleHover.containsMouse && titleMeasure.width>titleViewport.width;loops:Animation.Infinite;alwaysRunToEnd:false
+        PauseAnimation{duration:650}
+        NumberAnimation{from:0;to:Math.min(0,titleViewport.width-titleMeasure.width);duration:Math.max(1000,(titleMeasure.width-titleViewport.width)*28);easing.type:Easing.Linear}
+        PauseAnimation{duration:900}
+        NumberAnimation{to:0;duration:0}
+       }
+      }
+      HoverHandler{id:titleHover;onHoveredChanged:if(!hovered)trackTitle.x=0;readonly property bool containsMouse:hovered}
+     }
+     Rectangle{id:lyricsBadge;objectName:"player-lyrics-button";visible:root.showPopout;x:titleViewport.x+titleViewport.width+7;anchors.verticalCenter:trackTitle.verticalCenter;width:16;height:18;radius:4;color:'#ededf0'
       Text{anchors.fill:parent;leftPadding:1;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter;text:'L';font.family:ShelfStyle.textFamily;font.pixelSize:11;font.weight:Font.Bold;color:'#27272a'}
       Accessible.role:Accessible.Button;Accessible.name:qsTr('Lyrics')
       MouseArea{anchors.fill:parent;onClicked:root.openLyrics()}

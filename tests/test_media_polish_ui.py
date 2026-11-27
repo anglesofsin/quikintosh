@@ -21,7 +21,10 @@ import Quickshell.Wayland
 import qs.island-shelf
 import qs.services
 import qs.rosa.services
+import qs.rosa.overlays as ReviewIsland
 ShellRoot{
+ ReviewIsland.Island{id:arrivalHub}
+ Component.onCompleted:IslandConfig.setStyle('enabled',false)
  PanelWindow{anchors.top:true;anchors.bottom:true;anchors.left:true;anchors.right:true;exclusiveZone:-1;WlrLayershell.layer:WlrLayer.Background;Image{anchors.fill:parent;source:'file:///tmp/qi-review-dunes.png';fillMode:Image.PreserveAspectCrop}}
  TestCase{id:pointer;name:'PrivateMediaPointer';when:false}
  FloatingMusic{id:floatingPlayer}
@@ -42,8 +45,10 @@ ShellRoot{
  IpcHandler{target:'mediaQA'
   function tap(name:string):void{function find(item){if(!item.visible)return null;if(item.objectName===name)return item;for(const child of item.children || []){const hit=find(child);if(hit)return hit}return null}const item=find(floatingPlayer.contentItem);if(!item)throw new Error('Missing control '+name);pointer.mouseClick(item,item.width/2,item.height/2,Qt.LeftButton)}
   function iconInfo():string{function walk(item,rows){if(item.asset!==undefined)rows.push({icon:item.icon,asset:item.asset,children:(item.children || []).map(c=>({source:String(c.source || ''),status:c.status,visible:c.visible}))});for(const child of item.children || [])walk(child,rows)}const rows=[];walk(win.contentItem,rows);return JSON.stringify(rows)}
-  function state():string{return JSON.stringify({floatingContent:floatingPlayer.content,page:win.page,playing:MprisState.isPlaying,has:MprisState.hasPlayer,loaded:loader.status===Loader.Ready,queue:ShelfState.queueData,playerOpen:ShelfState.playerOpen})}
+  function state():string{return JSON.stringify({mediaReady:arrivalHub.mediaReady,floatingContent:floatingPlayer.content,page:win.page,playing:MprisState.isPlaying,has:MprisState.hasPlayer,loaded:loader.status===Loader.Ready,queue:ShelfState.queueData,playerOpen:ShelfState.playerOpen})}
   function page(name:string):void{win.page=name}
+  function marquee():void{loader.item.demo={media:{title:'A very long track title that must scroll smoothly and expose the complete title on hover',artist:'Test Artist',length:203,progress:.3,playing:true}};Qt.callLater(()=>{function find(i){if(i.objectName==='player-title-viewport')return i;for(const c of i.children || []){const r=find(c);if(r)return r}return null}const target=find(loader.item);pointer.mouseMove(target,target.width/2,target.height/2)})}
+  function marqueeState():string{function find(i){if(i.objectName==='player-title-text')return i;for(const c of i.children || []){const r=find(c);if(r)return r}return null}const text=find(loader.item);return JSON.stringify({x:text.x,width:text.width,viewport:text.parent.width})}
   function pause():void{MprisState.togglePlaying()}
   function floating(mode:string,content:string):void{IslandConfig.setStyle('floatingPlayerSize',mode);floatingPlayer.content=content;ShelfState.playerOpen=true;win.visible=false}
  }
@@ -76,7 +81,8 @@ ShellRoot{
     command='for _,w in ipairs(hl.get_windows()) do if w.title=="Media Polish Review" then hl.dispatch(hl.dsp.window.float({action="enable",window="address:"..w.address}));hl.dispatch(hl.dsp.window.resize({x='+str(w)+',y='+str(h)+',window="address:"..w.address})) end end'
     subprocess.run(['hyprctl','eval',command],env=env,capture_output=True,check=True)
    try:
-    wait(lambda s:s['has'] and s['loaded']);resize(560,290);capture('media-playing');ipc('pause');wait(lambda s:not s['playing']);capture('media-paused');ipc('pause')
+    wait(lambda s:s['has'] and s['loaded']);resize(560,290);capture('media-playing');ipc('pause');wait(lambda s:not s['playing']);capture('media-paused');self.assertFalse(json.loads(ipc('state'))['mediaReady']);started=time.monotonic();ipc('pause');time.sleep(1);self.assertFalse(json.loads(ipc('state'))['mediaReady']);wait(lambda s:s['mediaReady']);self.assertGreaterEqual(time.monotonic()-started,1.8)
+    ipc('marquee');time.sleep(1.4);marquee=json.loads(ipc('marqueeState'));self.assertLess(marquee['x'],0);self.assertGreater(marquee['width'],marquee['viewport']);capture('title-marquee')
     for name,size in [('calendar',(620,260)),('batteries',(560,300)),('empty',(560,250)),('icons',(400,220)),('focus',(380,220)),('queue',(380,570))]:
      ipc('page',name);wait(lambda s:s['loaded']);resize(*size)
      if name=='queue':wait(lambda s:s['queue'].get('supported') and len(s['queue'].get('items',[]))==2)

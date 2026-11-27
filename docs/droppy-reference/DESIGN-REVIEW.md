@@ -63,3 +63,8 @@ Isolated revision: inline elapsed/remaining times around a 6 px seek track, adja
 ## Follow-up: lyrics alignment and icon badges
 
 Lyrics badge follows the rendered title width with a 7 px gap and vertically centered glyph; intrinsic text width replaces a separate font-metrics estimate. Remaining vertical space goes between metadata and the seek row, keeping transport controls near the bottom. Icon and badge are centered as a group with a 4 px gap, and tray buttons grow for additional digits. New transparent AI tray and microphone assets have measured alpha bounds; the microphone has no sound waves. Targeted native player/menu review passed (20.031 s); synthetic audio review passed (36.906 s). Updated player, navigation and audio comparisons were visually inspected; no activation was performed.
+
+
+## Reference glyph and typography correction
+
+Time labels use 13 px SF Pro Text Medium with tabular figures; artist uses 16 px SF Pro Display Medium. Re-generated laptop and inbox from the user-supplied reference crops using built-in image_gen, preserving transparent negative space and measuring alpha bounds for centering. Unselected navigation glyphs and the floating-player laptop use secondary foreground. Native player/menu test passed in 27.088 s; player/navigation comparison images visually reviewed. No live activation.

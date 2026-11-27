@@ -46,6 +46,7 @@ def integrate(root):
     s=s.replace('spacing:3\n            ShelfButton','spacing:6\n            ShelfButton')
     s=s.replace('implicitWidth:44;implicitHeight:36','implicitWidth:34;implicitHeight:28;flat:true;iconSize:15')
     s=s.replace('implicitWidth:34;implicitHeight:28;flat:true;iconSize:15;icon:"notch/inbox.svg"', 'implicitWidth:badge>0 ? Math.max(34,15+String(badge).length*6+10):34;implicitHeight:28;flat:true;iconSize:15;icon:"notch/inbox.svg"')
+    s=s.replace('flat:true;iconSize:15;', 'flat:true;iconSize:15;foreground:selected ? ShelfStyle.primary:ShelfStyle.secondary;')
     s=s.replace('    Component {id:tray;','    Component{id:storage;StorageShelf{}}\n    Component {id:tray;',1)
     s=s.replace('panel.detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring","selection","queue","jobs"].includes(panel.detailWidget) ? 620:380')
     s=s.replace('detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring","selection","queue","jobs"].includes(detailWidget) ? 620:380')

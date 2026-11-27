@@ -82,14 +82,14 @@ Item {
       MouseArea{anchors.fill:parent;onClicked:root.openLyrics()}
      }
     }
-    Text{Layout.fillWidth:true;text:root.artist || (root.sample ? '':MprisState.identity);textFormat:Text.PlainText;font.family:ShelfStyle.textFamily;font.pixelSize:root.portrait ? 16:14;color:ShelfStyle.secondary;elide:Text.ElideRight}
+    Text{Layout.fillWidth:true;text:root.artist || (root.sample ? '':MprisState.identity);textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:16;font.weight:Font.Medium;color:'#b5b5bb';elide:Text.ElideRight}
    }
    ShelfAudioMeter{visible:!root.portrait;Layout.preferredWidth:34;Layout.preferredHeight:28}
   }
   Item{visible:!root.portrait;Layout.fillHeight:true;Layout.minimumHeight:12}
   RowLayout {
    Layout.fillWidth:true;Layout.maximumHeight:20;spacing:10
-   Text{text:root.timeText(root.position);font.family:ShelfStyle.textFamily;font.pixelSize:12;color:ShelfStyle.secondary}
+   Text{text:root.timeText(root.position);font.family:ShelfStyle.textFamily;font.pixelSize:13;font.weight:Font.Medium;font.features:({tnum:1});color:'#b5b5bb'}
    Slider {
     id:seek;Layout.fillWidth:true;implicitHeight:20;from:0;to:Math.max(1,root.duration);value:root.position;enabled:!root.sample && MprisState.canSeek
     Accessible.name:qsTr('Playback position')
@@ -100,7 +100,7 @@ Item {
     background:Rectangle{y:(seek.height-height)/2;width:seek.width;height:6;radius:3;color:'#36ffffff';Rectangle{width:parent.width*seek.visualPosition;height:parent.height;radius:parent.radius;color:'#e6ffffff'}}
     handle:Rectangle{visible:seek.pressed;width:10;height:10;radius:5;color:'white';x:seek.visualPosition*(seek.width-width);y:(seek.height-height)/2}
    }
-   Text{text:root.duration>0 ? '−'+root.timeText(root.duration-root.position):'—:—';font.family:ShelfStyle.textFamily;font.pixelSize:12;color:ShelfStyle.secondary}
+   Text{text:root.duration>0 ? '−'+root.timeText(root.duration-root.position):'—:—';font.family:ShelfStyle.textFamily;font.pixelSize:13;font.weight:Font.Medium;font.features:({tnum:1});color:'#b5b5bb'}
   }
   RowLayout {
    id:transport;Layout.fillWidth:true;Layout.maximumHeight:Layout.preferredHeight;Layout.preferredHeight:root.portrait ? 54:root.height<170 ? 32:40;spacing:22
@@ -120,7 +120,7 @@ Item {
     }
    }
    Item{Layout.fillWidth:true}
-   ShelfButton{visible:root.showPopout;flat:true;icon:'laptop.png';iconSize:28;accessibleLabel:qsTr('Floating player');onClicked:ShelfState.playerOpen=true}
+   ShelfButton{visible:root.showPopout;flat:true;icon:'laptop.png';iconSize:28;foreground:ShelfStyle.secondary;accessibleLabel:qsTr('Floating player');onClicked:ShelfState.playerOpen=true}
   }
   RowLayout {
    visible:root.hasVolume && (root.portrait || root.height>=210);Layout.fillWidth:true;spacing:10

@@ -2,3 +2,5 @@ Built-in image_gen; 2026-11-27. Transparent PNG assets.
 Tray: single filled SF-style inbox tray, shallow symmetric open tray with central notch, white flat silhouette, medium bold, no badge/text/container/shadow.
 Microphone: single SF-style microphone.fill; solid capsule, U cradle, short stem and foot; white, no sound waves, no extra marks, no background.
 Original generated files copied unchanged; alpha bounds measured for centered UI rendering.
+
+Reference revision: built-in image_gen with user crops bPviwl (laptop) and elrygH (inbox). Laptop: preserve empty outlined screen, moderately thick uniform stroke, slightly rounded top corners, protruding flat base. Inbox: preserve sloped rear rim, transparent upper opening, filled front with central concave notch, no bathtub silhouette. White transparent assets copied unchanged.

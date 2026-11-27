@@ -135,7 +135,11 @@ class IslandSurfaceUI(unittest.TestCase):
     subprocess.run(['grim','-l','1',str(out/'home-context-menu.png')],env=env,check=True,timeout=30)
     ipc('menuHover');time.sleep(.1)
     subprocess.run(['grim','-l','1',str(out/'home-context-menu-highlight.png')],env=env,check=True,timeout=30)
-    ipc('menuSelect');wait_state(lambda s:s['hold']);assert json.loads(ipc('menuState'))['editing'],'Menu click did not activate customization'
+    ipc('menuSelect')
+    for attempt in range(40):
+     if json.loads(ipc('menuState'))['editing']:break
+     time.sleep(.05)
+    assert json.loads(ipc('menuState'))['editing'],'Menu click did not activate customization'
     swapped=json.loads(ipc('reorderReview'));(out/'widget-reorder.json').write_text(json.dumps(swapped));assert swapped['after'][0]==swapped['before'][1] and swapped['after'][1]==swapped['before'][0],swapped
     ipc('editHome','false')
     if os.environ.get('QUICKINTOSH_REVIEW_MENU_ONLY')=='1':

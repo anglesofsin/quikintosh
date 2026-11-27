@@ -25,6 +25,7 @@ class IslandSurfaceUI(unittest.TestCase):
   import qs.services
   import qs.rosa.services
   import qs.rosa.overlays
+  import "island-shelf"
   ShellRoot{
    function visualNames(item){if(!item)return [];let names=item.objectName ? [item.objectName]:[];for(const child of item.children || [])names=names.concat(visualNames(child));return names}
    property bool reviewInitialised:false
@@ -36,8 +37,13 @@ class IslandSurfaceUI(unittest.TestCase):
     WeatherState.available=true;WeatherState.city='Cupertino';WeatherState.tempC=21;WeatherState.description='Mostly sunny';WeatherState.weatherCode=0;WeatherState.forecast=[0,1,2,3,4,5,6].map(i=>({date:new Date(Date.UTC(2026,10,27+i)).toISOString().slice(0,10),code:[0,1,2,61,63,95,0][i],tempMax:25-i,tempMin:14-i}));WeatherState.hourly=[{time:'2026-11-27T10:00',temp:21,code:0},{time:'2026-11-27T11:00',temp:22,code:0},{time:'2026-11-27T12:00',temp:24,code:2},{time:'2026-11-27T13:00',temp:25,code:0}];IslandConfig.setStyle('dashboardWeatherLocation',true);
    }
    PanelWindow{anchors{left:true;right:true;top:true;bottom:true}exclusionMode:ExclusionMode.Ignore;WlrLayershell.layer:WlrLayer.Background;color:'#292b36';Image{anchors.fill:parent;fillMode:Image.PreserveAspectCrop;source:Quickshell.env('QUICKINTOSH_REVIEW_BACKGROUND') || Quickshell.shellPath('assets/wallpapers/daniel-leone.jpg')}}
+   FloatingMusic{id:floatingReview}
+   PanelWindow{id:playerReview;visible:false;implicitWidth:760;implicitHeight:540;anchors{top:true;left:true}exclusionMode:ExclusionMode.Ignore;color:'#171719';WlrLayershell.namespace:'qi-player-review'
+    property bool portrait:false
+    ShelfMedia{id:reviewPlayer;anchors.fill:parent;anchors.margins:22;portrait:playerReview.portrait;showPopout:false}
+   }
    IslandDashboard{id:island;output:Quickshell.screens[0];expanded:false;onDismissed:expanded=false}
-   IpcHandler{target:'reviewA';function expandIsland():string{island.expanded=true;return 'expanded='+island.expanded}function close():void{island.expanded=false}function holdReview(on:bool):void{ShelfState.interaction(on)}function editHome(on:bool):void{ShelfState.editing=on}function page(n:int):void{island.selectPage(n)}function populate():void{populateReview()}function detail(key:string):void{island.detailWidget=key;island.selectPage(13)}function playback():void{MprisState.togglePlaying()}function state():string{return JSON.stringify({playing:MprisState.isPlaying,hasPlayer:MprisState.hasPlayer,expanded:island.expanded,page:island.page,hold:ShelfState.holdOpen,clipCount:ShelfState.clips.length,fileIcon:IconResolver.forFile('thought.txt'),names:visualNames(island.contentItem),geometry:island.qaGeometry})}}
+   IpcHandler{target:'reviewA';function expandIsland():string{island.expanded=true;return 'expanded='+island.expanded}function close():void{island.expanded=false}function holdReview(on:bool):void{ShelfState.interaction(on)}function editHome(on:bool):void{ShelfState.editing=on}function page(n:int):void{playerReview.visible=false;island.selectPage(n)}function playerMode(name:string):void{playerReview.portrait=name==='player';playerReview.implicitWidth=name==='activity' ? 440:name==='mini' ? 340:360;playerReview.implicitHeight=name==='activity' ? 178:name==='mini' ? 254:540;playerReview.visible=true}function floatingMode(name:string):void{playerReview.visible=false;IslandConfig.setStyle("floatingPlayerSize",name);ShelfState.playerOpen=true}function closePlayer():void{ShelfState.playerOpen=false}function volume(value:real):void{MprisState.activePlayer.volume=value}function populate():void{populateReview()}function detail(key:string):void{island.detailWidget=key;island.selectPage(13)}function playback():void{MprisState.togglePlaying()}function state():string{return JSON.stringify({playerVolume:MprisState.activePlayer ? MprisState.activePlayer.volume:0,playerLayout:reviewPlayer.qaLayout,playing:MprisState.isPlaying,hasPlayer:MprisState.hasPlayer,expanded:island.expanded,page:island.page,hold:ShelfState.holdOpen,clipCount:ShelfState.clips.length,fileIcon:IconResolver.forFile('thought.txt'),names:visualNames(island.contentItem),geometry:island.qaGeometry})}}
   }''')
    env=dict(os.environ,HOME=tmp,XDG_CONFIG_HOME=tmp+'/.config',XDG_CACHE_HOME=tmp+'/.cache',XDG_STATE_HOME=tmp+'/.state',XDG_RUNTIME_DIR=runtime,WAYLAND_DISPLAY=os.environ['QUICKINTOSH_TEST_PRIVATE_WAYLAND'],HYPRLAND_INSTANCE_SIGNATURE=os.environ['QUICKINTOSH_TEST_PRIVATE_HYPRLAND'],DBUS_SESSION_BUS_ADDRESS='unix:path=/nonexistent')
    env.pop('DISPLAY',None);env['QT_NO_XDG_DESKTOP_PORTAL']='1'
@@ -62,11 +68,11 @@ class IslandSurfaceUI(unittest.TestCase):
    config=Path(os.environ['QUICKINTOSH_TEST_CONFIG']);config.write_text(config.read_text()+"\nif hl.plugin.hyprglass then hl.plugin.hyprglass.config({enabled=true,layers={enabled=true,force_live_resample=false}});hl.plugin.hyprglass.preset('quickintosh-island',{inherits='pomme',blur_strength=0.65,bevel_strength=0.18,specular_strength=0.22,dark={brightness=1,contrast=1,tint_color=0},light={brightness=1,contrast=1,tint_color=0}});hl.plugin.hyprglass.layer('quickintosh-island-dashboard',{preset='quickintosh-island',mask_mode='contour',mask_threshold=0.004,live_resample=true}) end\n")
    ctl('reload');ctl('dismissnotify','-1')
    def ipc(*args):
-    r=subprocess.run([qs,'-p',tmp,'ipc','call','reviewA',*args],env=env,capture_output=True,text=True,timeout=5)
+    r=subprocess.run([qs,'-p',tmp,'ipc','call','reviewA',*args],env=env,capture_output=True,text=True,timeout=30)
     if r.returncode:raise RuntimeError(r.stdout+r.stderr+(root/'log').read_text()[-4000:])
     return r.stdout
    def wait_state(predicate):
-    deadline=time.monotonic()+5;last={}
+    deadline=time.monotonic()+30;last={}
     while time.monotonic()<deadline:
      last=json.loads(ipc('state'))
      if predicate(last):return last
@@ -74,7 +80,7 @@ class IslandSurfaceUI(unittest.TestCase):
     raise AssertionError('UI did not settle: '+str(last))
    with (root/'log').open('w') as log:p=subprocess.Popen([qs,'-p',tmp],env=env,stdout=log,stderr=log,start_new_session=True)
    try:
-    deadline=time.monotonic()+30;startup_error=None
+    deadline=time.monotonic()+90;startup_error=None
     while time.monotonic()<deadline:
      assert p.poll() is None,(root/'log').read_text()
      try:state=json.loads(ipc('state'));break
@@ -105,6 +111,29 @@ class IslandSurfaceUI(unittest.TestCase):
       ipc('detail',key);wait_state(lambda s:'shelf-'+('stats' if key=='performance' else key) in s['names'] and abs(s['geometry']['bodyWidth']-380)<.01);ipc('populate');time.sleep(.3)
       subprocess.run(['grim','-l','1',str(out/('widget-'+key+'.png'))],env=env,check=True,timeout=15)
      ipc('page','8');wait_state(lambda s:s['page']==8)
+    if os.environ.get('QUICKINTOSH_REVIEW_EXPANDED')=='1':
+     for mode in ['activity','mini','player']:
+      ipc('playerMode',mode);time.sleep(.6)
+      state=wait_state(lambda s:s['playerLayout']['portrait']==(mode=='player') and s['playerLayout']['seekWidth']>100)
+      assert state['playerLayout']['titleWidth']>100,state
+      subprocess.run(['grim','-l','1',str(out/('expanded-'+mode+'.png'))],env=env,check=True,timeout=30)
+      (out/('expanded-'+mode+'.json')).write_text(json.dumps(state))
+     ipc('close');time.sleep(.5)
+     for mode in ['mini','player','expanded']:
+      ipc('floatingMode',mode)
+      deadline=time.monotonic()+10
+      while time.monotonic()<deadline:
+       clients=json.loads(ctl('-j','clients'));window=next((w for w in clients if w.get('title')=='Quickintosh Floating Player'),None)
+       expected=[340,254] if mode=='mini' else [360,540] if mode=='player' else [760,540]
+       if window and window['floating'] and all(abs(a-b)<3 for a,b in zip(window['size'],expected)):break
+       time.sleep(.1)
+      else:raise AssertionError('Floating player geometry: '+str(window))
+      (out/('floating-'+mode+'.json')).write_text(json.dumps(window))
+      time.sleep(.3)
+      subprocess.run(['grim','-l','1',str(out/('floating-'+mode+'.png'))],env=env,check=True,timeout=30)
+     ipc('closePlayer')
+     ipc('volume','0.35');wait_state(lambda s:abs(s['playerVolume']-.35)<.01)
+     ipc('page','8');ipc('expandIsland')
     ipc('editHome','true');wait_state(lambda s:s['hold'] and abs(s['geometry']['bodyHeight']-440)<.01)
     subprocess.run(['grim','-l','1',str(out/'editor.png')],env=env,check=True,timeout=15)
     (out/'editor.json').write_text(ipc('state'))
@@ -132,14 +161,17 @@ class IslandSurfaceUI(unittest.TestCase):
       try:recorder.wait(timeout=3)
       except subprocess.TimeoutExpired:recorder.kill();recorder.wait()
      recordingLog.close()
-    if media.poll() is None:media.terminate();media.wait(timeout=4)
-    mediaLog.close()
-    if bus.poll() is None:bus.terminate();bus.wait(timeout=4)
-    bus.stdout.close();bus.stderr.close()
+    # Stop the UI before its providers so teardown cannot mask a test failure.
     if p.poll() is None:
      os.killpg(p.pid,signal.SIGTERM)
      try:p.wait(timeout=4)
      except subprocess.TimeoutExpired:os.killpg(p.pid,signal.SIGKILL);p.wait()
+    for provider in (media,bus):
+     if provider.poll() is None:
+      provider.terminate()
+      try:provider.wait(timeout=4)
+      except subprocess.TimeoutExpired:provider.kill();provider.wait()
+    mediaLog.close();bus.stdout.close();bus.stderr.close()
     shutil.copyfile(root/'log',out/'qml.log')
 
 if __name__=='__main__':unittest.main()

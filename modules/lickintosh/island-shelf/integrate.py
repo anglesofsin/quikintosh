@@ -7,7 +7,7 @@ shutil.copytree(source,root/'island-shelf',ignore=shutil.ignore_patterns('test_*
 for p in (root/'island-shelf').rglob('*'):p.chmod(0o755 if p.is_dir() else 0o644)
 p=root/'island-shelf/ShelfState.qml';(root/'services/ShelfState.qml').write_text(p.read_text().replace('@PYTHON@',sys.argv[2]));p.unlink()
 p=root/'services/qmldir';p.write_text(p.read_text()+'\nsingleton ShelfState ShelfState.qml\n')
-(root/'island-shelf/qmldir').write_text('singleton ShelfStyle ShelfStyle.qml\n'+'\n'.join(name+' '+name+'.qml' for name in ['ShelfFocus','ShelfNotes','ShelfPlayback','ShelfForecast','ShelfStats','ShelfCamera','ShelfIcon','ShelfButton','ShelfCalendar','ShelfWeather','ShelfHome','FileTray','ClipboardShelf','LyricsShelf','AudioShelf','WidgetLibrary','ActivitiesShelf','FloatingMusic','ShelfChoice','ShelfSlider','StayAwakeShelf','NotificationShelf','FloatingTray','ShelfAppearance'])+'\n')
+(root/'island-shelf/qmldir').write_text('singleton ShelfStyle ShelfStyle.qml\n'+'\n'.join(name+' '+name+'.qml' for name in ['ShelfMedia','ShelfFocus','ShelfNotes','ShelfPlayback','ShelfForecast','ShelfStats','ShelfCamera','ShelfIcon','ShelfButton','ShelfCalendar','ShelfWeather','ShelfHome','FileTray','ClipboardShelf','LyricsShelf','AudioShelf','WidgetLibrary','ActivitiesShelf','FloatingMusic','ShelfChoice','ShelfSlider','StayAwakeShelf','NotificationShelf','FloatingTray','ShelfAppearance'])+'\n')
 base=root/'rosa'
 p=base/'services/IslandConfig.qml';s=p.read_text();spec={
  'interactionPreset':dict(type='pick',def_='droppy',values=['droppy','classic','custom']),
@@ -75,7 +75,7 @@ s=s[:a]+'''    Component {id:overview;ShelfHome{onOpenPage:page=>panel.selectPag
 a=s.index('    Component {\n        id: notifications');b=s.index('    component ForecastCell:',a)
 s=s[:a]+'    Component{id:notifications;NotificationShelf{notices:panel.notices}}\n\n'+s[b:]
 a=s.index('    Component {\n        id: media');b=s.index('    Component{id:notifications;',a)
-s=s[:a]+'    Component{id:media;ShelfHome{slots:["media"];onOpenPage:page=>panel.selectPage(page)}}\n\n'+s[b:]
+s=s[:a]+'    Component{id:media;ShelfMedia{}}\n\n'+s[b:]
 a=s.index('    Component {\n        id: forecast');b=s.index('    Component {\n        id: cameraFull',a)
 s=s[:a]+'    Component{id:forecast;ShelfForecast{}}\n\n'+s[b:]
 a=s.index('    Component {\n        id: cameraFull');s=s[:a]+'    Component{id:cameraFull;ShelfCamera{}}\n}\n'
@@ -161,3 +161,17 @@ if sparkline.exists():
 # Apply compact presentation after the existing ownership/interaction patches.
 import runpy
 runpy.run_path(str(source / 'compact.py'))['integrate'](root)
+
+# Expanded activity player shares the same capability-aware media presentation.
+p=root/'rosa/overlays/cards/MediaCard.qml'
+p.write_text('''import QtQuick
+import "../../../island-shelf"
+Item {
+ id:root
+ property color tint:"white"
+ property var demo:({})
+ property bool big:false
+ readonly property Item hero:player.hero
+ ShelfMedia{id:player;anchors.fill:parent;demo:root.demo}
+}
+''')

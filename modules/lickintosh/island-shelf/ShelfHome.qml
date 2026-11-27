@@ -22,8 +22,8 @@ Flickable {
     Layout.horizontalStretchFactor:IslandConfig.s('shelfWeight'+(index+1))*(modelData==='media' ? 105:modelData==='weather' ? 95:100)
     Layout.minimumWidth:140
     Rectangle{anchors.fill:parent;radius:20;color:IslandConfig.s('shelfWidgetCards') ? '#151518':'transparent';border.color:IslandConfig.s('shelfWidgetCards') ? '#25252b':'transparent'}
-    Rectangle{anchors.fill:parent;anchors.margins:-1;radius:20;color:'transparent';border.width:1;border.color:'#50ffffff';visible:ShelfState.editing}
-    Loader {anchors.fill:parent;anchors.margins:IslandConfig.s('shelfWidgetCards') ? 14:0;sourceComponent:({media:music,calendar:calendar,weather:weather,focus:focusComponent,notes:notes,performance:stats,files:files,clipboard:clipboardWidget,audio:audioWidget,awake:awakeWidget,storage:storageWidget,camera:cameraWidget,queue:queueWidget,selection:selectionWidget,ring:ringWidget,transcribe:transcribeWidget,terminal:terminalWidget,breather:breatherWidget,vault:vaultWidget,developer:developerWidget,teleprompter:teleprompterWidget,notifications:notificationsWidget})[slot.modelData] || music}
+    Rectangle{anchors.fill:parent;radius:18;color:'transparent';border.width:1;border.color:'#303034';visible:ShelfState.editing}
+    Loader {anchors.fill:parent;anchors.margins:IslandConfig.s('shelfWidgetCards') ? 14:0;anchors.topMargin:ShelfState.editing ? 22:IslandConfig.s('shelfWidgetCards') ? 14:0;sourceComponent:({media:music,calendar:calendar,weather:weather,focus:focusComponent,notes:notes,performance:stats,files:files,clipboard:clipboardWidget,audio:audioWidget,awake:awakeWidget,storage:storageWidget,camera:cameraWidget,queue:queueWidget,selection:selectionWidget,ring:ringWidget,transcribe:transcribeWidget,terminal:terminalWidget,breather:breatherWidget,vault:vaultWidget,developer:developerWidget,teleprompter:teleprompterWidget,notifications:notificationsWidget})[slot.modelData] || music}
     DropArea{anchors.fill:parent;keys:['application/x-quickintosh-shelf-slot','application/x-quickintosh-widget'];onDropped:drop=>{
      const key=drop.source?.widgetKey || drop.getDataAsString('application/x-quickintosh-widget');if(key){IslandConfig.setStyle('shelfSlot'+(slot.index+1),key);drop.acceptProposedAction();return}
      const from=drop.source?.slotIndex!==undefined ? drop.source.slotIndex:Number(drop.getDataAsString('application/x-quickintosh-shelf-slot'));const to=slot.index
@@ -35,7 +35,8 @@ Flickable {
      MouseArea{id:reorderMouse;objectName:'reorder-'+slot.index;anchors.fill:parent;drag.target:reorderProxy;onReleased:reorderProxy.Drag.drop();cursorShape:Qt.OpenHandCursor}
      Item{id:reorderProxy;property int slotIndex:slot.index;width:1;height:1;Drag.source:reorderProxy;Drag.keys:['application/x-quickintosh-shelf-slot'];Drag.active:reorderMouse.drag.active;Drag.dragType:Drag.Internal;Drag.supportedActions:Qt.MoveAction;Drag.proposedAction:Qt.MoveAction;Drag.mimeData:({'application/x-quickintosh-shelf-slot':String(slot.index)});Drag.onDragFinished:{x=0;y=0}}
     }
-    Rectangle{visible:ShelfState.editing;anchors.right:parent.right;anchors.bottom:parent.bottom;anchors.rightMargin:3;anchors.bottomMargin:10;width:4;height:28;radius:2;color:'#80ffffff';z:20
+    Rectangle{visible:ShelfState.editing;anchors.right:parent.right;anchors.bottom:parent.bottom;anchors.rightMargin:3;anchors.bottomMargin:10;width:18;height:18;radius:9;color:'#252529';z:20
+     ShelfIcon{anchors.centerIn:parent;size:11;icon:'notch/more-horizontal.svg';color:'#aaaab3'}
      property real startX:0;property int original:1
      MouseArea{anchors.fill:parent;anchors.margins:-7;cursorShape:Qt.SizeHorCursor;onPressed:e=>{parent.startX=mapToGlobal(e.x,e.y).x;parent.original=IslandConfig.s('shelfWeight'+(slot.index+1))}
 onPositionChanged:e=>{if(pressed){const change=Math.round((mapToGlobal(e.x,e.y).x-parent.startX)/100);IslandConfig.setStyle('shelfWeight'+(slot.index+1),Math.max(1,Math.min(3,parent.original+change)))}}}

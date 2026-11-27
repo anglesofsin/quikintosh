@@ -67,3 +67,12 @@ private_mpris_queue fixture separately verifies delayed queue changes on D-Bus.
 Latest personalization adds explicit recency-order and actual reorder assertions.
 App-data review/uninstall runs in an isolated worker so scanning and package
 operations cannot block the shelf backend. No actual uninstall was tested.
+
+Personalization: /tmp/qi-personalization-final.log passed the actual widget drag,
+recent-order assertion, inline editor screenshot and the supported local module
+flows. The visual review additionally separated editor handles from widget titles.
+
+The white edge fragments were editor chrome: an overhanging outline and vertical
+resize handles. The outline now stays inside its slot with low contrast; the
+resize action has a contained circular affordance. Editor content has a separate
+top inset, keeping drag handles clear of track titles.

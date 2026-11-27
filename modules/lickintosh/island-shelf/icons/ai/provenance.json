@@ -1,0 +1,24 @@
+{
+  "generator": "OpenAI image_gen",
+  "format": "transparent PNG",
+  "assets": {
+    "music": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-61064e38-9a39-4352-b3c3-ae62ddd66f7f.png",
+    "calendar": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-71573264-b593-4e91-a3fa-adc07e33e075.png",
+    "cloud": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-97ce6c53-4369-4828-a5cc-ba566eb63888.png",
+    "camera": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-43a5b0ea-ea40-461b-9ab5-96c0fd1fbc07.png",
+    "clipboard": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-1b38dc41-1cc0-420b-82c1-b3c4267e02c6.png",
+    "bell": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-b4f622c7-cade-467d-8bd7-bbd54b0bd395.png",
+    "home": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-3e6a7812-6934-49d6-806d-f848586de4dc.png",
+    "tray": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-51979e12-5c06-451b-82ca-5c0d815c2887.png",
+    "widgets": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-6d08275e-10d5-4c37-a3e5-a8200c8ce649.png",
+    "play": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-5e054790-3d09-4a3c-8ea6-dcad79c515a3.png",
+    "pause": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-1bbd3b5b-8b96-4634-90f9-ef84f86790e8.png",
+    "backward": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-a5ee88fe-46cd-49f4-a607-9cc3f87b5ff8.png",
+    "forward": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-45a0acc4-347d-4d49-83bd-c3163f56e86a.png",
+    "laptop": "/home/pg/.codex/generated_images/01a1ff29-add6-7c81-b9ea-a97b2af941bb/exec-a2ef02c5-c56f-4929-a39a-9ab81f61168a.png"
+  },
+  "purpose": "Droppy-inspired monochrome interface icons; visual parity requires review",
+  "prompt": "Standalone white monochrome SF Symbols-inspired rounded semibold interface glyph, true transparent square, clean flat geometry, no shadows, texture, gradients, labels or background; readable at 20px.",
+  "integration": "Original generated RGBA PNGs copied intact. QML requests a small DPI-scaled decoded image. No programmatic icon redrawing.",
+  "opticalBounds": "QML scale/centering from alpha>=128 bounds; original PNG files remain unchanged."
+}

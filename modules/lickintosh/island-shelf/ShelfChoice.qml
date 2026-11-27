@@ -7,7 +7,7 @@ ComboBox {
  property bool holding:false
  function syncHold(){if(!manageHold || !popup)return;if(holding===popup.visible)return;holding=popup.visible;ShelfState.interaction(holding)}
  Component.onDestruction:if(holding)ShelfState.interaction(false)
- implicitHeight:32;leftPadding:10;rightPadding:26;font.family:'SF Pro Text';font.pixelSize:12
+ implicitHeight:32;leftPadding:10;rightPadding:26;font.family:ShelfStyle.textFamily;font.pixelSize:12
  contentItem:Text{text:control.displayText;color:'#eeeeF2';font:control.font;verticalAlignment:Text.AlignVCenter;elide:Text.ElideRight}
  indicator:Text{anchors.right:parent.right;anchors.rightMargin:10;anchors.verticalCenter:parent.verticalCenter;text:'⌄';color:'#aaaab3';font.pixelSize:15}
  background:Rectangle{radius:10;color:control.down ? '#38383e':'#25252a';border.color:control.activeFocus ? '#777780':'#393940'}

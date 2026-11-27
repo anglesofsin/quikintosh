@@ -7,7 +7,7 @@ shutil.copytree(source,root/'island-shelf',ignore=shutil.ignore_patterns('test_*
 for p in (root/'island-shelf').rglob('*'):p.chmod(0o755 if p.is_dir() else 0o644)
 p=root/'island-shelf/ShelfState.qml';(root/'services/ShelfState.qml').write_text(p.read_text().replace('@PYTHON@',sys.argv[2]));p.unlink()
 p=root/'services/qmldir';p.write_text(p.read_text()+'\nsingleton ShelfState ShelfState.qml\n')
-(root/'island-shelf/qmldir').write_text('\n'.join(name+' '+name+'.qml' for name in ['ShelfButton','ShelfCalendar','ShelfWeather','ShelfHome','FileTray','ClipboardShelf','LyricsShelf','AudioShelf','WidgetLibrary','ActivitiesShelf','FloatingMusic','ShelfChoice','ShelfSlider','StayAwakeShelf','NotificationShelf','FloatingTray','ShelfAppearance'])+'\n')
+(root/'island-shelf/qmldir').write_text('singleton ShelfStyle ShelfStyle.qml\n'+'\n'.join(name+' '+name+'.qml' for name in ['ShelfFocus','ShelfNotes','ShelfPlayback','ShelfForecast','ShelfStats','ShelfCamera','ShelfIcon','ShelfButton','ShelfCalendar','ShelfWeather','ShelfHome','FileTray','ClipboardShelf','LyricsShelf','AudioShelf','WidgetLibrary','ActivitiesShelf','FloatingMusic','ShelfChoice','ShelfSlider','StayAwakeShelf','NotificationShelf','FloatingTray','ShelfAppearance'])+'\n')
 base=root/'rosa'
 p=base/'services/IslandConfig.qml';s=p.read_text();spec={
  'interactionPreset':dict(type='pick',def_='droppy',values=['droppy','classic','custom']),
@@ -42,8 +42,10 @@ p=base/'overlays/IslandDashboard.qml';s=p.read_text().replace('import qs.service
 s=s.replace('implicitWidth: Math.min(output.width - 32, 1120)','implicitWidth: Math.min(output.width - 32, panel.page===13 ? 380:panel.page===0 && IslandConfig.s("shelfAdaptiveWidth") ? Math.min(IslandConfig.s("shelfWidth"),Math.max(380,[1,2,3,4].filter(i=>IslandConfig.s("shelfSlot"+i)!=="none").length*380)):IslandConfig.s("shelfWidth"))')
 s=s.replace('        Layout.maximumWidth: parent ? parent.width : implicitWidth','')
 s=s.replace('ShellMotion.fade()', 'SettingsPreferences.accessibility.reduceMotion ? 0:IslandConfig.s("shelfAnimationMs")')
-s=s.replace('implicitHeight: 306','implicitHeight: bodyHeight+72')
-s=s.replace('readonly property int bodyHeight: 236','readonly property int bodyHeight: panel.page===8 ? Math.min(output.height-80,ShelfState.editing ? 440:310):IslandConfig.s("shelfHeight")')
+s=s.replace('property int page: 0', 'readonly property int pageWidth:({1:560,2:540,3:460,4:480,5:480,6:820,7:1000,8:1000,9:620,10:440,11:580,12:500,13:(panel.detailWidget==="calendar" ? 620:380)})[page] || IslandConfig.s("shelfWidth")\n    property int page: 0')
+s=s.replace('panel.page===13 ? 380:panel.page===0','panel.page!==0 ? panel.pageWidth:panel.page===0')
+s=s.replace('implicitHeight: 306' ,'implicitHeight: bodyHeight+72')
+s=s.replace('readonly property int bodyHeight: 236','readonly property int bodyHeight: panel.page===8 ? Math.min(output.height-80,ShelfState.editing ? 440:310):({1:336,4:300,5:300,6:280,7:300,9:330,10:300,11:300,12:216})[panel.page] || IslandConfig.s("shelfHeight")')
 s=s.replace('property real capsuleTop: 3', 'readonly property bool attachedNotch:(output.name===Quickshell.screens[0]?.name ? IslandConfig.s("surfaceMode"):IslandConfig.s("externalSurfaceMode"))==="notch"\n    property real capsuleTop: 3')
 s=s.replace('        HoverHandler { id: dashboardHover;', '        Rectangle{visible:panel.attachedNotch;anchors.top:parent.top;width:parent.width;height:30;color:body.color}\n        HoverHandler { id: dashboardHover;')
 s=s.replace('mask: Region { item: body; radius: 30 }', 'mask: Region { item: body; radius: panel.attachedNotch ? 0:52; Region { item: navigation; radius: 22 } }')
@@ -72,6 +74,12 @@ s=s[:a]+'''    Component {id:overview;ShelfHome{onOpenPage:page=>panel.selectPag
 '''+s[b:]
 a=s.index('    Component {\n        id: notifications');b=s.index('    component ForecastCell:',a)
 s=s[:a]+'    Component{id:notifications;NotificationShelf{notices:panel.notices}}\n\n'+s[b:]
+a=s.index('    Component {\n        id: media');b=s.index('    Component{id:notifications;',a)
+s=s[:a]+'    Component{id:media;ShelfHome{slots:["media"];onOpenPage:page=>panel.selectPage(page)}}\n\n'+s[b:]
+a=s.index('    Component {\n        id: forecast');b=s.index('    Component {\n        id: cameraFull',a)
+s=s[:a]+'    Component{id:forecast;ShelfForecast{}}\n\n'+s[b:]
+a=s.index('    Component {\n        id: cameraFull');s=s[:a]+'    Component{id:cameraFull;ShelfCamera{}}\n}\n'
+s=s.replace('Component { id: performance; PerformancePage {} }','Component{id:performance;ShelfStats{}}')
 s=s.replace('color: "#ff000000"', 'color: IslandConfig.s("shelfMaterial")==="black" || !RenderingState.glassEnabled ? "#ff000000":IslandConfig.s("shelfMaterial")==="dynamic" ? "#04000000":"#18202024"')
 s=s.replace('        HoverHandler { id: dashboardHover;', '        Rectangle{anchors.fill:parent;radius:52;visible:IslandConfig.s("shelfMaterial")==="dynamic" && RenderingState.glassEnabled;gradient:Gradient{GradientStop{position:0;color:"#ff000000"}GradientStop{position:.48;color:"#ee000000"}GradientStop{position:1;color:"#00000000"}}}\n        HoverHandler { id: dashboardHover;')
 s=s.replace('radius: Math.min(30, height / 2)', 'radius: Math.min(52, height / 2)')
@@ -143,3 +151,9 @@ s=s.replace('    property bool weatherLocationRevealed:false','    property bool
 s=s.replace('model: group.modelData.names.filter(name=>name!=="eatPopups")', 'model: group.modelData.names.filter(name=>name!=="eatPopups" && !["surfaceMode","externalSurfaceMode","shelfMaterial","shelfWidth","shelfHeight","shelfSlot1","shelfSlot2","shelfSlot3","shelfSlot4","shelfWeight1","shelfWeight2","shelfWeight3","shelfWeight4"].includes(name))')
 s=s.replace('    ContentSection {\n        title: I18n.tr("Dashboard")', '    ContentSection {\n        title: I18n.tr("Dashboard")\n        TahoeButton{text:I18n.tr("Customize shelf…");onClicked:Quickshell.execDetached(["quickintosh","ipc","call","shelf","open","8"])}',1)
 p.write_text(s)
+
+# Shelf graphs use the shared graph's explicit transparent surface option.
+sparkline = root / "ui/topbar/notch/dashboard/Sparkline.qml"
+if sparkline.exists():
+    text = sparkline.read_text().replace("property color lineColor: Theme.accent", "property color lineColor: Theme.accent\n    property color backgroundColor: \"#141414\"")
+    sparkline.write_text(text.replace('color: "#141414"', 'color: root.backgroundColor'))

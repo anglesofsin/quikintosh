@@ -13,10 +13,10 @@ FloatingWindow {
  onModeChanged:resizeSoon.restart()
  onVisibleChanged:{if(!visible)ShelfState.playerOpen=false;else resizeSoon.restart()}
  Timer{id:resizeSoon;interval:180;onTriggered:if(root.visible)Quickshell.execDetached(['hyprctl','eval','for _,w in ipairs(hl.get_windows()) do if w.title=="Quickintosh Floating Player" then hl.dispatch(hl.dsp.window.resize({x='+root.implicitWidth+',y='+root.implicitHeight+',window="address:"..w.address})) end end'])}
- Rectangle{anchors.fill:parent;radius:24;color:IslandConfig.s('shelfMaterial')==='black' || !RenderingState.glassEnabled ? '#ff000000':'#60202024';border.color:'#35ffffff'
+ Rectangle{anchors.fill:parent;radius:24;color:IslandConfig.s('shelfMaterial')==='black' || !RenderingState.glassEnabled ? '#ff000000':'#18000000';border.color:ShelfStyle.outline
   ColumnLayout{anchors.fill:parent;anchors.margins:18;spacing:12
    RowLayout{Layout.fillWidth:true;spacing:8
-    Text{Layout.fillWidth:true;text:qsTr('Now Playing');font.family:'SF Pro Text';font.pixelSize:12;font.weight:Font.DemiBold;color:'#9999a0'}
+    Text{Layout.fillWidth:true;text:qsTr('Now Playing');font.family:ShelfStyle.textFamily;font.pixelSize:12;font.weight:Font.DemiBold;color:ShelfStyle.secondary}
     ShelfChoice{Layout.preferredWidth:110;model:[qsTr('Mini'),qsTr('Player'),qsTr('Lyrics')];currentIndex:['mini','player','expanded'].indexOf(root.mode);onActivated:i=>IslandConfig.setStyle('floatingPlayerSize',['mini','player','expanded'][i])}
     ShelfButton{icon:'notch/x.svg';onClicked:ShelfState.playerOpen=false}
    }

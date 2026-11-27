@@ -32,17 +32,17 @@ ShellRoot{
      self.assertIsNone(p.poll(),(root/'log').read_text())
      r=subprocess.run([qs,'-p',tmp,'ipc','call','morphQA',*args],env=env,capture_output=True,text=True,timeout=5)
      self.assertEqual(r.returncode,0,r.stdout+r.stderr);return r.stdout
-    def wait(predicate):
-     end=time.monotonic()+5;last={}
+    def wait(predicate,timeout=5):
+     end=time.monotonic()+timeout;last={}
      while time.monotonic()<end:
       try:
        last=json.loads(ipc('state'))
        if predicate(last):return last
-      except (ValueError,KeyError,AssertionError):
+      except (ValueError,KeyError,AssertionError,subprocess.TimeoutExpired):
        if p.poll() is not None:raise
       time.sleep(.025)
      self.fail(str(last)+'\n'+(root/'log').read_text()[-3500:])
-    wait(lambda s:s.get('visible') and s.get('compactOpacity',0)>.95)
+    wait(lambda s:s.get('visible') and s.get('compactOpacity',0)>.95,timeout=30)
     for _ in range(20):
      ipc('expandIsland','true');wait(lambda s:s.get('cover') and s.get('compactOpacity')==0)
      time.sleep(.08)

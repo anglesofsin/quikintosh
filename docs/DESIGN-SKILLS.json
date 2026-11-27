@@ -1,0 +1,251 @@
+{
+  "installed": 49,
+  "location": "~/.codex/skills",
+  "skills": [
+    {
+      "name": "apple-design",
+      "repository": "https://github.com/emilkowalski/skills",
+      "path": "skills/apple-design"
+    },
+    {
+      "name": "emil-design-eng",
+      "repository": "https://github.com/emilkowalski/skills",
+      "path": "skills/emil-design-eng"
+    },
+    {
+      "name": "animate",
+      "repository": "https://github.com/emilkowalski/skills",
+      "path": "skills/animate"
+    },
+    {
+      "name": "animation-performance",
+      "repository": "https://github.com/emilkowalski/skills",
+      "path": "skills/animation-performance"
+    },
+    {
+      "name": "animation-vocabulary",
+      "repository": "https://github.com/emilkowalski/skills",
+      "path": "skills/animation-vocabulary"
+    },
+    {
+      "name": "choreograph",
+      "repository": "https://github.com/emilkowalski/skills",
+      "path": "skills/choreograph"
+    },
+    {
+      "name": "gestures",
+      "repository": "https://github.com/emilkowalski/skills",
+      "path": "skills/gestures"
+    },
+    {
+      "name": "review-animations",
+      "repository": "https://github.com/emilkowalski/skills",
+      "path": "skills/review-animations"
+    },
+    {
+      "name": "break-ui",
+      "repository": "https://github.com/emilkowalski/skills",
+      "path": "skills/break-ui"
+    },
+    {
+      "name": "accessibility-audit",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "design-systems/skills/accessibility-audit"
+    },
+    {
+      "name": "component-spec",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "design-systems/skills/component-spec"
+    },
+    {
+      "name": "design-token",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "design-systems/skills/design-token"
+    },
+    {
+      "name": "icon-system",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "design-systems/skills/icon-system"
+    },
+    {
+      "name": "localization-design",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "design-systems/skills/localization-design"
+    },
+    {
+      "name": "motion-system",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "design-systems/skills/motion-system"
+    },
+    {
+      "name": "theming-system",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "design-systems/skills/theming-system"
+    },
+    {
+      "name": "color-system",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "ui-design/skills/color-system"
+    },
+    {
+      "name": "dark-mode-design",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "ui-design/skills/dark-mode-design"
+    },
+    {
+      "name": "layout-grid",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "ui-design/skills/layout-grid"
+    },
+    {
+      "name": "platform-conventions",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "ui-design/skills/platform-conventions"
+    },
+    {
+      "name": "responsive-design",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "ui-design/skills/responsive-design"
+    },
+    {
+      "name": "spacing-system",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "ui-design/skills/spacing-system"
+    },
+    {
+      "name": "typography-scale",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "ui-design/skills/typography-scale"
+    },
+    {
+      "name": "visual-hierarchy",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "ui-design/skills/visual-hierarchy"
+    },
+    {
+      "name": "critique-affordance",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "visual-critique/skills/critique-affordance"
+    },
+    {
+      "name": "critique-brand-consistency",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "visual-critique/skills/critique-brand-consistency"
+    },
+    {
+      "name": "critique-color",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "visual-critique/skills/critique-color"
+    },
+    {
+      "name": "critique-composition",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "visual-critique/skills/critique-composition"
+    },
+    {
+      "name": "critique-information-density",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "visual-critique/skills/critique-information-density"
+    },
+    {
+      "name": "critique-typography",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "visual-critique/skills/critique-typography"
+    },
+    {
+      "name": "critique-visual-hierarchy",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "visual-critique/skills/critique-visual-hierarchy"
+    },
+    {
+      "name": "design-critique",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "design-ops/skills/design-critique"
+    },
+    {
+      "name": "design-qa-checklist",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "design-ops/skills/design-qa-checklist"
+    },
+    {
+      "name": "handoff-spec",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "design-ops/skills/handoff-spec"
+    },
+    {
+      "name": "error-handling-ux",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "interaction-design/skills/error-handling-ux"
+    },
+    {
+      "name": "feedback-patterns",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "interaction-design/skills/feedback-patterns"
+    },
+    {
+      "name": "loading-states",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "interaction-design/skills/loading-states"
+    },
+    {
+      "name": "micro-interaction-spec",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "interaction-design/skills/micro-interaction-spec"
+    },
+    {
+      "name": "navigation-patterns",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "interaction-design/skills/navigation-patterns"
+    },
+    {
+      "name": "state-machine",
+      "repository": "https://github.com/owl-listener/designer-skills",
+      "path": "interaction-design/skills/state-machine"
+    },
+    {
+      "name": "impeccable",
+      "repository": "https://github.com/pbakaus/impeccable",
+      "path": ".agents/skills/impeccable"
+    },
+    {
+      "name": "ui-ux-pro-max",
+      "repository": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "path": ".claude/skills/ui-ux-pro-max"
+    },
+    {
+      "name": "design-system",
+      "repository": "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill",
+      "path": ".claude/skills/design-system"
+    },
+    {
+      "name": "qt-qml",
+      "repository": "https://github.com/TheQtCompanyRnD/agent-skills",
+      "path": "skills/qt-qml"
+    },
+    {
+      "name": "qt-qml-review",
+      "repository": "https://github.com/TheQtCompanyRnD/agent-skills",
+      "path": "skills/qt-qml-review"
+    },
+    {
+      "name": "qt-qml-profiler",
+      "repository": "https://github.com/TheQtCompanyRnD/agent-skills",
+      "path": "skills/qt-qml-profiler"
+    },
+    {
+      "name": "qt-qml-test",
+      "repository": "https://github.com/TheQtCompanyRnD/agent-skills",
+      "path": "skills/qt-qml-test"
+    },
+    {
+      "name": "qt-qml-test-run",
+      "repository": "https://github.com/TheQtCompanyRnD/agent-skills",
+      "path": "skills/qt-qml-test-run"
+    },
+    {
+      "name": "qt-ui-design",
+      "repository": "https://github.com/TheQtCompanyRnD/agent-skills",
+      "path": "skills/qt-ui-design"
+    }
+  ]
+}

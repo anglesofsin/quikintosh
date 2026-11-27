@@ -31,7 +31,7 @@ Item {
  function swap(direction){const other=selectedSlot+direction;if(other<0 || other>3)return;const a=IslandConfig.s('shelfSlot'+(selectedSlot+1));IslandConfig.setStyle('shelfSlot'+(selectedSlot+1),IslandConfig.s('shelfSlot'+(other+1)));IslandConfig.setStyle('shelfSlot'+(other+1),a);selectedSlot=other}
  ColumnLayout{anchors.fill:parent;spacing:16
   RowLayout{Layout.fillWidth:true
-   Text{Layout.fillWidth:true;text:ShelfState.editing ? qsTr('Edit Home'):qsTr('Widgets');color:'white';font.family:'SF Pro Display';font.pixelSize:19;font.weight:Font.DemiBold}
+   Text{Layout.fillWidth:true;text:ShelfState.editing ? qsTr('Edit Home'):qsTr('Widgets');color:'white';font.family:ShelfStyle.displayFamily;font.pixelSize:19;font.weight:Font.DemiBold}
    ShelfButton{visible:!ShelfState.editing;flat:true;icon:'notch/edit-3.svg';accessibleLabel:qsTr('Edit Home');onClicked:ShelfState.editing=true}
    ShelfButton{visible:ShelfState.editing;text:qsTr('Done');selected:true;onClicked:{ShelfState.editing=false;root.openPage(0)}}
   }
@@ -39,8 +39,8 @@ Item {
    Repeater{model:4
     delegate:Rectangle{required property int index;readonly property var info:root.widget(IslandConfig.s('shelfSlot'+(index+1)));Layout.fillWidth:true;implicitHeight:76;radius:16;color:root.selectedSlot===index ? '#29ffffff':'#0dffffff';border.width:1;border.color:root.selectedSlot===index ? '#a0ffffff':'#1cffffff'
      ColumnLayout{anchors.centerIn:parent;spacing:7
-      CFVI{Layout.alignment:Qt.AlignHCenter;size:25;Layout.preferredWidth:25;Layout.preferredHeight:25;icon:'notch/'+info.icon+'.svg';color:'white'}
-      Text{text:info.title;font.family:'SF Pro Text';font.pixelSize:12;color:'white'}
+      ShelfIcon{Layout.alignment:Qt.AlignHCenter;size:25;Layout.preferredWidth:25;Layout.preferredHeight:25;icon:'notch/'+info.icon+'.svg';color:'white'}
+      Text{text:info.title;font.family:ShelfStyle.textFamily;font.pixelSize:12;color:'white'}
      }
      TapHandler{onTapped:root.selectedSlot=index}
     }
@@ -61,9 +61,9 @@ Item {
    ScrollBar.vertical:ScrollBar{policy:ScrollBar.AsNeeded}
    delegate:Item{required property var modelData;width:grid.cellWidth;height:grid.cellHeight
     Rectangle{anchors.horizontalCenter:parent.horizontalCenter;y:3;width:54;height:54;radius:17;color:tileMouse.pressed ? '#42ffffff':tileMouse.containsMouse ? '#24ffffff':'#0dffffff';border.width:1;border.color:'#1cffffff'
-     CFVI{anchors.centerIn:parent;size:29;Layout.preferredWidth:29;Layout.preferredHeight:29;icon:'notch/'+modelData.icon+'.svg';color:'white'}
+     ShelfIcon{anchors.centerIn:parent;size:29;Layout.preferredWidth:29;Layout.preferredHeight:29;icon:'notch/'+modelData.icon+'.svg';color:'white'}
     }
-    Text{anchors.left:parent.left;anchors.right:parent.right;y:68;text:modelData.title;horizontalAlignment:Text.AlignHCenter;font.family:'SF Pro Text';font.pixelSize:12;color:'#d7d7dc';elide:Text.ElideRight}
+    Text{anchors.left:parent.left;anchors.right:parent.right;y:68;text:modelData.title;horizontalAlignment:Text.AlignHCenter;font.family:ShelfStyle.textFamily;font.pixelSize:12;color:'#d7d7dc';elide:Text.ElideRight}
     MouseArea{id:tileMouse;anchors.fill:parent;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;onClicked:root.choose(modelData)}
     Accessible.role:Accessible.Button;Accessible.name:modelData.title;Accessible.onPressAction:root.choose(modelData)
    }

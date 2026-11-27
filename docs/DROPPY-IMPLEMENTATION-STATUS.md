@@ -18,7 +18,7 @@ times on a private compositor, checks the GlobalMenuService state on every
 transition, and requires 60 actual `activespecialv2` events. The regression passed.
 It has not yet been activated on the user's installed shell.
 
-## Stage A — first review rejected; revision in validation
+## Stage A — icon and page-by-page revision in validation
 
 - Home, File Tray and Widgets share the existing dashboard window. A compact
   three-icon navigator follows its geometry below the island; its input region
@@ -33,8 +33,9 @@ It has not yet been activated on the user's installed shell.
 - The editor owns an explicit open hold. Leaving the editor releases that hold;
   merely moving the pointer outside while configuring does not collapse it.
   Browsing the catalogue alone no longer pins the island open.
-- Home's media controls use filled variants of the existing licensed Feather
-  playback artwork. Progress and elapsed/remaining times share one row.
+- Home's playback and navigation controls use generated transparent PNG artwork,
+  reviewed at 16, 24 and 32 logical pixels. The six additional generated catalogue
+  icons share the same resolver. Existing assets remain for other controls. Progress and elapsed/remaining times share one row.
   Artwork is clipped to its rounded silhouette. Unavailable weather is shown
   explicitly, without a fabricated condition or temperature.
 
@@ -70,6 +71,16 @@ calendar/weather data. These are test fixtures, not a live forecast or calendar.
 The test verifies playback/pause against the real D-Bus service. Reference
 artwork/background crops are temporary research artifacts, not shipped assets. Overall pixel parity has not passed and must not be asserted.
 
+The subsequent `droppy-design-audit` candidate adds all thirteen page captures,
+three local widget-detail captures, real private clipboard/file-tray fixtures,
+a seven-day forecast fixture and populated Notes. The widget regression asserts
+actual loaded component names; this caught and corrected a collision between a
+`focus` component id and the inherited Item property. Expanded calendar events
+and month have separately bounded geometry. Its source, generated-icon sheet,
+MPRIS actions and per-page geometry are saved beside the captures. The exact
+installed skill inventory is `DESIGN-SKILLS.json`; the visual audit checklist is
+`DROPPY-PAGE-DESIGN-AUDIT.md`.
+
 The ordinary portable shell build also exposed an omitted `caelestia-shell`
 argument in the NixOS module; this is fixed. That build then encountered inode
 exhaustion while copying the icon bank. Source assembly and UI validation use
@@ -94,3 +105,5 @@ account/key integrations and Apple-only cloud features remain excluded.
 E: native hardware latency/frame-time/background-resampling validation,
 multimonitor and fractional scaling, installed-session regression, normal Nix
 build, final activation and GitHub delivery.
+
+Latest optical review uses 14 AI-generated PNGs and a visible-alpha-bounds resolver. Four playback actions share the reference-style transport row. Calendar lists all actual events in a clipped, scrollable viewport. The exact current test log is saved with the review artifacts. No installation activation has been performed.

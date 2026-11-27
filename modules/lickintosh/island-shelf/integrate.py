@@ -178,3 +178,4 @@ Item {
 
 runpy.run_path(str(source / 'interaction.py'))['integrate'](root)
 runpy.run_path(str(source / 'motion.py'))['integrate'](root)
+runpy.run_path(str(source / 'tab_response.py'))['integrate'](root)

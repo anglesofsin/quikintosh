@@ -21,7 +21,7 @@ Item {
   x:(root.width-root.bounds[4]*root.opticalScale)/2-root.bounds[2]*root.opticalScale
   y:(root.height-root.bounds[5]*root.opticalScale)/2-root.bounds[3]*root.opticalScale
   visible:root.asset!==''
-  source:visible ? Qt.resolvedUrl('icons/ai/'+root.asset+'.png'):''
+  source:root.asset!=='' ? Qt.resolvedUrl('icons/ai/'+root.asset+'.png'):''
   sourceSize:Qt.size(Math.ceil(width*Screen.devicePixelRatio),Math.ceil(height*Screen.devicePixelRatio))
   fillMode:Image.PreserveAspectFit
   opacity:(root.needsTint ? 1:root.color.r)*root.color.a
@@ -32,7 +32,7 @@ Item {
  CFVI {
   anchors.centerIn:parent
   visible:root.asset===''
-  icon:visible ? root.icon:''
+  icon:root.asset==='' ? root.icon:''
   size:root.size;color:root.color
  }
 }

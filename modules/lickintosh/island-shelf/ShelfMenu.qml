@@ -11,6 +11,12 @@ Menu {
  closePolicy:Popup.CloseOnEscape | Popup.CloseOnPressOutside
  readonly property var materialState:background?.materialState || ({})
  readonly property bool glassReady:background?.captureReady || false
+ property double closedAt:0
+ function toggleAt(item,x,y){if(visible){close();return}if(Date.now()-closedAt<180)return;popup(item,x,y)}
+ onClosed:closedAt=Date.now()
+ transformOrigin:Item.TopRight
+ enter:Transition{ParallelAnimation{NumberAnimation{property:'opacity';from:0;to:1;duration:SettingsPreferences.accessibility.reduceMotion ? 0:110}NumberAnimation{property:'scale';from:.97;to:1;duration:SettingsPreferences.accessibility.reduceMotion ? 0:140;easing.type:Easing.OutCubic}}}
+ exit:Transition{ParallelAnimation{NumberAnimation{property:'opacity';from:1;to:0;duration:SettingsPreferences.accessibility.reduceMotion ? 0:85}NumberAnimation{property:'scale';from:1;to:.985;duration:SettingsPreferences.accessibility.reduceMotion ? 0:100;easing.type:Easing.OutCubic}}}
  property bool prewarm:false
  property bool held:false
  onVisibleChanged:{if(held!==visible){held=visible;ShelfState.interaction(held);ShelfState.menuCount=Math.max(0,ShelfState.menuCount+(held ? 1:-1))}}
@@ -42,8 +48,8 @@ Menu {
    blurRadius:32
   }
   Rectangle{anchors.fill:parent;radius:12;color:'#d92b2b32';visible:!backdrop.captureSettled}
-  TahoeGlass{anchors.fill:parent;backdrop:backdrop.ready ? backdrop:null;cornerRadius:12;autoDarken:false;refractionWidth:4;materialOpacity:1;centerOpacity:1}
-  Rectangle{anchors.fill:parent;radius:12;color:'#9c24242d';border.width:1;border.color:'#45ffffff'}
+  TahoeGlass{anchors.fill:parent;backdrop:backdrop.ready ? backdrop:null;cornerRadius:12;autoDarken:false;refractionWidth:1.5;highlightStrength:.15;materialOpacity:1;centerOpacity:1}
+  Rectangle{anchors.fill:parent;radius:12;color:'#59242427';border.width:1;border.color:'#27ffffff'}
  }
  delegate:ShelfMenuItem{}
 }

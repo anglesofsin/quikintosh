@@ -33,12 +33,12 @@ Item {
     }
    }
    ShelfButton{implicitWidth:38;implicitHeight:38;icon:'notch/x.svg';accessibleLabel:qsTr('Cancel customization');onClicked:{root.savedSlots.forEach((key,i)=>IslandConfig.setStyle('shelfSlot'+(i+1),key));root.savedWeights.forEach((value,i)=>IslandConfig.setStyle('shelfWeight'+(i+1),value));ShelfState.editing=false}}
-   ShelfButton{implicitWidth:38;implicitHeight:38;icon:'notch/check.svg';selected:true;accessibleLabel:qsTr('Finish customization');onClicked:ShelfState.editing=false}
+   ShelfButton{implicitWidth:38;implicitHeight:38;icon:'notch/check.svg';selected:true;selectedColor:'#0a84ff';accessibleLabel:qsTr('Finish customization');onClicked:ShelfState.editing=false}
   }
  }
- ShelfButton{id:optionsButton;objectName:'home-options';visible:!ShelfState.editing;anchors.right:parent.right;anchors.top:parent.top;implicitWidth:26;implicitHeight:26;opacity:.65;icon:'notch/more-horizontal.svg';accessibleLabel:qsTr('Home options');onClicked:menu.popup(optionsButton,optionsButton.width-menu.width,optionsButton.height+4)}
+ ShelfButton{id:optionsButton;objectName:'home-options';visible:!ShelfState.editing;anchors.right:parent.right;anchors.top:parent.top;implicitWidth:26;implicitHeight:26;opacity:.65;icon:'notch/more-horizontal.svg';accessibleLabel:qsTr('Home options');onClicked:menu.toggleAt(optionsButton,optionsButton.width-menu.width,optionsButton.height+4)}
  ShelfMenu{id:menu;prewarm:true
-  ShelfMenuItem{symbol:'notch/grid.svg';text:qsTr('Customize Home');onTriggered:ShelfState.editing=true}
+  ShelfMenuItem{symbol:'notch/layout.svg';text:qsTr('Customize Home');onTriggered:ShelfState.editing=true}
   ShelfMenu{id:sourcesMenu;title:qsTr('Source')
    Instantiator{model:MprisState.players
     delegate:ShelfMenuItem{required property var modelData;symbol:'notch/music.svg';text:(MprisState.activePlayer===modelData ? '✓ ':'')+(modelData.identity || qsTr('Media player'));onTriggered:MprisState.selectPlayer(modelData)}
@@ -50,6 +50,6 @@ Item {
   }
   ShelfMenuSeparator{}
   ShelfMenuItem{symbol:'notch/grid.svg';text:qsTr('Open Command Center');onTriggered:ShelfState.reveal(8)}
-  ShelfMenuItem{symbol:'notch/settings.svg';text:qsTr('Settings');onTriggered:SettingsLauncher.open('')}
+  ShelfMenuItem{symbol:'notch/settings.svg';text:qsTr('Open Settings');onTriggered:SettingsLauncher.open('')}
  }
 }

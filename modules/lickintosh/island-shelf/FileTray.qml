@@ -47,7 +47,7 @@ Item {
      Text{anchors.left:parent.left;anchors.right:parent.right;anchors.margins:4;y:128;text:(tile.modelData.pinned ? qsTr('Pinned · '):'')+(tile.modelData.directory ? qsTr('%1 items').arg(tile.modelData.count || 0):root.sizeText(tile.modelData.size)+(tile.modelData.dimensions ? ' · '+tile.modelData.dimensions:''));color:tile.picked ? '#d9eeff':'#a1a1a6';font.family:ShelfStyle.textFamily;font.pixelSize:12;horizontalAlignment:Text.AlignHCenter;elide:Text.ElideRight}
      MouseArea{id:mouse;objectName:'tray-item-'+tile.index;anchors.fill:parent;acceptedButtons:Qt.LeftButton|Qt.RightButton;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;drag.target:dragProxy;drag.threshold:8
       onPressed:e=>{if(e.button===Qt.RightButton){if(!tile.picked)root.selected=[tile.modelData.path]}else root.choose(tile.modelData.path,!!(e.modifiers&Qt.ControlModifier))}
-      onClicked:e=>{if(e.button===Qt.RightButton)fileMenu.popup(mouse,e.x,e.y)}
+      onClicked:e=>{if(e.button===Qt.RightButton)fileMenu.toggleAt(mouse,e.x,e.y)}
       onDoubleClicked:Quickshell.execDetached(['xdg-open',tile.modelData.path])
       onPositionChanged:e=>{if(drag.active){const dir=e.x>dragProxy.lastX ? 1:-1;if(dir!==dragProxy.direction && Math.abs(e.x-dragProxy.lastX)>6){dragProxy.reversals++;dragProxy.direction=dir;if(dragProxy.reversals>=6){ShelfState.trayOpen=true;dragProxy.reversals=0}}dragProxy.lastX=e.x}}
       onReleased:{dragProxy.reversals=0}
@@ -65,11 +65,11 @@ Item {
       ShelfMenuItem{symbol:'notch/eye.svg';text:qsTr('Quick Look');onTriggered:QuickLookState.show([tile.modelData.path],0,'external')}
       ShelfMenuItem{symbol:'notch/refresh-cw.svg';text:qsTr('Transform…');onTriggered:root.transform('compress')}
       ShelfMenuItem{symbol:'notch/package.svg';text:qsTr('Create ZIP');onTriggered:root.act('archive')}
-      ShelfMenuItem{visible:String(tile.modelData.name).toLowerCase().endsWith('.zip');height:visible ? implicitHeight:0;text:qsTr('Unzip');onTriggered:root.act('unzip')}
+      ShelfMenuItem{visible:String(tile.modelData.name).toLowerCase().endsWith('.zip');height:visible ? implicitHeight:0;symbol:'notch/package.svg';text:qsTr('Unzip');onTriggered:root.act('unzip')}
       ShelfMenuItem{symbol:'notch/edit-3.svg';text:qsTr('Rename…');onTriggered:{root.renamePath=tile.modelData.path;renameInput.text=tile.modelData.name;renameDialog.open()}}
       ShelfMenuSeparator{}
-      ShelfMenuItem{text:tile.modelData.pinned ? qsTr('Unpin'):qsTr('Pin');onTriggered:root.act('pin')}
-      ShelfMenuItem{visible:tile.modelData.directory;height:visible ? implicitHeight:0;text:tile.modelData.tracked ? qsTr('Stop tracking folder'):qsTr('Track folder');onTriggered:root.act('track')}
+      ShelfMenuItem{symbol:'notch/check.svg';text:tile.modelData.pinned ? qsTr('Unpin'):qsTr('Pin');onTriggered:root.act('pin')}
+      ShelfMenuItem{visible:tile.modelData.directory;height:visible ? implicitHeight:0;symbol:'notch/eye.svg';text:tile.modelData.tracked ? qsTr('Stop tracking folder'):qsTr('Track folder');onTriggered:root.act('track')}
       ShelfMenuItem{symbol:'notch/copy.svg';text:qsTr('Copy');onTriggered:root.act('copy')}
       ShelfMenuItem{symbol:'notch/send.svg';text:qsTr('Share with LocalSend');visible:!!ShelfState.capabilities.share;height:visible ? implicitHeight:0;onTriggered:root.act('share')}
       ShelfMenuItem{symbol:'notch/folder.svg';text:qsTr('Show in Finder');onTriggered:Quickshell.execDetached(['quickintosh-finder','--select',tile.modelData.path])}
@@ -81,7 +81,9 @@ Item {
   }
   Text{Layout.fillWidth:true;text:ShelfState.notice;color:ShelfState.noticeError ? '#ffb4aa':ShelfStyle.secondary;visible:!!text;elide:Text.ElideRight;font.family:ShelfStyle.textFamily;font.pixelSize:12}
  }
- Popup{id:renameDialog;anchors.centerIn:parent;width:Math.min(root.width,330);padding:16;modal:true
+ Popup{id:renameDialog;anchors.centerIn:parent;width:Math.min(root.width,330);padding:16;modal:false
+  onOpened:ShelfState.interaction(true)
+  onClosed:ShelfState.interaction(false)
   background:Rectangle{radius:20;color:'#ee242426';border.color:ShelfStyle.outline}
   contentItem:ColumnLayout{spacing:12
    Text{text:qsTr('Rename');color:'white';font.family:ShelfStyle.displayFamily;font.pixelSize:17;font.weight:Font.DemiBold}

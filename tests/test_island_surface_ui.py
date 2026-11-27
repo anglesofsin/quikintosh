@@ -135,6 +135,17 @@ class IslandSurfaceUI(unittest.TestCase):
       if native.poll() is None:
        pointer_command('up');native.stdin.write('quit\n');native.stdin.flush();native.wait(timeout=5)
       native.stdin.close();native.stdout.close()
+    if os.environ.get('QUICKINTOSH_REVIEW_MENU_TOGGLE')=='1':
+     ipc('page','0');time.sleep(.5);ipc('menuOpen');time.sleep(.4)
+     assert json.loads(ipc('menuState'))['visible']
+     ipc('menuOpen');time.sleep(.3)
+     assert not json.loads(ipc('menuState'))['visible'],'Second trigger reopened the menu'
+     ipc('menuOpen');time.sleep(.4)
+     assert json.loads(ipc('menuState'))['visible'],'Menu did not reopen on a new click'
+     ipc('menuHover');time.sleep(.2)
+     subprocess.run(['grim','-l','1',str(out/'menu-toggle-final.png')],env=env,check=True,timeout=30)
+     ipc('menuOpen');time.sleep(.25)
+     print('REAL_MENU_TRIGGER_OPEN_CLOSE_OPEN_OK')
     if os.environ.get('QUICKINTOSH_REVIEW_AUDIO')=='1':
      ipc('page','10');wait_state(lambda s:s['page']==10 and abs(s['geometry']['bodyWidth']-440)<.01);time.sleep(.6)
      subprocess.run(['grim','-l','1',str(out/'audio-rounded-fill.png')],env=env,check=True,timeout=30)

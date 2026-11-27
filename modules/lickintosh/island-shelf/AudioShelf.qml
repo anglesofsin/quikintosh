@@ -11,8 +11,8 @@ Item{
  PwObjectTracker{objects:root.visible ? root.streams:[]}
  ColumnLayout{anchors.fill:parent;spacing:10
   RowLayout{Layout.fillWidth:true;spacing:6
-   ShelfButton{implicitWidth:30;implicitHeight:30;icon:'notch/volume-2.svg';selected:!root.inputs;accessibleLabel:qsTr('Application output');onClicked:root.inputs=false}
-   ShelfButton{implicitWidth:30;implicitHeight:30;icon:'notch/mic.svg';selected:root.inputs;accessibleLabel:qsTr('Application input');onClicked:root.inputs=true}
+   ShelfButton{implicitWidth:30;implicitHeight:30;icon:'notch/volume-2.svg';selected:!root.inputs;selectedColor:'#59370c';foreground:!root.inputs ? '#ffad32':'#aaaab3';accessibleLabel:qsTr('Application output');onClicked:root.inputs=false}
+   ShelfButton{implicitWidth:30;implicitHeight:30;icon:'notch/mic.svg';selected:root.inputs;selectedColor:'#59370c';foreground:root.inputs ? '#ffad32':'#aaaab3';accessibleLabel:qsTr('Application input');onClicked:root.inputs=true}
    Item{Layout.fillWidth:true}
    ShelfButton{implicitWidth:30;implicitHeight:30;icon:'notch/rotate-ccw.svg';accessibleLabel:qsTr('Reset application volumes');enabled:root.streams.length>0;onClicked:root.streams.forEach(n=>{n.audio.volume=1;n.audio.muted=false})}
   }

@@ -29,11 +29,11 @@ Item {
  onWatchingChanged:syncWatch()
  Component.onCompleted:syncWatch()
  Component.onDestruction:if(held)MprisState.watchPosition(false)
- MouseArea{anchors.fill:parent;acceptedButtons:Qt.RightButton;onClicked:event=>contextMenu.popup(root,event.x,event.y)}
+ MouseArea{anchors.fill:parent;acceptedButtons:Qt.RightButton;onClicked:event=>contextMenu.toggleAt(root,event.x,event.y)}
  ShelfMenu{id:contextMenu
   ShelfMenuItem{symbol:'notch/list.svg';text:qsTr('Playing Next');onTriggered:ShelfState.openDetail('queue')}
   ShelfMenuItem{symbol:'notch/type.svg';text:qsTr('Lyrics');onTriggered:root.openLyrics()}
-  ShelfMenuItem{symbol:'notch/grid.svg';text:qsTr('Customize Home');onTriggered:{ShelfState.reveal(0);ShelfState.editing=true}}
+  ShelfMenuItem{symbol:'notch/layout.svg';text:qsTr('Customize Home');onTriggered:{ShelfState.reveal(0);ShelfState.editing=true}}
   ShelfMenu{id:sourcesMenu;title:qsTr('Source')
    Instantiator{model:MprisState.players
     delegate:ShelfMenuItem{required property var modelData;symbol:'notch/music.svg';text:(MprisState.activePlayer===modelData ? '✓ ':'')+(modelData.identity || qsTr('Media player'));onTriggered:MprisState.selectPlayer(modelData)}
@@ -76,7 +76,7 @@ Item {
     Text{Layout.fillWidth:true;text:root.title || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:20;font.weight:Font.DemiBold;color:ShelfStyle.primary;elide:Text.ElideRight}
     Text{Layout.fillWidth:true;text:root.artist || (root.sample ? '':MprisState.identity);textFormat:Text.PlainText;font.family:ShelfStyle.textFamily;font.pixelSize:root.portrait ? 16:14;color:ShelfStyle.secondary;elide:Text.ElideRight}
    }
-   ShelfButton{visible:!root.portrait;flat:true;icon:'notch/sliders.svg';iconSize:23;accessibleLabel:qsTr('Audio sources');onClicked:root.openSources()}
+   ShelfAudioMeter{visible:!root.portrait;Layout.preferredWidth:34;Layout.preferredHeight:28}
   }
   ColumnLayout {
    Layout.fillWidth:true;spacing:0

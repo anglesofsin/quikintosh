@@ -1,5 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
+import Quickshell.Io
+import Quickshell.Hyprland
 import qs.services
 
 // The bar stays rectangular. Inverse quarter-circles extend below its edges,
@@ -13,6 +15,24 @@ Item {
  readonly property real paintOpacity:cfg.backgroundEnabled ? cfg.backgroundOpacity:(cfg.blurEnabled ? 0.02:0)
  visible:(cfg.backgroundEnabled || cfg.blurEnabled) && root.y+root.height>0
  opacity:paintOpacity
+ // Match only edge-maximized clients to the cutout radius. A named rule restores
+ // their normal decoration automatically when the maximize tag is removed.
+ readonly property bool matchCorners:ShellConfig.options.edges.roundMenuBackground && (cfg.backgroundEnabled || cfg.blurEnabled)
+ readonly property int matchingRadius:ShellConfig.options.edges.menuCornerRadius
+ property bool initialized:false
+ property bool pendingRule:false
+ function scheduleRule(){if(initialized)cornerRuleDelay.restart()}
+ onMatchCornersChanged:scheduleRule()
+ onMatchingRadiusChanged:scheduleRule()
+ Component.onCompleted:{initialized=true;scheduleRule()}
+ Connections{target:Hyprland;function onRawEvent(event){if(event.name==='configreloaded')root.scheduleRule()}}
+ Timer{id:cornerRuleDelay;interval:120;onTriggered:{if(cornerRule.running)root.pendingRule=true;else cornerRule.running=true}}
+ Process{
+  id:cornerRule
+  command:['hyprctl','eval',"hl.window_rule({name='quickintosh-menubar-corners',enabled="+(root.matchCorners ? 'true':'false')+",match={tag='quickintosh-maximized'},rounding="+root.matchingRadius+"}); for _,w in ipairs(hl.get_windows()) do local m=w.monitor; if m and w.fullscreen==0 then local a=m.reserved; if math.abs(w.at.x-(m.x+a.left))<1 and math.abs(w.at.y-(m.y+a.top))<1 and math.abs(w.size.x-(m.mode.width-a.left-a.right))<1 and math.abs(w.size.y-(m.mode.height-a.top-a.bottom))<1 then local tagged=false;for _,t in ipairs(w.tags or {}) do if t=='quickintosh-maximized' then tagged=true end end;if not tagged then hl.dispatch(hl.dsp.window.tag({tag='+quickintosh-maximized',window='address:'..w.address})) end end end end"]
+  onExited:if(root.pendingRule){root.pendingRule=false;cornerRuleDelay.restart()}
+ }
+
  Rectangle{anchors.fill:parent;color:root.paint}
  component OuterCorner:Shape {
   width:root.cornerRadius;height:root.cornerRadius

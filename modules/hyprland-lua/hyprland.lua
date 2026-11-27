@@ -193,6 +193,7 @@ local function toggleDecoratedZoom()
     local saved = zoomedWindows[w.address]
     if saved then
         zoomedWindows[w.address] = nil
+        hl.dispatch(hl.dsp.window.tag({tag="-quickintosh-maximized",window=selector}))
         if w.fullscreen ~= 0 then hl.dispatch(hl.dsp.window.fullscreen({action="unset",layout_aware=false, window=selector})) end
         if saved.floating then
             hl.dispatch(hl.dsp.window.resize({x=saved.width,y=saved.height,window=selector}))
@@ -211,6 +212,7 @@ local function toggleDecoratedZoom()
     hl.dispatch(hl.dsp.window.float({action="enable",window=selector}))
     hl.dispatch(hl.dsp.window.resize({x=math.max(80,mon.mode.width-area.left-area.right-2*inset),y=math.max(80,mon.mode.height-area.top-area.bottom-2*inset),window=selector}))
     hl.dispatch(hl.dsp.window.move({x=mon.x+area.left+inset,y=mon.y+area.top+inset,window=selector}))
+    hl.dispatch(hl.dsp.window.tag({tag="+quickintosh-maximized",window=selector}))
 end
 configurableBind("ALT + F", toggleDecoratedZoom, {description="Toggle maximize"})
 hl.bind(m .. " + T", hl.dsp.exec_cmd("/home/pg/scripts/infinite-desktop-focus-toggle.sh"), { description = "Toggle float / canvas focus mode" })

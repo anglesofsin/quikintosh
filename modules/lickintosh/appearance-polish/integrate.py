@@ -53,7 +53,7 @@ s=s.replace('    id: root','''    id: root
     ContentSection{title:"Menu bar background"
         ConfigSwitch{text:"Show background";checked:ShellConfig.options.topbar.backgroundEnabled;onToggled:value=>ShellConfig.options.topbar.backgroundEnabled=value}
         ColorSetting{visible:ShellConfig.options.topbar.backgroundEnabled;label:"Background color";value:ShellConfig.options.topbar.backgroundColor;onPicked:value=>ShellConfig.options.topbar.backgroundColor=String(value)}
-        ConfigSlider{visible:ShellConfig.options.topbar.backgroundEnabled;text:"Opacity";from:0.1;to:1;value:ShellConfig.options.topbar.backgroundOpacity;onMoved:value=>ShellConfig.options.topbar.backgroundOpacity=value}
+        ConfigSlider{visible:ShellConfig.options.topbar.backgroundEnabled;text:"Opacity";from:0.1;to:1;decimals:2;value:ShellConfig.options.topbar.backgroundOpacity;onMoved:value=>ShellConfig.options.topbar.backgroundOpacity=value}
     }''',1);p.write_text(s)
 # Transparent is the default; background is painted only in the actual bar.
 edit('shell.qml','            TopBar {\n                id: _topBarItem','''            Rectangle {

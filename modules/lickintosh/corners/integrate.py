@@ -6,6 +6,7 @@ for p in root.rglob('*'):
 for name in ['ScreenEdges','CornerTrigger','HotCorners','CornerSettings','HotCornersSettings','QuickNote','MenuBarBackground']:
  (root/'components'/f'{name}.qml').write_text((here/f'{name}.qml').read_text())
  p=root/'components/qmldir';p.write_text(p.read_text()+f'\n{name} {name}.qml\n')
+(root/'tools/menu-corners.py').write_text((here/'menu-corners.py').read_text())
 p=root/'services/ShellConfig.qml';s=p.read_text();anchor='            property JsonObject lockscreen: JsonObject {';assert s.count(anchor)==1
 s=s.replace(anchor,'''            property JsonObject edges:JsonObject{
                 property bool roundedCorners:false

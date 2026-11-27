@@ -63,7 +63,7 @@ def validate(values):
 def commands(api,values,previous=()):
  profiles=validate(values)
  if not profiles and not previous:return ''
- commands=[]
+ commands=['hl.plugin.hyprglass.preset("quickintosh-dock",'+api.lua({'inherits':'pomme','blur_strength':.65,'bevel_strength':.18,'specular_strength':.22,'dark':{'brightness':1.,'contrast':1.,'tint_color':0},'light':{'brightness':1.,'contrast':1.,'tint_color':0}})+')']
  # hyprglass.layer replaces the whole namespace registry at commit time. Always
  # submit the complete Quickintosh baseline and all currently customized areas.
  layers={ns:{'mask_mode':'contour','mask_threshold':.18} for ns in ['quickintosh-quickshot-controls','quickintosh-island-dashboard','quickintosh-sharing-panel','quickintosh-status-popover']}

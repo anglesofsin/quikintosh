@@ -6,3 +6,5 @@ Original generated files copied unchanged; alpha bounds measured for centered UI
 Reference revision: built-in image_gen with user crops bPviwl (laptop) and elrygH (inbox). Laptop: preserve empty outlined screen, moderately thick uniform stroke, slightly rounded top corners, protruding flat base. Inbox: preserve sloped rear rim, transparent upper opening, filled front with central concave notch, no bathtub silhouette. White transparent assets copied unchanged.
 
 2026-11-27 nearby controls, built-in image_gen: white SF-style smartphone outline with home indicator, semibold clockwise arrow, and symmetrical rounded semibold xmark; transparent PNG, no backgrounds. Each generated separately. Alpha bounds measured for optical alignment; nearby device24px, refresh17px and close13px in28px circular controls.
+
+Paperplane replacement: built-in image_gen, filled SF paperplane.fill style, strong compact solid white up-right silhouette, broad wings with narrow transparent diagonal fold, no wireframe/glow/shadow/background. Original transparent PNG copied unchanged; code only measures alpha bounds and integrates asset.

@@ -21,8 +21,8 @@ Rectangle {
  Keys.onReturnPressed:clicked()
  border.width:activeFocus ? 1:0
  border.color:'#8fffffff'
- ShelfIcon {visible:!!root.icon;anchors.left:parent.left;anchors.leftMargin:root.text ? 10:(root.width-size)/2;anchors.verticalCenter:parent.verticalCenter;size:root.iconSize;icon:root.icon;color:root.foreground}
- Text{visible:root.badge>0;anchors.right:parent.right;anchors.rightMargin:5;anchors.verticalCenter:parent.verticalCenter;text:root.badge;font.family:'SF Pro Text';font.pixelSize:10;font.weight:Font.DemiBold;color:'#c9c9ce'}
+ ShelfIcon {visible:!!root.icon;anchors.left:parent.left;anchors.leftMargin:root.text ? 10:(root.width-(root.badge>0 ? badgeLabel.implicitWidth+4:0)-size)/2;anchors.verticalCenter:parent.verticalCenter;size:root.iconSize;icon:root.icon;color:root.foreground}
+ Text{id:badgeLabel;visible:root.badge>0;anchors.left:parent.left;anchors.leftMargin:(root.width+root.iconSize-implicitWidth)/2+2;anchors.verticalCenter:parent.verticalCenter;text:root.badge;font.family:'SF Pro Text';font.pixelSize:10;font.weight:Font.DemiBold;color:'#c9c9ce'}
  Text {id:label;anchors.centerIn:parent;anchors.horizontalCenterOffset:root.icon ? 10:0;text:root.text;font.family:ShelfStyle.textFamily;font.pixelSize:ShelfStyle.body;font.weight:Font.Medium;color:root.foreground;textFormat:Text.PlainText}
  MouseArea{id:mouse;anchors.fill:parent;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;onClicked:root.clicked()}
  Accessible.role:Accessible.Button;Accessible.name:accessibleLabel;Accessible.onPressAction:clicked()

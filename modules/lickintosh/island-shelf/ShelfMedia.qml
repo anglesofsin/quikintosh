@@ -21,7 +21,7 @@ Item {
  readonly property real position:sample ? sample.progress*sample.length:MprisState.position
  readonly property bool hasVolume:!sample && !!MprisState.activePlayer && MprisState.activePlayer.volumeSupported && MprisState.activePlayer.canControl
  readonly property Item hero:portrait ? cover:smallCover
- readonly property var qaLayout:({width:width,height:height,portrait:portrait,coverWidth:cover.width,titleWidth:metadata.width,seekWidth:seek.width,transportWidth:transport.width,volume:hasVolume,title:title})
+ readonly property var qaLayout:({width:width,height:height,portrait:portrait,coverWidth:cover.width,titleWidth:metadata.width,seekWidth:seek.width,transportWidth:transport.width,volume:hasVolume,title:title,titleElided:trackTitle.truncated,lyricsGap:lyricsBadge.x-(trackTitle.x+trackTitle.width),lyricsCenter:lyricsBadge.y+lyricsBadge.height/2,titleCenter:trackTitle.y+trackTitle.height/2})
  property bool held:false
  readonly property bool watching:visible && !!QsWindow.window && QsWindow.window.visible
  function syncWatch(){if(held!==watching){held=watching;MprisState.watchPosition(held)}}
@@ -62,7 +62,7 @@ Item {
    ShelfIcon{anchors.centerIn:parent;visible:!root.artwork;size:48;icon:'notch/music.svg';color:ShelfStyle.secondary}
   }
   RowLayout {
-   Layout.fillWidth:true;spacing:14
+   Layout.fillWidth:true;Layout.maximumHeight:root.portrait ? Infinity:smallCover.width;spacing:14
    ClippingRectangle {
     id:smallCover
     Layout.preferredWidth:root.height<170 ? 44:68
@@ -73,18 +73,22 @@ Item {
    }
    ColumnLayout {
     id:metadata;Layout.fillWidth:true;spacing:4
-    TextMetrics{id:titleMetrics;text:root.title || qsTr("Nothing playing");font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:18;font.weight:Font.DemiBold}
-    RowLayout{Layout.fillWidth:true;spacing:7
-    Text{id:trackTitle;Layout.preferredWidth:Math.max(0,Math.min(titleMetrics.advanceWidth+10,metadata.width-30));text:root.title || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:18;font.weight:Font.DemiBold;color:ShelfStyle.primary;elide:Text.ElideRight}
-    Rectangle{visible:root.showPopout;Layout.preferredWidth:16;Layout.preferredHeight:18;radius:4;color:'#ededf0';Text{anchors.centerIn:parent;text:'L';font.family:ShelfStyle.textFamily;font.pixelSize:12;font.weight:Font.Bold;color:'#27272a'} Accessible.role:Accessible.Button;Accessible.name:qsTr('Lyrics');MouseArea{anchors.fill:parent;onClicked:root.openLyrics()}}
-    Item{Layout.fillWidth:true}
+    Item{
+     Layout.fillWidth:true;implicitHeight:Math.max(trackTitle.implicitHeight,18)
+     Text{id:trackTitle;width:Math.min(implicitWidth,Math.max(0,parent.width-(lyricsBadge.visible ? lyricsBadge.width+7:0)));anchors.verticalCenter:parent.verticalCenter;text:root.title || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:18;font.weight:Font.DemiBold;color:ShelfStyle.primary;elide:Text.ElideRight;wrapMode:Text.NoWrap}
+     Rectangle{id:lyricsBadge;visible:root.showPopout;x:trackTitle.x+trackTitle.width+7;anchors.verticalCenter:trackTitle.verticalCenter;width:16;height:18;radius:4;color:'#ededf0'
+      Text{anchors.fill:parent;leftPadding:1;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter;text:'L';font.family:ShelfStyle.textFamily;font.pixelSize:11;font.weight:Font.Bold;color:'#27272a'}
+      Accessible.role:Accessible.Button;Accessible.name:qsTr('Lyrics')
+      MouseArea{anchors.fill:parent;onClicked:root.openLyrics()}
+     }
     }
     Text{Layout.fillWidth:true;text:root.artist || (root.sample ? '':MprisState.identity);textFormat:Text.PlainText;font.family:ShelfStyle.textFamily;font.pixelSize:root.portrait ? 16:14;color:ShelfStyle.secondary;elide:Text.ElideRight}
    }
    ShelfAudioMeter{visible:!root.portrait;Layout.preferredWidth:34;Layout.preferredHeight:28}
   }
+  Item{visible:!root.portrait;Layout.fillHeight:true;Layout.minimumHeight:12}
   RowLayout {
-   Layout.fillWidth:true;spacing:10
+   Layout.fillWidth:true;Layout.maximumHeight:20;spacing:10
    Text{text:root.timeText(root.position);font.family:ShelfStyle.textFamily;font.pixelSize:12;color:ShelfStyle.secondary}
    Slider {
     id:seek;Layout.fillWidth:true;implicitHeight:20;from:0;to:Math.max(1,root.duration);value:root.position;enabled:!root.sample && MprisState.canSeek
@@ -99,7 +103,7 @@ Item {
    Text{text:root.duration>0 ? '−'+root.timeText(root.duration-root.position):'—:—';font.family:ShelfStyle.textFamily;font.pixelSize:12;color:ShelfStyle.secondary}
   }
   RowLayout {
-   id:transport;Layout.fillWidth:true;Layout.preferredHeight:root.portrait ? 54:root.height<170 ? 32:40;spacing:22
+   id:transport;Layout.fillWidth:true;Layout.maximumHeight:Layout.preferredHeight;Layout.preferredHeight:root.portrait ? 54:root.height<170 ? 32:40;spacing:22
    ShelfButton{visible:root.showPopout;flat:true;icon:'notch/list.svg';iconSize:26;accessibleLabel:qsTr('Playing Next');onClicked:ShelfState.openDetail('queue')}
    Item{Layout.fillWidth:true}
    Repeater {

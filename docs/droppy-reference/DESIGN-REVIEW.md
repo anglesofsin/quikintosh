@@ -58,3 +58,8 @@ covers capsule clipping with private synthetic streams. Full 15-page render pass
 ## Player, navigation and mixer refinement
 
 Isolated revision: inline elapsed/remaining times around a 6 px seek track, adjacent lyrics badge, compact navigation (36 px with 34 × 28 px targets), and 0–200% application gain with a midpoint unity marker. Mixer backgrounds use available slider geometry to keep the rounded mask inside each row. The audio fixture contains two synthetic streams; it does not change live application volume. Existing clipboard and context-menu implementation is preserved. The previous 34-screen contact sheet is retained as `all-surfaces-unchanged.png`; it is baseline evidence, not a claim that all 34 screens were reworked in this revision.
+
+
+## Follow-up: lyrics alignment and icon badges
+
+Lyrics badge follows the rendered title width with a 7 px gap and vertically centered glyph; intrinsic text width replaces a separate font-metrics estimate. Remaining vertical space goes between metadata and the seek row, keeping transport controls near the bottom. Icon and badge are centered as a group with a 4 px gap, and tray buttons grow for additional digits. New transparent AI tray and microphone assets have measured alpha bounds; the microphone has no sound waves. Targeted native player/menu review passed (20.031 s); synthetic audio review passed (36.906 s). Updated player, navigation and audio comparisons were visually inspected; no activation was performed.

@@ -146,6 +146,14 @@ class IslandSurfaceUI(unittest.TestCase):
      subprocess.run(['grim','-l','1',str(out/'menu-toggle-final.png')],env=env,check=True,timeout=30)
      ipc('menuOpen');time.sleep(.25)
      print('REAL_MENU_TRIGGER_OPEN_CLOSE_OPEN_OK')
+    if os.environ.get('QUICKINTOSH_REVIEW_PLAYER_REFINEMENT')=='1':
+     ipc('notchReview','true');ipc('page','3')
+     state=wait_state(lambda s:s['page']==3 and abs(s['geometry']['navHeight']-36)<.01)
+     time.sleep(.8)
+     subprocess.run(['grim','-l','1',str(out/'notch-media.png')],env=env,check=True,timeout=30)
+     diagnostics=(root/'log').read_text()
+     for issue in ['ReferenceError:','TypeError:','Cannot assign','Failed to load configuration']:assert issue not in diagnostics,diagnostics[-8000:]
+     print('PLAYER_INLINE_TIMES_LYRICS_AND_COMPACT_NAVIGATION_OK');return
     if os.environ.get('QUICKINTOSH_REVIEW_AUDIO')=='1':
      ipc('page','10');wait_state(lambda s:s['page']==10 and abs(s['geometry']['bodyWidth']-440)<.01);time.sleep(.6)
      subprocess.run(['grim','-l','1',str(out/'audio-rounded-fill.png')],env=env,check=True,timeout=30)

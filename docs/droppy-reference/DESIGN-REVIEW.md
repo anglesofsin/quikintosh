@@ -53,3 +53,8 @@ Evidence from /tmp/qi-design-final-validation.log: actual compact owner repeated
 local expanded pages and editor interaction. /tmp/qi-design-audio-validation.log
 covers capsule clipping with private synthetic streams. Full 15-page render pass:
 /tmp/qi-design-all-refined.log. Final meter iteration is checked separately.
+
+
+## Player, navigation and mixer refinement
+
+Isolated revision: inline elapsed/remaining times around a 6 px seek track, adjacent lyrics badge, compact navigation (36 px with 34 × 28 px targets), and 0–200% application gain with a midpoint unity marker. Mixer backgrounds use available slider geometry to keep the rounded mask inside each row. The audio fixture contains two synthetic streams; it does not change live application volume. Existing clipboard and context-menu implementation is preserved. The previous 34-screen contact sheet is retained as `all-surfaces-unchanged.png`; it is baseline evidence, not a claim that all 34 screens were reworked in this revision.

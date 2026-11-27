@@ -73,13 +73,19 @@ Item {
    }
    ColumnLayout {
     id:metadata;Layout.fillWidth:true;spacing:4
-    Text{Layout.fillWidth:true;text:root.title || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:20;font.weight:Font.DemiBold;color:ShelfStyle.primary;elide:Text.ElideRight}
+    TextMetrics{id:titleMetrics;text:root.title || qsTr("Nothing playing");font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:18;font.weight:Font.DemiBold}
+    RowLayout{Layout.fillWidth:true;spacing:7
+    Text{id:trackTitle;Layout.preferredWidth:Math.max(0,Math.min(titleMetrics.advanceWidth+10,metadata.width-30));text:root.title || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:18;font.weight:Font.DemiBold;color:ShelfStyle.primary;elide:Text.ElideRight}
+    Rectangle{visible:root.showPopout;Layout.preferredWidth:16;Layout.preferredHeight:18;radius:4;color:'#ededf0';Text{anchors.centerIn:parent;text:'L';font.family:ShelfStyle.textFamily;font.pixelSize:12;font.weight:Font.Bold;color:'#27272a'} Accessible.role:Accessible.Button;Accessible.name:qsTr('Lyrics');MouseArea{anchors.fill:parent;onClicked:root.openLyrics()}}
+    Item{Layout.fillWidth:true}
+    }
     Text{Layout.fillWidth:true;text:root.artist || (root.sample ? '':MprisState.identity);textFormat:Text.PlainText;font.family:ShelfStyle.textFamily;font.pixelSize:root.portrait ? 16:14;color:ShelfStyle.secondary;elide:Text.ElideRight}
    }
    ShelfAudioMeter{visible:!root.portrait;Layout.preferredWidth:34;Layout.preferredHeight:28}
   }
-  ColumnLayout {
-   Layout.fillWidth:true;spacing:0
+  RowLayout {
+   Layout.fillWidth:true;spacing:10
+   Text{text:root.timeText(root.position);font.family:ShelfStyle.textFamily;font.pixelSize:12;color:ShelfStyle.secondary}
    Slider {
     id:seek;Layout.fillWidth:true;implicitHeight:20;from:0;to:Math.max(1,root.duration);value:root.position;enabled:!root.sample && MprisState.canSeek
     Accessible.name:qsTr('Playback position')
@@ -87,18 +93,14 @@ Item {
     onPressedChanged:{if(holding!==pressed){holding=pressed;ShelfState.interaction(holding)}}
     Component.onDestruction:if(holding)ShelfState.interaction(false)
     onMoved:MprisState.seek(value)
-    background:Rectangle{y:(seek.height-height)/2;width:seek.width;height:5;radius:2.5;color:'#36ffffff';Rectangle{width:parent.width*seek.visualPosition;height:parent.height;radius:parent.radius;color:'#e6ffffff'}}
+    background:Rectangle{y:(seek.height-height)/2;width:seek.width;height:6;radius:3;color:'#36ffffff';Rectangle{width:parent.width*seek.visualPosition;height:parent.height;radius:parent.radius;color:'#e6ffffff'}}
     handle:Rectangle{visible:seek.pressed;width:10;height:10;radius:5;color:'white';x:seek.visualPosition*(seek.width-width);y:(seek.height-height)/2}
    }
-   RowLayout{Layout.fillWidth:true
-    Text{text:root.timeText(root.position);font.family:ShelfStyle.textFamily;font.pixelSize:11;font.features:({tnum:1});color:ShelfStyle.secondary}
-    Item{Layout.fillWidth:true}
-    Text{text:root.duration>0 ? '−'+root.timeText(root.duration-root.position):'—:—';font.family:ShelfStyle.textFamily;font.pixelSize:11;font.features:({tnum:1});color:ShelfStyle.secondary}
-   }
+   Text{text:root.duration>0 ? '−'+root.timeText(root.duration-root.position):'—:—';font.family:ShelfStyle.textFamily;font.pixelSize:12;color:ShelfStyle.secondary}
   }
   RowLayout {
    id:transport;Layout.fillWidth:true;Layout.preferredHeight:root.portrait ? 54:root.height<170 ? 32:40;spacing:22
-   ShelfButton{visible:root.showPopout;flat:true;icon:'notch/list.svg';iconSize:22;accessibleLabel:qsTr('Playing Next');onClicked:ShelfState.openDetail('queue')}
+   ShelfButton{visible:root.showPopout;flat:true;icon:'notch/list.svg';iconSize:26;accessibleLabel:qsTr('Playing Next');onClicked:ShelfState.openDetail('queue')}
    Item{Layout.fillWidth:true}
    Repeater {
     model:[{icon:'backward',label:qsTr('Previous track'),enabled:MprisState.canGoPrevious},{icon:MprisState.isPlaying ? 'pause':'play',label:MprisState.isPlaying ? qsTr('Pause'):qsTr('Play'),enabled:MprisState.canTogglePlaying},{icon:'forward',label:qsTr('Next track'),enabled:MprisState.canGoNext}]
@@ -114,7 +116,7 @@ Item {
     }
    }
    Item{Layout.fillWidth:true}
-   ShelfButton{visible:root.showPopout;flat:true;icon:'laptop.png';iconSize:24;accessibleLabel:qsTr('Floating player');onClicked:ShelfState.playerOpen=true}
+   ShelfButton{visible:root.showPopout;flat:true;icon:'laptop.png';iconSize:28;accessibleLabel:qsTr('Floating player');onClicked:ShelfState.playerOpen=true}
   }
   RowLayout {
    visible:root.hasVolume && (root.portrait || root.height>=210);Layout.fillWidth:true;spacing:10

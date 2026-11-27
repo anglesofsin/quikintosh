@@ -6,6 +6,7 @@ font=ImageFont.truetype('/nix/store/qs383gjr4y3sdirbm0gndygcrb8q2i2r-quickintosh
 pairs=[
  ('menu','/tmp/codex-clipboard-5r2OzT.png',(418,85,747,320),'menu-toggle-final.png',(1240,50,1510,265)),
  ('player','/tmp/codex-clipboard-zuTEgB.png',(45,10,560,290),'notch-media.png',(700,0,1220,285)),
+ ('navigation','/tmp/codex-clipboard-zuTEgB.png',(230,255,435,300),'notch-media.png',(873,231,1047,276)),
  ('personalization','/tmp/codex-clipboard-YRVpQ6.png',(0,10,825,352),'personalization-refined.png',(386,0,1535,320)),
  ('files','/tmp/codex-clipboard-gYkKBF.png',(30,35,740,305),'page-tray.png',(590,0,1330,260)),
  ('audio','/tmp/codex-clipboard-HqcBwd.png',(20,10,454,320),'audio-rounded-fill.png',(730,0,1190,190)),

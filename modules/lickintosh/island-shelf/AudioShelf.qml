@@ -19,12 +19,13 @@ Item{
   ListView{id:list;Layout.fillWidth:true;Layout.fillHeight:true;spacing:6;clip:true;model:root.streams
    ScrollBar.vertical:ScrollBar{policy:ScrollBar.AsNeeded}
    delegate:Item{id:row;required property var modelData;width:list.width;height:40
-    Slider{id:volume;anchors.fill:parent;padding:0;from:0;to:1;value:row.modelData.audio.volume;onMoved:row.modelData.audio.volume=value;Accessible.name:qsTr('%1 volume').arg(row.modelData.description || row.modelData.name)
+    Slider{id:volume;anchors.fill:parent;padding:0;from:0;to:2;value:row.modelData.audio.volume;onMoved:row.modelData.audio.volume=value;Accessible.name:qsTr('%1 volume').arg(row.modelData.description || row.modelData.name)
      property bool held:false
      onPressedChanged:{if(held!==pressed){held=pressed;ShelfState.interaction(held)}}
      Component.onDestruction:if(held)ShelfState.interaction(false)
-     background:ClippingRectangle{x:0;y:0;width:volume.width;height:volume.height;radius:20;color:'#101012'
+     background:ClippingRectangle{x:0;y:0;width:volume.availableWidth;height:volume.availableHeight;radius:20;color:'#101012'
       Rectangle{width:parent.width*volume.visualPosition;height:parent.height;color:row.modelData.audio.muted ? '#1a19191c':'#38ffffff'}
+      Rectangle{x:Math.floor(parent.width/2);width:2;height:parent.height;color:'#4d77777d'}
      }
      handle:Item{}
     }

@@ -18,7 +18,7 @@ ShellRoot {
 ''')
 p=root/'ui/topbar/statusarea/controlcenter/ControlCenter.qml';s=p.read_text();a=s.index('    function openCalculator() {');b=s.index('    Process { id: _shOn;',a)
 s=s[:a]+'''    function openCalculator() {
-        root.closeRequested()
+        root.closing()
         Quickshell.execDetached(['quickintosh-calculator'])
     }
 '''+s[b:];p.write_text(s)

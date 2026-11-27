@@ -323,6 +323,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-tahoe}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/emoji}/integrate.py $out ${quickLookPython}/bin/python3
       ${pkgs.python3}/bin/python3 ${./lickintosh/calculator}/integrate.py $out ${quickLookPython}/bin/python3
+      ${pkgs.python3}/bin/python3 ${./lickintosh/interface/menu-motion.py} $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-organization}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-review}/review.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/cursor}/integrate.py $out

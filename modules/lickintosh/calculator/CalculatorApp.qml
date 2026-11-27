@@ -125,22 +125,43 @@ Scope {
   id:b
   required property string label
   property url iconSource:''
+  property color labelColor:app.ink
+  opacity:enabled ? 1:.4
   implicitHeight:28;implicitWidth:Math.max(30,label.length*7+18)
   focusPolicy:Qt.NoFocus
   background:Rectangle{radius:7;color:b.down ? '#30ffffff':b.hovered ? '#18ffffff':'transparent'}
   contentItem:Item{
-   Text{anchors.fill:parent;visible:String(b.iconSource).length===0;text:b.label;font.family:'SF Pro Text';font.pixelSize:12;color:app.ink;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
+   Text{anchors.fill:parent;visible:String(b.iconSource).length===0;text:b.label;font.family:'SF Pro Text';font.pixelSize:12;color:b.labelColor;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter}
    Image{anchors.centerIn:parent;visible:String(b.iconSource).length>0;source:b.iconSource;width:18;height:18;fillMode:Image.PreserveAspectFit}
   }
  }
+ component CalcMenu:Menu {
+  padding:6;implicitWidth:236;modal:false
+  font.family:'SF Pro Text';font.pixelSize:13
+  background:Rectangle{radius:12;color:app.light ? '#f5f5f7':'#303033';border.width:1;border.color:app.light ? '#18000000':'#30ffffff'}
+  enter:Transition{NumberAnimation{property:'opacity';from:0;to:1;duration:100}}
+  exit:Transition{NumberAnimation{property:'opacity';from:1;to:0;duration:100}}
+ }
+ component CalcMenuItem:MenuItem {
+  id:entry;implicitHeight:32;implicitWidth:224;padding:0
+  property string hint:''
+  font.family:'SF Pro Text';font.pixelSize:13
+  background:Rectangle{radius:6;color:entry.highlighted ? '#3478f6':'transparent'}
+  indicator:Text{x:8;anchors.verticalCenter:parent.verticalCenter;text:'✓';visible:entry.checked;font.family:'SF Pro Text';font.pixelSize:13;color:entry.highlighted ? 'white':app.ink}
+  contentItem:Item{
+   Text{anchors{left:parent.left;leftMargin:27;right:shortcutText.left;rightMargin:12;verticalCenter:parent.verticalCenter}text:entry.text;font:entry.font;color:!entry.enabled ? app.secondaryInk:entry.highlighted ? 'white':app.ink;elide:Text.ElideRight}
+   Text{id:shortcutText;anchors{right:parent.right;rightMargin:9;verticalCenter:parent.verticalCenter}text:entry.hint;font.family:'SF Pro Text';font.pixelSize:12;color:entry.highlighted ? '#ddffffff':app.secondaryInk}
+  }
+ }
+ component CalcSeparator:MenuSeparator{padding:5;contentItem:Rectangle{implicitHeight:1;color:app.light ? '#18000000':'#22ffffff'}}
  component UnitChoice:ComboBox {
   id:choice
-  implicitWidth:130;implicitHeight:32
+  implicitWidth:130;implicitHeight:32;padding:0;leftPadding:0;rightPadding:0;spacing:0
   font.family:'SF Pro Text';font.pixelSize:13
   background:Rectangle{radius:8;color:app.light ? '#16000000':'#15ffffff'}
   contentItem:Text {leftPadding:10;rightPadding:20;text:choice.displayText;color:app.ink;font:choice.font;verticalAlignment:Text.AlignVCenter;elide:Text.ElideRight}
   indicator:Text{x:parent.width-18;y:8;text:'⌄';color:app.secondaryInk}
-  delegate:ItemDelegate{required property var modelData;required property int index;width:choice.width;text:modelData;font:choice.font;highlighted:choice.highlightedIndex===index}
+  delegate:ItemDelegate{id:option;required property var modelData;required property int index;width:ListView.view.width;implicitHeight:32;padding:0;highlighted:choice.highlightedIndex===index;contentItem:Text{leftPadding:10;rightPadding:10;text:option.modelData;font:choice.font;color:option.highlighted ? 'white':app.ink;verticalAlignment:Text.AlignVCenter;elide:Text.ElideRight}background:Rectangle{radius:6;color:option.highlighted ? '#3478f6':'transparent'}}
   popup:Popup{y:choice.height+5;width:Math.max(150,choice.width);padding:5;background:Rectangle{radius:10;color:app.light ? '#f4f4f4':'#303033';border.color:'#25ffffff'}contentItem:ListView{implicitHeight:Math.min(contentHeight,280);model:choice.delegateModel;clip:true;currentIndex:choice.highlightedIndex;ScrollIndicator.vertical:ScrollIndicator{}}}
  }
  FloatingWindow {
@@ -151,7 +172,7 @@ Scope {
   readonly property int sidebarWidth:app.historyShown ? 280:0
   readonly property int mainWidth:app.state.mode==='notes' ? 640:app.state.mode==='scientific' ? 730:app.state.mode==='programmer' ? 590:330
   implicitWidth:mainWidth+sidebarWidth
-  implicitHeight:app.state.mode==='notes' ? 570:app.state.mode==='programmer' ? 680:app.converting || app.state.rpn ? 650:570
+  implicitHeight:app.state.mode==='notes' ? 570:app.state.mode==='programmer' ? 680:app.converting ? 720:app.state.rpn ? 650:570
   minimumSize:Qt.size(330,570)
   maximumSize:Qt.size(1200,900)
   onVisibleChanged:if(!visible)app.opened=false
@@ -196,10 +217,11 @@ Scope {
    Item {
     id:titlebar;height:58;anchors{top:parent.top;left:parent.left;right:parent.right}
     MouseArea{anchors.fill:parent;onPressed:window.startSystemMove();onDoubleClicked:app.historyShown=!app.historyShown}
-    Row {x:20;y:21;spacing:10
+    Row {id:trafficLights;x:20;y:21;spacing:10
+     HoverHandler{id:trafficHover}
      Repeater {model:['#ff5f57','#febc2e','#55565a']
       Rectangle {required property string modelData;required property int index;width:19;height:19;radius:10;color:modelData
-       Text{anchors.centerIn:parent;text:index===0 ? '×':index===1 ? '−':'';font.pixelSize:16;color:'#85000000';visible:traffic.containsMouse}
+       Text{anchors.fill:parent;text:index===0 ? '×':index===1 ? '−':'';font.family:'SF Pro Text';font.weight:Font.DemiBold;font.pixelSize:14;color:'#95000000';horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter;visible:trafficHover.hovered && index!==2}
        MouseArea{id:traffic;anchors.fill:parent;hoverEnabled:true;enabled:index!==2;onClicked:if(index===0)app.opened=false;else window.minimized=true}
       }
      }
@@ -230,13 +252,13 @@ Scope {
      ScrollIndicator.vertical:ScrollIndicator{}
     }
     SmallButton{x:12;y:0;label:app.tr('History');enabled:false}
-    SmallButton{anchors.right:parent.right;anchors.rightMargin:10;y:0;label:'⌫';Accessible.name:app.tr('Clear history');onClicked:clearHistoryDialog.open()}
+    SmallButton{anchors.right:parent.right;anchors.rightMargin:10;y:0;label:'';iconSource:Quickshell.shellDir+'/assets/icons/notch/trash.svg';enabled:app.state.history.length>0;Accessible.name:app.tr('Clear history');onClicked:clearHistoryDialog.open()}
    }
    Item {
     id:main;anchors{left:sidebar.right;right:parent.right;top:titlebar.bottom;bottom:parent.bottom}
     visible:app.state.mode!=='notes'
     Item {
-     id:display;anchors{left:parent.left;right:parent.right;top:parent.top}height:app.state.mode==='programmer' ? 218:app.converting || app.state.rpn ? 210:142
+     id:display;anchors{left:parent.left;right:parent.right;top:parent.top}height:app.state.mode==='programmer' ? 218:app.converting ? 280:app.state.rpn ? 210:142
      Text {
       anchors{left:parent.left;right:parent.right;rightMargin:22;leftMargin:20;top:parent.top;topMargin:20}
       horizontalAlignment:Text.AlignRight;text:app.state.expression.replace(/\*/g,'×').replace(/\//g,'÷');color:app.secondaryInk
@@ -267,15 +289,15 @@ Scope {
        }
       }
      }
-     Column {visible:app.converting;x:16;y:137;spacing:7
-      Row{spacing:6
-       UnitChoice{width:126;model:app.categories;currentIndex:app.categories.indexOf(app.category);onActivated:app.category=currentText}
-       UnitChoice{width:70;model:app.units;currentIndex:app.units.indexOf(app.sourceUnit);onActivated:app.sourceUnit=currentText}
-       SmallButton{label:'⇄';onClicked:{const old=app.sourceUnit;app.sourceUnit=app.targetUnit;app.targetUnit=old}}
-       UnitChoice{width:70;model:app.units;currentIndex:app.units.indexOf(app.targetUnit);onActivated:app.targetUnit=currentText}
+     Column {visible:app.converting;x:16;y:137;width:main.width-32;spacing:8
+      UnitChoice{width:parent.width;model:app.categories;currentIndex:app.categories.indexOf(app.category);onActivated:app.category=currentText}
+      Row{width:parent.width;spacing:6
+       UnitChoice{width:(parent.width-44)/2;model:app.units;currentIndex:app.units.indexOf(app.sourceUnit);onActivated:app.sourceUnit=currentText}
+       SmallButton{implicitWidth:32;implicitHeight:32;label:'⇄';onClicked:{const old=app.sourceUnit;app.sourceUnit=app.targetUnit;app.targetUnit=old}}
+       UnitChoice{width:(parent.width-44)/2;model:app.units;currentIndex:app.units.indexOf(app.targetUnit);onActivated:app.targetUnit=currentText}
       }
-      Text{width:main.width-32;text:app.formatted(app.conversion)+' '+app.targetUnit;horizontalAlignment:Text.AlignRight;color:app.ink;font.family:'SF Pro Display';font.pixelSize:21;elide:Text.ElideLeft}
-      Text{visible:app.category==='Currency';text:app.currencyError || app.rateDate;color:app.secondaryInk;font.pixelSize:10}
+      Text{width:parent.width;text:app.formatted(app.conversion)+' '+app.targetUnit;horizontalAlignment:Text.AlignRight;color:app.ink;font.family:'SF Pro Display';font.pixelSize:21;elide:Text.ElideLeft}
+      Text{visible:app.category==='Currency';width:parent.width;text:app.currencyError || app.rateDate;color:app.secondaryInk;font.family:'SF Pro Text';font.pixelSize:10;elide:Text.ElideRight}
      }
     }
     Row {
@@ -292,7 +314,7 @@ Scope {
      }
      Grid {columns:4;spacing:8
       Repeater {model:['AC','±','%','÷','7','8','9','×','4','5','6','−','1','2','3','+','mode','0','.','=']
-       CalcButton{required property string modelData;keyValue:modelData;label:modelData==='mode' ? '▦':modelData==='±' ? '+/−':modelData==='=' && app.state.rpn ? 'enter':modelData;implicitHeight:app.state.mode==='programmer' ? 60:64;textSize:modelData==='±' ? 23:modelData==='mode' ? 25:modelData==='=' && app.state.rpn ? 17:29;orange:['÷','×','−','+','='].includes(modelData);utility:['AC','±','%'].includes(modelData);enabled:app.state.mode!=='programmer' || !/^[0-9]$/.test(modelData) || Number(modelData)<app.state.base}
+       CalcButton{required property string modelData;keyValue:modelData;label:modelData==='mode' ? '▦':modelData==='±' ? '+/−':modelData==='=' && app.state.rpn ? '↵':modelData;implicitHeight:app.state.mode==='programmer' ? 60:64;textSize:modelData==='±' ? 23:modelData==='mode' ? 25:modelData==='=' && app.state.rpn ? 26:29;orange:['÷','×','−','+','='].includes(modelData);utility:['AC','±','%'].includes(modelData);enabled:app.state.mode!=='programmer' || !/^[0-9]$/.test(modelData) || Number(modelData)<app.state.base}
       }
      }
     }
@@ -312,28 +334,41 @@ Scope {
     }
     SmallButton{label:app.tr('Basic');onClicked:app.changeMode('basic')}
    }
-   Menu {
-    id:modeMenu;x:Math.max(10,window.width-width-15);y:window.height-height-20;width:230
-    background:Rectangle{radius:12;color:app.light ? '#f2f2f4':'#343439';border.color:'#30ffffff'}
-    delegate:MenuItem{id:mi;implicitHeight:33;contentItem:Text{text:mi.text;color:app.ink;font.family:'SF Pro Text';font.pixelSize:13;leftPadding:8;verticalAlignment:Text.AlignVCenter}background:Rectangle{radius:6;color:mi.highlighted ? '#3579d5':'transparent'}}
-    MenuItem{text:app.tr('Basic')+'                 Ctrl+1';onTriggered:app.changeMode('basic')}
-    MenuItem{text:app.tr('Scientific')+'          Ctrl+2';onTriggered:app.changeMode('scientific')}
-    MenuItem{text:app.tr('Programmer')+'       Ctrl+3';onTriggered:app.changeMode('programmer')}
-    MenuSeparator{}
-    MenuItem{text:app.tr('Convert');checkable:true;checked:app.converting;enabled:app.state.mode==='basic' || app.state.mode==='scientific';onTriggered:app.converting=!app.converting}
-    MenuItem{text:app.tr('RPN Mode');checkable:true;checked:app.state.rpn;enabled:app.state.mode==='basic' || app.state.mode==='scientific';onTriggered:app.send({action:'rpn'})}
-    MenuItem{text:app.tr('Show History');checkable:true;checked:app.historyShown;onTriggered:app.historyShown=!app.historyShown}
-    MenuSeparator{}
-    MenuItem{text:app.tr('Math Notes');onTriggered:app.changeMode('notes')}
-    MenuItem{text:app.tr('Copy Result');onTriggered:app.copy(app.state.rawValue)}
+   CalcMenu {
+    id:modeMenu;x:Math.max(10,window.width-width-15);y:window.height-height-20
+    CalcMenuItem{text:app.tr('Basic');hint:'Ctrl+1';onTriggered:app.changeMode('basic')}
+    CalcMenuItem{text:app.tr('Scientific');hint:'Ctrl+2';onTriggered:app.changeMode('scientific')}
+    CalcMenuItem{text:app.tr('Programmer');hint:'Ctrl+3';onTriggered:app.changeMode('programmer')}
+    CalcSeparator{}
+    CalcMenuItem{text:app.tr('Convert');checkable:true;checked:app.converting;enabled:app.state.mode==='basic' || app.state.mode==='scientific';onTriggered:app.converting=!app.converting}
+    CalcMenuItem{text:app.tr('RPN Mode');checkable:true;checked:app.state.rpn;enabled:app.state.mode==='basic' || app.state.mode==='scientific';onTriggered:app.send({action:'rpn'})}
+    CalcMenuItem{text:app.tr('Show History');checkable:true;checked:app.historyShown;onTriggered:app.historyShown=!app.historyShown}
+    CalcSeparator{}
+    CalcMenuItem{text:app.tr('Math Notes');onTriggered:app.changeMode('notes')}
+    CalcMenuItem{text:app.tr('Copy Result');onTriggered:app.copy(app.state.rawValue)}
    }
-   Menu{id:historyContext
-    MenuItem{text:app.tr('Copy Result');onTriggered:if(app.selectedHistory)app.copy(app.selectedHistory.result)}
-    MenuItem{text:app.tr('Copy Expression');onTriggered:if(app.selectedHistory)app.copy(app.selectedHistory.expression)}
-    MenuSeparator{}
-    MenuItem{text:app.tr('Delete');onTriggered:if(app.selectedHistory)app.send({action:'deleteHistory',time:app.selectedHistory.time})}
+   CalcMenu{id:historyContext
+    CalcMenuItem{text:app.tr('Copy Result');onTriggered:if(app.selectedHistory)app.copy(app.selectedHistory.result)}
+    CalcMenuItem{text:app.tr('Copy Expression');onTriggered:if(app.selectedHistory)app.copy(app.selectedHistory.expression)}
+    CalcSeparator{}
+    CalcMenuItem{text:app.tr('Delete');onTriggered:if(app.selectedHistory)app.send({action:'deleteHistory',time:app.selectedHistory.time})}
    }
-   Dialog{id:clearHistoryDialog;anchors.centerIn:parent;modal:true;title:app.tr('Clear history?');standardButtons:Dialog.Cancel|Dialog.Ok;onAccepted:app.send({action:'clearHistory'});background:Rectangle{radius:14;color:app.light ? '#f0f0f0':'#303033';border.color:'#40ffffff'}}
+   Popup{
+    id:clearHistoryDialog;anchors.centerIn:parent;width:292;padding:22;modal:true;focus:true
+    closePolicy:Popup.CloseOnEscape
+    background:Rectangle{radius:18;color:app.light ? '#f1f1f3':'#303033';border.width:1;border.color:app.light ? '#20000000':'#30ffffff'}
+    Overlay.modal:Rectangle{color:'#28000000'}
+    enter:Transition{NumberAnimation{property:'opacity';from:0;to:1;duration:120}}
+    exit:Transition{NumberAnimation{property:'opacity';from:1;to:0;duration:100}}
+    contentItem:Column{
+     spacing:20
+     Text{width:parent.width;text:app.tr('Clear history?');wrapMode:Text.WordWrap;font.family:'SF Pro Display';font.pixelSize:17;font.weight:Font.DemiBold;color:app.ink;horizontalAlignment:Text.AlignHCenter}
+     Row{spacing:10
+      SmallButton{implicitWidth:119;implicitHeight:32;label:app.tr('Cancel');background:Rectangle{radius:8;color:app.light ? '#ffffff':'#555558'}onClicked:clearHistoryDialog.close()}
+      SmallButton{implicitWidth:119;implicitHeight:32;label:app.tr('Clear history');labelColor:'white';background:Rectangle{radius:8;color:'#3478f6'}onClicked:{app.send({action:'clearHistory'});clearHistoryDialog.close()}}
+     }
+    }
+   }
   }
  }
 }

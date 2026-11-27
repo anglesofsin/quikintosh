@@ -62,3 +62,12 @@ promise of zero latency on every machine or workload.
 References: [Apple's Tahoe guide](https://support.apple.com/en-ge/guide/calculator/welcome/12.0/mac/26),
 [mode overview](https://support.apple.com/guide/calculator/choose-the-right-mode-calc22d50970/mac),
 [Frankfurter API](https://frankfurter.dev/v1/).
+
+The mode menu, history context menu, confirmation popup and unit selectors use
+explicit SF Pro controls, including their popup delegates. Conversion selectors
+use two rows so they fit the compact width. The Control Center launch path emits
+its actual closing signal before starting/reusing the calculator.
+
+`tests/test_calculator_panels_ui.py` checks the real Control Center launch route
+and repeated Apple/volume menu fades in a private compositor. Menu lifetimes follow
+the actual opacity animation, so a slow frame cannot make a fixed timer cut it off.

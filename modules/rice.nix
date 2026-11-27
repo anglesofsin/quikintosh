@@ -339,7 +339,7 @@ let
   };
   lickintoshPackage = (pkgs.writeShellApplication {
     name = "lickintosh";
-    runtimeInputs = [ lickintoshQs rosaIslandd rosaTools pkgs.localsend pkgs.poppler-utils pkgs.tesseract pkgs.zbar pkgs.wf-recorder pkgs.ffmpeg pkgs.pulseaudio pkgs.libnotify pkgs.cava pkgs.psmisc pkgs.libcanberra-gtk3 pkgs.cups pkgs.python3 pkgs.imagemagick pkgs.brightnessctl pkgs.ddcutil
+    runtimeInputs = [ lickintoshQs rosaIslandd rosaTools pkgs.whisper-cpp pkgs.localsend pkgs.poppler-utils pkgs.tesseract pkgs.zbar pkgs.wf-recorder pkgs.ffmpeg pkgs.pulseaudio pkgs.libnotify pkgs.cava pkgs.psmisc pkgs.libcanberra-gtk3 pkgs.cups pkgs.python3 pkgs.imagemagick pkgs.brightnessctl pkgs.ddcutil
       desktopProfile finder pkgs.glib pkgs.trash-cli pkgs.seahorse pkgs.pika-backup pkgs.networkmanagerapplet pkgs.simple-scan
       pkgs.playerctl pkgs.wl-clipboard pkgs.cliphist pkgs.grim pkgs.slurp
       pkgs.hyprpicker pkgs.jq pkgs.curl pkgs.xdg-utils pkgs.xdg-user-dirs
@@ -368,6 +368,7 @@ let
       ${pkgs.python3}/bin/python3 ${../scripts/setup-defaults.py} ${lickintoshRoot}/quickintosh-defaults ${lickintoshRoot}/assets/wallpapers/daniel-leone.jpg
       mkdir -p "$HOME/.config/lickintosh/core" "$HOME/.config/lickintosh/rosa" "$HOME/.local/state/lickintosh/emoji"
       ${pkgs.python3}/bin/python3 ${./lickintosh/bootstrap.py} ${lickintoshRoot}/assets/wallpapers/daniel-leone.jpg
+      export QUICKINTOSH_WHISPER_MODEL="${whisperModel}"
       export QML_IMPORT_PATH="${quickintoshRendering}/lib/qt-6/qml:${lib.makeSearchPath "lib/qt-6/qml" (with pkgs.qt6; [ qtgraphs qtquick3d qtquicktimeline qtmultimedia qt5compat qtsvg ])}:''${QML_IMPORT_PATH:-}"
       export QT_PLUGIN_PATH="${lib.makeSearchPath "lib/qt-6/plugins" (with pkgs.qt6; [ qtmultimedia qtimageformats ])}:''${QT_PLUGIN_PATH:-}"
       export FONTCONFIG_FILE=${pkgs.makeFontsConf { fontDirectories = [ (lickintosh-src + "/assets/fonts") ./lickintosh/widget-review/fonts appleEmojiFont (pkgs.nerd-fonts.symbols-only + "/share/fonts") ]; }}
@@ -391,6 +392,15 @@ let
       exec ${lickintoshQs}/bin/qs -p ${lickintoshRoot} "$@"
     '';
   }).overrideAttrs { version = lickintoshRoot.version; };
+  whisperModel = pkgs.fetchurl {
+    url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin";
+    sha256 = "1zifp9gk9220vysx8a00mzf2sy05ni4l6crx95baivhlvp1mpvb0";
+  };
+  shelfMcp = pkgs.writeShellApplication {
+    name = "quickintosh-mcp";
+    runtimeInputs = [ pkgs.python3 ];
+    text = ''exec ${pkgs.python3}/bin/python3 ${lickintoshRoot}/island-shelf/mcp_server.py "$@"'';
+  };
   calculatorLauncher = pkgs.writeShellApplication {
     name = "quickintosh-calculator";
     runtimeInputs = [ lickintoshQs pkgs.wl-clipboard pkgs.hyprland ];
@@ -641,7 +651,7 @@ in
   services.dbus.packages = [ pkgs.gvfs ];
   systemd.packages = [ pkgs.gvfs ];
   services.udisks2.enable = true;
-  environment.systemPackages = [ desktopProfile finder finderDesktop riceFileManager quickLookOpener quickLookDesktop calculatorLauncher calculatorDesktop quickintoshAnima wallpaperBenchmark
+  environment.systemPackages = [ shelfMcp desktopProfile finder finderDesktop riceFileManager quickLookOpener quickLookDesktop calculatorLauncher calculatorDesktop quickintoshAnima wallpaperBenchmark
     pkgs.noctalia-shell
     noctaliaLegacyPackage
     lickintoshPackage

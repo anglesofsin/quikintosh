@@ -246,7 +246,8 @@
       "id": "mcp",
       "name": "Mcp",
       "url": "https://getdroppy.app/features/mcp",
-      "status": "pending"
+      "status": "implemented-core",
+      "scope": "Opt-in local stdio bridge; third-party client setup is explicit."
     },
     {
       "id": "mechey",
@@ -403,7 +404,8 @@
       "id": "voice-transcribe",
       "name": "Voice Transcribe",
       "url": "https://getdroppy.app/features/voice-transcribe",
-      "status": "pending"
+      "status": "implemented-core",
+      "scope": "Local file/microphone transcription; multilingual base model; explicit capture only."
     },
     {
       "id": "weather",

@@ -23,7 +23,7 @@ Flickable {
     Layout.minimumWidth:140
     Rectangle{anchors.fill:parent;radius:20;color:IslandConfig.s('shelfWidgetCards') ? '#151518':'transparent';border.color:IslandConfig.s('shelfWidgetCards') ? '#25252b':'transparent'}
     Rectangle{anchors.fill:parent;anchors.margins:-1;radius:20;color:'transparent';border.width:1;border.color:'#70ffffff';visible:ShelfState.editing}
-    Loader {anchors.fill:parent;anchors.margins:IslandConfig.s('shelfWidgetCards') ? 14:0;sourceComponent:({media:music,calendar:calendar,weather:weather,focus:focusComponent,notes:notes,performance:stats,files:files,clipboard:clipboardWidget,audio:audioWidget,awake:awakeWidget,storage:storageWidget,camera:cameraWidget,terminal:terminalWidget,breather:breatherWidget,vault:vaultWidget,developer:developerWidget,teleprompter:teleprompterWidget,notifications:notificationsWidget})[slot.modelData] || music}
+    Loader {anchors.fill:parent;anchors.margins:IslandConfig.s('shelfWidgetCards') ? 14:0;sourceComponent:({media:music,calendar:calendar,weather:weather,focus:focusComponent,notes:notes,performance:stats,files:files,clipboard:clipboardWidget,audio:audioWidget,awake:awakeWidget,storage:storageWidget,camera:cameraWidget,transcribe:transcribeWidget,terminal:terminalWidget,breather:breatherWidget,vault:vaultWidget,developer:developerWidget,teleprompter:teleprompterWidget,notifications:notificationsWidget})[slot.modelData] || music}
     DropArea{anchors.fill:parent;keys:['application/x-quickintosh-shelf-slot','application/x-quickintosh-widget'];onDropped:drop=>{
      const key=drop.source?.widgetKey || drop.getDataAsString('application/x-quickintosh-widget');if(key){IslandConfig.setStyle('shelfSlot'+(slot.index+1),key);drop.acceptProposedAction();return}
      const from=drop.source?.slotIndex!==undefined ? drop.source.slotIndex:Number(drop.getDataAsString('application/x-quickintosh-shelf-slot'));const to=slot.index
@@ -44,6 +44,7 @@ onPositionChanged:e=>{if(pressed){const change=Math.round((mapToGlobal(e.x,e.y).
    }
   }
  }
+ Component{id:transcribeWidget;TranscribeShelf{}}
  Component{id:terminalWidget;TerminalShelf{}}
  Component{id:breatherWidget;BreatherShelf{}}
  Component{id:vaultWidget;VaultShelf{}}

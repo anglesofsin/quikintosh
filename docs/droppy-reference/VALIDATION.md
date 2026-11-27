@@ -33,3 +33,19 @@ No claim is made of full 71-feature parity or pixel identity across all screens.
 Notch seam: explicit one-pixel corner overlap, no body border in attached-notch
 mode. Focused native validation passed in /tmp/qi-notch-seam-final-v2.log and
 the screenshot was visually inspected before activation.
+
+Follow-up audio validation: actual radius clipping replaces rectangular clipping;
+the central divider was removed. Two synthetic stream levels (68% and 100%) were
+rendered in a private compositor, with adaptive height. The render fixture is
+not evidence of actual PipeWire gain control; that existing path was unchanged.
+Evidence: /tmp/qi-audio-sized-final-v2.log, audio-rounded-fill.png.
+
+The local command runner executed printf through its actual QML process bridge.
+14 developer/terminal/Finder/vault tests and six MCP permission/protocol tests
+passed. The stdio MCP initialization, tool discovery and read-only status call
+also succeeded against the running shell. No external MCP client was modified.
+
+Local speech inference processed the official public whisper.cpp JFK sample in
+14.42 seconds in the backend test, then again through QML without microphone
+capture. Evidence: /tmp/qi-transcribe-validation.json and
+/tmp/qi-transcribe-ui-final.log. Input audio never came from the user's call.

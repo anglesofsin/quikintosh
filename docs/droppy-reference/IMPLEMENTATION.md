@@ -26,6 +26,8 @@ Implemented local capabilities:
 - Notifications with images, advertised actions and native freedesktop inline reply.
 - MPRIS player transport, source choice, seek, volume, lyrics and floating variants.
 - Real calendar, notes, focus, weather, stats, camera and idle inhibition widgets.
+- Local MCP stdio bridge with separate UI/files/activity permissions, bounded
+  requests and no network listener or arbitrary command execution. See MCP.md.
 - Quick Terminal runs explicitly submitted commands with bounded output, a stop
   action and a complete terminal launcher for interactive sessions.
 - Developer tools: offline JSON/Base64/URL/JWT inspection/UUID/SHA transformations.
@@ -45,3 +47,10 @@ private Apple APIs. Third-party accounts need a supported provider and user
 credentials; no credentials are discovered or copied from app profiles.
 Notification reply requires support from the sender. Destructive operations are
 never automatic. A compatible Linux alternative is not labelled pixel-identical.
+
+Voice transcription uses local whisper.cpp with the multilingual base model.
+Recording is explicit (maximum 60 seconds); file input is normalized locally and
+limited to the first five minutes. The microphone job is cancelled on lock or
+when its recording view becomes hidden. Temporary audio is removed after work.
+Language selection includes automatic, Portuguese and nine other choices.
+No audio is uploaded. This does not establish word-perfect transcription.

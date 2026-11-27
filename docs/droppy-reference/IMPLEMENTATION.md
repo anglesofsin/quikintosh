@@ -67,3 +67,9 @@ track events and supports jump, add and remove when advertised. Standard MPRIS
 does not define arbitrary queue reordering; no private Spotify API is assumed.
 Selection Actions is opt-in; its primary-selection text is transient. Copy/Search
 work locally and external search happens only on an explicit click.
+
+Tasks & Agents provides an explicit local job runner and bounded summary history.
+Use `quickintosh-run --title "Build" -- your-command`; progress appears in Live
+Activities. Interactive agents keep their caller TTY. It does not scrape private
+Claude/Codex histories or claim model-token/cost statistics. Exit summaries store
+only a chosen title, duration, status and completion timestamp (last 200 jobs).

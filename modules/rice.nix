@@ -397,6 +397,11 @@ let
     url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin";
     sha256 = "1zifp9gk9220vysx8a00mzf2sy05ni4l6crx95baivhlvp1mpvb0";
   };
+  shelfJobRunner = pkgs.writeShellApplication {
+    name = "quickintosh-run";
+    runtimeInputs = [ pkgs.python3 pkgs.libnotify ];
+    text = ''exec ${pkgs.python3}/bin/python3 ${lickintoshRoot}/island-shelf/activity_runner.py "$@"'';
+  };
   shelfMcp = pkgs.writeShellApplication {
     name = "quickintosh-mcp";
     runtimeInputs = [ pkgs.python3 ];
@@ -652,7 +657,7 @@ in
   services.dbus.packages = [ pkgs.gvfs ];
   systemd.packages = [ pkgs.gvfs ];
   services.udisks2.enable = true;
-  environment.systemPackages = [ shelfMcp desktopProfile finder finderDesktop riceFileManager quickLookOpener quickLookDesktop calculatorLauncher calculatorDesktop quickintoshAnima wallpaperBenchmark
+  environment.systemPackages = [ shelfJobRunner shelfMcp desktopProfile finder finderDesktop riceFileManager quickLookOpener quickLookDesktop calculatorLauncher calculatorDesktop quickintoshAnima wallpaperBenchmark
     pkgs.noctalia-shell
     noctaliaLegacyPackage
     lickintoshPackage

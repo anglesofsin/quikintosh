@@ -83,7 +83,7 @@ Singleton {
   }
   root.breakDue=next
  }}
- readonly property var widgetPriority:['media','weather','calendar','focus','notes','files','clipboard','audio','notifications','performance','queue','camera','storage','awake','calculator','emoji','spotlight','applications','transcribe','terminal','vault','developer','breather','teleprompter','ring','selection','activities','settings']
+ readonly property var widgetPriority:['media','weather','calendar','focus','notes','files','clipboard','audio','notifications','performance','queue','camera','storage','awake','calculator','emoji','spotlight','applications','transcribe','terminal','vault','developer','breather','teleprompter','ring','selection','jobs','activities','settings']
  function orderWidgets(items){const recent=utilityPreferences.widgetRecent || [];return items.slice().sort((a,b)=>{const x=recent.indexOf(a.key),y=recent.indexOf(b.key);if(x>=0 || y>=0)return x<0 ? 1:y<0 ? -1:x-y;return widgetPriority.indexOf(a.key)-widgetPriority.indexOf(b.key)})}
  function useWidget(key){const recent=[key].concat((utilityPreferences.widgetRecent || []).filter(k=>k!==key)).slice(0,40);utilityPreferences=Object.assign({},utilityPreferences,{widgetRecent:recent});send({action:'utilityPreferences',values:{widgetRecent:recent}})}
  function beginEditing(){reveal(0);editing=true}
@@ -123,6 +123,7 @@ Singleton {
  property var pending:[]
  property int openPage:0
  Connections{target:IslandBus;function onLockedChanged(){if(IslandBus.locked){root.clearSelection();root.playerOpen=false;root.ringRequested=false;root.ringOpen=false;root.trayOpen=false;root.basketOpen=false;root.editing=false;root.editorOwners=({});root.interactionCount=0;root.menuCount=0}}}
+ signal jobHistory(var data)
  signal developerResult(string text,string error)
  signal closeRequested()
  signal reveal(int page)
@@ -144,6 +145,7 @@ Singleton {
    else if(e.type==='activities')root.activities=e.items
    else if(e.type==='storage')root.storageInfo=e
    else if(e.type==='applications'){root.installedApps=e.items;if(e.suggested)root.applicationSuggested(e.suggested)}
+   else if(e.type==='jobHistory')root.jobHistory(e)
    else if(e.type==='queue')root.queueData=e
    else if(e.type==='applicationData')root.appDataReview=e
    else if(e.type==='busy')root.fileBusy=e.value

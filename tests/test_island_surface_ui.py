@@ -148,7 +148,7 @@ class IslandSurfaceUI(unittest.TestCase):
      (out/'action-ring-shortcuts.json').write_text(json.dumps(ring_binds,indent=2))
      ipc('page','8');wait_state(lambda s:s['page']==8 and abs(s['geometry']['bodyHeight']-310)<.01);time.sleep(.6)
      subprocess.run(['grim','-l','1',str(out/'command-center.png')],env=env,check=True,timeout=30)
-     for key in ['developer','teleprompter','vault','breather','terminal','transcribe','ring','selection','queue']:
+     for key in ['developer','teleprompter','vault','breather','terminal','transcribe','ring','selection','queue','jobs']:
       ipc('detail',key);wait_state(lambda s:abs(s['geometry']['bodyWidth']-620)<.01);time.sleep(.5)
       subprocess.run(['grim','-l','1',str(out/('widget-'+key+'.png'))],env=env,check=True,timeout=30)
       if key=='queue':
@@ -282,7 +282,7 @@ class IslandSurfaceUI(unittest.TestCase):
      subprocess.run(['grim','-l','1',str(out/'notch-media.png')],env=env,check=True,timeout=30)
      ipc('notchReview','false')
      for key in ([] if os.environ.get('QUICKINTOSH_REVIEW_FOCUSED')=='1' else ['focus','notes','performance','files','clipboard','audio','awake','storage','camera','notifications','developer','teleprompter','vault','breather']):
-      ipc('detail',key);wait_state(lambda s:(key not in ['focus','notes','performance'] or 'shelf-'+('stats' if key=='performance' else key) in s['names']) and abs(s['geometry']['bodyWidth']-(620 if key in ('developer','teleprompter','vault','breather') else 380))<.01);ipc('populate');time.sleep(.3)
+      ipc('detail',key);wait_state(lambda s:(key not in ['focus','notes','performance'] or 'shelf-'+('stats' if key=='performance' else key) in s['names']) and abs(s['geometry']['bodyWidth']-(620 if key in ('developer','teleprompter','vault','breather','jobs') else 380))<.01);ipc('populate');time.sleep(.3)
       if key=='queue':
        for attempt in range(100):
         queue=json.loads(ipc('queueState'))

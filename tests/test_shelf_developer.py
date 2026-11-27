@@ -42,6 +42,29 @@ class DeveloperToolsTests(unittest.TestCase):
    shelf=Shelf(root);shelf.handle({'action':'utilityPreferences','values':{'teleprompterText':'script ☀'}})
    self.assertEqual(Shelf(root).handle({'action':'utilityPreferences'})['values'],{'teleprompterText':'script ☀'})
 
+class JobSummaryTests(unittest.TestCase):
+ def test_explicit_job_exit_and_activity(self):
+  import os,subprocess
+  with tempfile.TemporaryDirectory() as root:
+   folder=Path(root);tool=folder/'quickintosh';log=folder/'activity.jsonl'
+   tool.write_text('#!/bin/sh\nprintf "%s\\n" "$5" >> "$QA_ACTIVITY_LOG"\n');tool.chmod(0o755)
+   script=Path(__file__).resolve().parents[1]/'modules/lickintosh/island-shelf/activity_runner.py'
+   env=dict(os.environ,PATH=str(folder)+':'+os.environ['PATH'],XDG_STATE_HOME=str(folder/'state'),QA_ACTIVITY_LOG=str(log))
+   result=subprocess.run([sys.executable,str(script),'--title','Private test','--','bash','-c','sleep .1; exit 7'],env=env,capture_output=True,text=True,timeout=15)
+   self.assertEqual(result.returncode,7,result.stderr)
+   rows=[json.loads(line) for line in log.read_text().splitlines()]
+   self.assertEqual(rows[-1]['title'],'Private test');self.assertEqual(rows[-1]['subtitle'],'Exited with code 7')
+ def test_summary_has_no_command_or_output(self):
+  import os
+  from unittest.mock import patch
+  from activity_runner import save_summary
+  with tempfile.TemporaryDirectory() as root:
+   with patch.dict(os.environ,{'XDG_STATE_HOME':root}):save_summary('Build',1.25,0)
+   path=Path(root)/'quickintosh/island-shelf/job-history.jsonl'
+   row=json.loads(path.read_text());self.assertEqual(set(row),{'title','seconds','code','finished'})
+   shelf=Shelf(path.parent);result=shelf.handle({'action':'jobHistory'})
+   self.assertEqual(result['completed'],1);self.assertEqual(result['failed'],0);self.assertEqual(result['seconds'],1.25)
+
 class ApplicationCleanupTests(unittest.TestCase):
  def test_personal_data_is_opt_in_and_scoped(self):
   from unittest.mock import patch

@@ -81,3 +81,7 @@ Follow-up editor refinement removes the ellipsis buttons entirely: reorder has a
 small horizontal grip, resizing a narrow edge grip, both with larger invisible
 hit targets. The obsolete catalogue slot editor is removed; pencil routes to
 the same inline Home editor. No separate personalization flow remains.
+
+/tmp/qi-job-history-final.log passed the updated editor drag and Tasks & Agents
+page alongside the other local workflows. 23 backend tests include real process
+exit forwarding with a private IPC stub and metadata-only job summaries.

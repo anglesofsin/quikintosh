@@ -94,7 +94,16 @@ class Shelf(FileOperations,AppOperations,VaultOperations,MediaQueue):
         return sorted(rows,key=lambda x:(not x.get('pinned',False),-x.get('added',0)))
     def handle(self,event):
         action=event.get('action','list');values=event.get('paths',[])
-        if action=='queueWatch':return self.queue_watch(event)
+        if action=='jobHistory':
+            file=self.root/'job-history.jsonl';rows=[]
+            if file.exists() and file.stat().st_size<1024*1024:
+                for line in file.read_text().splitlines()[-200:]:
+                    try:
+                        item=json.loads(line)
+                        if isinstance(item,dict) and isinstance(item.get('title'),str) and isinstance(item.get('seconds'),(int,float)) and isinstance(item.get('code'),int):rows.append(item)
+                    except ValueError:continue
+            return dict(type='jobHistory',items=list(reversed(rows)),seconds=sum(max(0,item['seconds']) for item in rows),completed=sum(item['code']==0 for item in rows),failed=sum(item['code']!=0 for item in rows))
+        elif action=='queueWatch':return self.queue_watch(event)
         elif action=='queueAction':return self.queue_action(event)
         elif action in ('vaultSelect','vaultList','vaultRead','vaultSave'):return self.vault(event)
         elif action=='utilityPreferences':

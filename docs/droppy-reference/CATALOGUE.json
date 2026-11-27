@@ -6,7 +6,8 @@
       "id": "agents",
       "name": "Agents",
       "url": "https://getdroppy.app/features/agents",
-      "status": "pending"
+      "status": "partial",
+      "scope": "Explicit job progress via quickintosh-run and opt-in MCP; automatic per-tool hooks remain pending."
     },
     {
       "id": "ai-background-removal",

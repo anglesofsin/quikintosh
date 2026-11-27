@@ -120,6 +120,11 @@ class Shelf(FileOperations,AppOperations,VaultOperations,MediaQueue):
             if 'widgetRecent' in values:state['widgetRecent']=list(dict.fromkeys(key[:64] for key in values['widgetRecent'][:40] if isinstance(key,str)))
             if 'ringCount' in values:state['ringCount']=max(1,min(3,int(values['ringCount'])))
             if 'ringActions' in values:state['ringActions']=[key[:32] for key in values['ringActions'][:18] if isinstance(key,str)]
+            for key in ('navigationShown','navigationWidgets','navigationTrayOnlyWithFiles','navigationGestures'):
+                if key in values:state[key]=values[key] is True
+            if 'navigationFavorites' in values:
+                if not isinstance(values['navigationFavorites'],list):raise ValueError('Favorites must be a list')
+                state['navigationFavorites']=[key[:256] for key in values['navigationFavorites'][:4] if isinstance(key,str)]
             if 'commandColumns' in values:state['commandColumns']=max(4,min(7,int(values['commandColumns'])))
             if 'commandFavorites' in values:state['commandFavorites']=[str(key)[:64] for key in values['commandFavorites'][:64] if isinstance(key,str)]
             if 'breaksEnabled' in values:state['breaksEnabled']=values['breaksEnabled'] is True

@@ -31,8 +31,6 @@ def integrate(root):
     s=s.replace('Component {id:overview;ShelfHome{onOpenPage:page=>panel.selectPage(page)}}','Component {id:overview;HomeEditor{onOpenPage:page=>panel.selectPage(page)}}')
     s=s.replace('Component{id:widgetDetail;ShelfHome{slots:[panel.detailWidget];onOpenPage:page=>panel.selectPage(page)}}','Component{id:widgetDetail;ShelfHome{slots:[panel.detailWidget];onOpenPage:page=>panel.selectPage(page)}}')
     s=s.replace('ShelfButton{implicitWidth:44;implicitHeight:36;icon:"notch/grid.svg";', 'ShelfButton{implicitWidth:44;implicitHeight:36;icon:"notch/grid.svg";')
-    a='            ShelfButton{visible:ShelfState.editing && panel.page!==8;'
-    s=s.replace(a,'            ShelfButton{implicitWidth:44;implicitHeight:36;icon:"notch/hard-drive.svg";accessibleLabel:qsTr("Storage");selected:panel.page===14;onClicked:panel.selectPage(14)}\n'+a,1)
     s=s.replace('visible:ShelfState.editing && panel.page!==8;', 'visible:ShelfState.editing && panel.page!==8 && panel.page!==0;')
     s=s.replace('index>13','index>14').replace('model:14','model:15')
     s=s.replace('    property var visitedPages:({0:true})',
@@ -48,8 +46,8 @@ def integrate(root):
     s=s.replace('implicitWidth:34;implicitHeight:28;flat:true;iconSize:15;icon:"notch/inbox.svg"', 'implicitWidth:badge>0 ? Math.max(34,15+String(badge).length*6+10):34;implicitHeight:28;flat:true;iconSize:15;icon:"notch/inbox.svg"')
     s=s.replace('flat:true;iconSize:15;', 'flat:true;iconSize:15;foreground:selected ? ShelfStyle.primary:ShelfStyle.secondary;')
     s=s.replace('    Component {id:tray;','    Component{id:storage;StorageShelf{}}\n    Component {id:tray;',1)
-    s=s.replace('panel.detailWidget==="calendar" ? 620:380','["batteries","translate","calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring","selection","queue","jobs"].includes(panel.detailWidget) ? 620:380')
-    s=s.replace('detailWidget==="calendar" ? 620:380','["batteries","translate","calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring","selection","queue","jobs"].includes(detailWidget) ? 620:380')
+    s=s.replace('panel.detailWidget==="calendar" ? 620:380','["navigation","batteries","translate","calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring","selection","queue","jobs"].includes(panel.detailWidget) ? 620:380')
+    s=s.replace('detailWidget==="calendar" ? 620:380','["navigation","batteries","translate","calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring","selection","queue","jobs"].includes(detailWidget) ? 620:380')
     s=s.replace('13:(["calendar",','14:540,13:(["calendar",')
     s=s.replace('13:(detailWidget===','14:540,13:(detailWidget===')
     s=s.replace('({1:336,4:300','({14:300,1:336,4:300')
@@ -57,7 +55,7 @@ def integrate(root):
     s=s.replace('Rectangle{anchors.fill:parent;radius:52;visible:IslandConfig.s("shelfMaterial")','Rectangle{anchors.fill:parent;radius:panel.attachedNotch ? 0:52;visible:IslandConfig.s("shelfMaterial")',1)
     s=s.replace('    readonly property int bodyHeight:', '    readonly property int audioBodyHeight:Math.min(340,78+Math.max(1,Pipewire.nodes.values.filter(n=>n.isStream && n.audio).length)*46)\n    readonly property int bodyHeight:',1)
     s=s.replace('10:300','10:panel.audioBodyHeight')
-    s=s.replace('    readonly property int bodyHeight:', '    readonly property int detailBodyHeight:Math.min(output.height-80,({batteries:260,translate:260,ring:430,jobs:320,queue:360,developer:320,vault:360,terminal:320,teleprompter:330,transcribe:300,breather:240})[detailWidget] || IslandConfig.s("shelfHeight"))\n    readonly property int bodyHeight:',1)
+    s=s.replace('    readonly property int bodyHeight:', '    readonly property int detailBodyHeight:Math.min(output.height-80,({navigation:520,batteries:260,translate:260,ring:430,jobs:320,queue:360,developer:320,vault:360,terminal:320,teleprompter:330,transcribe:300,breather:240})[detailWidget] || IslandConfig.s("shelfHeight"))\n    readonly property int bodyHeight:',1)
     s=s.replace('({14:460,1:336','({13:panel.detailBodyHeight,14:460,1:336')
     s=s.replace('import QtQuick\n','import QtQuick\nimport QtQuick.Shapes\nimport Quickshell.Services.Pipewire\n',1)
     s=s.replace('margins.top: Math.max(0, capsuleTop)','margins.top: panel.attachedNotch ? 0:Math.max(0,capsuleTop)',1)
@@ -69,7 +67,7 @@ def integrate(root):
     s=s.replace('    ClippingRectangle {\n        id: body','    Shape{id:notchWings;visible:panel.attachedNotch && panel.geometryExpanded;anchors.top:body.top;anchors.horizontalCenter:body.horizontalCenter;width:visible ? body.width+56:0;height:visible ? 28:0;preferredRendererType:Shape.CurveRenderer\n        ShapePath{strokeWidth:-1;fillColor:"black";startX:0;startY:0\n            PathQuad{x:29;y:28;controlX:28;controlY:0}\n            PathLine{x:29;y:0}\n            PathLine{x:0;y:0}\n            PathMove{x:notchWings.width-29;y:0}\n            PathLine{x:notchWings.width-29;y:28}\n            PathQuad{x:notchWings.width;y:0;controlX:notchWings.width-28;controlY:0}\n            PathLine{x:notchWings.width-28;y:0}\n        }\n    }\n    ClippingRectangle {\n        id: body',1)
     p.write_text(s)
     qmldir=root/'island-shelf/qmldir'
-    qmldir.write_text(qmldir.read_text()+'\nHomeEditor HomeEditor.qml\nTransformWindow TransformWindow.qml\nStorageShelf StorageShelf.qml\nShelfMenu ShelfMenu.qml\nShelfMenuItem ShelfMenuItem.qml\nShelfMenuSeparator ShelfMenuSeparator.qml\nDragBasket DragBasket.qml\nHomeUtility HomeUtility.qml\nDeveloperTools DeveloperTools.qml\nTeleprompter Teleprompter.qml\nVaultShelf VaultShelf.qml\nBreatherShelf BreatherShelf.qml\nTerminalShelf TerminalShelf.qml\nTranscribeShelf TranscribeShelf.qml\nActionRing ActionRing.qml\nRingSettings RingSettings.qml\nSelectionActions SelectionActions.qml\nSelectionSettings SelectionSettings.qml\nQueueShelf QueueShelf.qml\nJobHistory JobHistory.qml\nShelfAudioMeter ShelfAudioMeter.qml\nShelfTextArea ShelfTextArea.qml\nNearbyShare NearbyShare.qml\nShelfPanelMaterial ShelfPanelMaterial.qml\nTranslateShelf TranslateShelf.qml\nBatteriesShelf BatteriesShelf.qml\n')
+    qmldir.write_text(qmldir.read_text()+'\nHomeEditor HomeEditor.qml\nTransformWindow TransformWindow.qml\nStorageShelf StorageShelf.qml\nShelfMenu ShelfMenu.qml\nShelfMenuItem ShelfMenuItem.qml\nShelfMenuSeparator ShelfMenuSeparator.qml\nDragBasket DragBasket.qml\nHomeUtility HomeUtility.qml\nDeveloperTools DeveloperTools.qml\nTeleprompter Teleprompter.qml\nVaultShelf VaultShelf.qml\nBreatherShelf BreatherShelf.qml\nTerminalShelf TerminalShelf.qml\nTranscribeShelf TranscribeShelf.qml\nActionRing ActionRing.qml\nRingSettings RingSettings.qml\nSelectionActions SelectionActions.qml\nSelectionSettings SelectionSettings.qml\nQueueShelf QueueShelf.qml\nJobHistory JobHistory.qml\nShelfAudioMeter ShelfAudioMeter.qml\nShelfTextArea ShelfTextArea.qml\nNearbyShare NearbyShare.qml\nShelfPanelMaterial ShelfPanelMaterial.qml\nsingleton ShelfNavigation ShelfNavigation.qml\nNavigationSettings NavigationSettings.qml\nTranslateShelf TranslateShelf.qml\nBatteriesShelf BatteriesShelf.qml\n')
     state=root/'services/ShelfState.qml';text=state.read_text();text=text.replace(' property var capabilities:', ' property string translationText:""\n property var capabilities:',1);state.write_text(text)
     p=root/'services/MprisState.qml';s=p.read_text()
     if p.is_symlink():p.unlink()
@@ -81,6 +79,8 @@ def integrate(root):
     s=s.replace('    NotificationServer {','    NotificationServer {\n        inlineReplySupported:true',1)
     if 'TransformWindow {}' not in s:s=s.replace('FloatingMusic{','SelectionActions{}\n    ActionRing{}\n    DragBasket{}\n    TransformWindow{}\n    FloatingMusic{',1)
     p.write_text(s)
+    import runpy
+    runpy.run_path(str(Path(__file__).with_name('navigation.py')))['integrate'](root)
 
 
 if __name__=='__main__':

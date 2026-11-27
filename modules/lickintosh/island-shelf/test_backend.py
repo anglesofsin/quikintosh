@@ -6,6 +6,13 @@ class ShelfTest(unittest.TestCase):
  def setUp(self):
   self.temp=tempfile.TemporaryDirectory();self.home=Path(self.temp.name);self.s=module.Shelf(self.home/'state');self.a=self.home/'a file.txt';self.a.write_text('original')
  def tearDown(self):self.temp.cleanup()
+ def test_navigation_preferences_persist_and_limit_favorites(self):
+  flags={'navigationShown':False,'navigationWidgets':False,'navigationTrayOnlyWithFiles':True,'navigationGestures':True,'navigationFavorites':['media','clipboard','batteries','storage','weather']}
+  self.s.handle({'action':'utilityPreferences','values':flags})
+  restored=module.Shelf(self.s.root).handle({'action':'utilityPreferences'})['values']
+  self.assertFalse(restored['navigationShown']);self.assertTrue(restored['navigationTrayOnlyWithFiles']);self.assertEqual(restored['navigationFavorites'],flags['navigationFavorites'][:4])
+ def test_navigation_invalid_favorites_rejected(self):
+  with self.assertRaises(ValueError):self.s.handle({'action':'utilityPreferences','values':{'navigationFavorites':'media'}})
  def test_add_uri_and_dedupe(self):
   self.s.add([self.a.as_uri(),str(self.a)]);self.assertEqual(len(self.s.entries()),1);self.assertEqual(self.a.read_text(),'original')
  def test_remove_retains_original(self):

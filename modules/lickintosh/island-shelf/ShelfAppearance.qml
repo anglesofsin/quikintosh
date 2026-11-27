@@ -58,4 +58,5 @@ ColumnLayout {
   Switch{checked:IslandConfig.s('trayShakeEnabled')!==false;onToggled:IslandConfig.setStyle('trayShakeEnabled',checked)}
  }
 
+ NavigationSettings{Layout.fillWidth:true;settingsPage:root.settingsPage}
 }

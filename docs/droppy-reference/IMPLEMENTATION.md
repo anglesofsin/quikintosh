@@ -80,3 +80,26 @@ only a chosen title, duration, status and completion timestamp (last 200 jobs).
 Quick Translate: optional explicit Google/Translate Shell online request, ten target languages, original editor/result card, cancel and copy. Source text goes via stdin; no request occurs on selection alone. Worker timeout and process-group cancellation bound provider work. Private QML flow translated the public phrase Good morning into Bom dia; three mocked backend tests cover input validation, stdin routing and provider failure. Local inference, replace-selection and standalone shortcut are pending; no equivalence to Apple Translation is claimed.
 
 Batteries panel: read-only UPower and paired/reachable KDE Connect charge properties with bounded D-Bus calls, 30-second visible-only refresh, explicit unknown-charge exclusion, and 24-hour disconnected cache. Green/orange/red progress rings, AI-generated headphones/charging glyphs and offline dimming rendered in a private compositor with synthetic device fixtures. Five backend tests and native fixture rendering passed. Actual host inventory returned one device; no device names were logged. Background alerts and per-device notification settings remain pending. Reference: https://getdroppy.app/features/batteries; KDE DBus properties verified against upstream batteryplugin.h.
+
+Navigation follow-up (isolated, not activated): the default strip contains Home,
+Tray and Widgets, with no fixed Storage button. Dynamic Island appearance settings
+expose Show navigation, Show widgets page, Tray only with files, horizontal
+trackpad page gestures, and four favorite slots. Favorites accept existing widgets,
+installed applications and known shell actions; duplicate slot selections move the
+favorite. Storage remains available in the widget catalogue and optional favorites.
+Preferences persist through the shelf backend. Hidden navigation has zero layout
+and input-region geometry. Horizontal touchpad handling cycles enabled pages;
+private tests exercise its handler, not physical touchpad hardware.
+
+Reference flow: https://getdroppy.app/docs/notch and
+https://getdroppy.app/docs/settings. The supplied Droppy screenshots establish the
+three main navigation glyphs. No verified screenshot of Droppy's corresponding
+settings page was available, so that page follows documented behavior and the
+existing settings design rather than claiming pixel identity.
+
+Validation: 12 backend tests passed, including preference reload and invalid
+favorites input. Native Qt rendering in a private nested compositor verifies
+three default destinations, four favorites, empty-Tray visibility, hidden-strip
+page navigation, favorite deduplication and favorite activation. Captures are
+navigation-default.png, navigation-favorites.png and navigation-settings.png in
+the local droppy-design-review review directory. No live shell activation.

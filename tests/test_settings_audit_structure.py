@@ -12,6 +12,10 @@ class AuditStructure(unittest.TestCase):
   for section in ['Shape & Material','Navigation & Favorites','Contextual Icons','Calls & Privacy','Advanced']:self.assertIn(section,after)
   self.assertIn('root.advancedOptions ? Rosa.IslandConfig.groups:[]',after)
   self.assertIn('["auto","focus","minimized"]',after)
+ def test_late_query_error_is_scoped_to_page(self):
+  original=(BASE/'services/SettingsState.qml').read_text();after=audit.error_scope(original)
+  self.assertIn('epoch:pageEpoch',after);self.assertIn("request.kind==='action' || request.epoch===root.pageEpoch",after)
+  self.assertIn("root.error=event.message",after)
  def test_paths_keep_action_and_dialog(self):
   source=(BASE/'settingsapp/SettingsPathRow.qml').read_text();after=audit.path_row(source)
   self.assertEqual(source.count('root.edited('),after.count('root.edited('));self.assertIn('FolderDialog',after);self.assertNotIn('Layout.maximumWidth:root.width*.47',after)

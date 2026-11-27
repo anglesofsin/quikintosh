@@ -6,12 +6,13 @@ from test_island_compact_ui import REQUIRED
 class SettingsPagesUI(unittest.TestCase):
  def test_every_page(self):
   runtime=Path(os.environ[REQUIRED[2]]).resolve();self.assertFalse(runtime.is_relative_to('/run/user'))
-  phase=os.environ.get('QI_SETTINGS_PHASE','before');out=Path('/home/pg/.local/state/quickintosh/reviews/settings-tahoe-audit')/phase;out.mkdir(parents=True,exist_ok=True)
+  phase=os.environ.get('QI_SETTINGS_PHASE','before');out=Path(os.environ.get('QI_SETTINGS_REVIEW_DIR','/home/pg/.local/state/quickintosh/reviews/settings-tahoe-audit'))/phase;out.mkdir(parents=True,exist_ok=True)
   with tempfile.TemporaryDirectory(prefix='qi-settings-audit-') as tmp:
    root=Path(tmp);source=Path(os.environ[REQUIRED[0]])
    for e in source.iterdir():
     if e.name not in ['shell.qml','settings.qml']:(root/e.name).symlink_to(e,target_is_directory=e.is_dir())
    text=(source/'settings.qml').read_text().replace('IpcHandler{\n  target:', '''IpcHandler{
+  function batteryDemo():void{loader.item.devices=[{id:'review-laptop',name:'Mac-style notebook',kind:'laptop',percent:81,charging:true,connected:true},{id:'review-phone',name:'Phone',kind:'phone',percent:64,charging:false,connected:true,source:'KDE Connect'}];BatteryHealthState.energyFullDesign=60;BatteryHealthState.energyFull=57;const now=Date.now()/1000;BatteryHistoryState.rawEntries=Array.from({length:48},(_,i)=>({timestamp:now-(47-i)*1800,percent:Math.round(47+i*.72),screenOn:i%3!==0}));}
   function geometry():string{function scan(item,result){if(item.visible && item.width>0 && item.height>0){if(item.text!==undefined && typeof item.text==='string' && item.text.length)result.push({text:item.text.slice(0,200),x:item.x,y:item.y,w:item.width,h:item.height,clipped:item.truncated===true})}for(const child of item.children || [])scan(child,result)}const rows=[];if(loader.item)scan(loader.item,rows);return JSON.stringify({width:window.width,height:window.height,rows:rows})}
   function scrollBottom():void{if(loader.item && loader.item.contentItem && loader.item.contentHeight)loader.item.contentItem.contentY=Math.max(0,loader.item.contentHeight-loader.item.height)}
   target:''',1)
@@ -55,7 +56,9 @@ class SettingsPagesUI(unittest.TestCase):
      time.sleep(.2);geo=json.loads(ipc('geometry'));report[key]=dict(page=page,state=state,geometry=geo)
      subprocess.run(['grim','-l','1',str(out/(key+'.png'))],env=env,check=True,timeout=15)
      if phase=='after':self.assertFalse(state['loadError'],key+'\n'+(root/'log').read_text()[-5000:]);self.assertTrue(state['loaded'],key)
-     if key in ['island','appearance','desktop','menubar','compositor','notifications','privacy','keyboard','mouse','wallpaper','widgets','glass']:
+     if key=='battery' and phase=='after':
+      ipc('batteryDemo');time.sleep(.25);subprocess.run(['grim','-l','1',str(out/'battery-notebook.png')],env=env,check=True,timeout=15)
+     if key in ['battery','island','appearance','desktop','menubar','compositor','notifications','privacy','keyboard','mouse','wallpaper','widgets','glass']:
       ipc('scrollBottom');time.sleep(.2);subprocess.run(['grim','-l','1',str(out/(key+'-bottom.png'))],env=env,check=True,timeout=15)
     text=(root/'log').read_text()
     if phase=='after':

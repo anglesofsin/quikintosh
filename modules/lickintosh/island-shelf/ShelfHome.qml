@@ -15,8 +15,9 @@ Flickable {
   width:root.contentWidth;height:root.height;spacing:24
   Repeater {
    model:root.slots
-   delegate:Item {
+   delegate:ClippingRectangle {
     id:slot;objectName:'home-slot-'+index;required property string modelData;required property int index
+    radius:IslandConfig.s('shelfWidgetCards') ? 20:0;color:'transparent';antialiasing:true
     visible:modelData!=='none'
     Layout.fillWidth:true;Layout.fillHeight:true
     Layout.horizontalStretchFactor:IslandConfig.s('shelfWeight'+(index+1))*(modelData==='media' ? 105:modelData==='weather' ? 95:100)
@@ -49,7 +50,7 @@ onPositionChanged:e=>{if(pressed){const change=Math.round((mapToGlobal(e.x,e.y).
  Component{id:batteriesWidget;BatteriesShelf{}}
  Component{id:translateWidget;TranslateShelf{}}
  Component{id:jobsWidget;JobHistory{}}
- Component{id:queueWidget;QueueShelf{}}
+ Component{id:queueWidget;QueueShelf{onCloseQueue:root.openPage(3)}}
  Component{id:selectionWidget;SelectionSettings{}}
  Component{id:ringWidget;RingSettings{}}
  Component{id:transcribeWidget;TranscribeShelf{}}

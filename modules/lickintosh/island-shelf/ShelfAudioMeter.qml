@@ -3,7 +3,7 @@ import Quickshell
 import qs.services
 import qs.rosa.services
 Item{
- id:root
+ id:root;objectName:"now-playing-meter"
  implicitWidth:34;implicitHeight:28
  property color tint:'#7873ed'
  property bool held:false

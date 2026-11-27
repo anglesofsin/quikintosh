@@ -3,14 +3,25 @@ import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
+import qs.rosa.reusables as RosaVisual
 import qs.services
 Item {
  id:root
  signal openLyrics()
  signal openSources()
- onOpenLyrics:ShelfState.reveal(9)
- onOpenSources:ShelfState.reveal(10)
+ signal openQueue()
+ signal openOutput()
+ property bool inlineActions:false
+ property bool queueSelected:false
+ onOpenQueue:if(!inlineActions)ShelfState.openDetail("queue")
+ onOpenOutput:if(!inlineActions)ShelfState.playerOpen=true
+ onOpenLyrics:if(!inlineActions)ShelfState.reveal(9)
+ onOpenSources:if(!inlineActions)ShelfState.reveal(10)
  property bool portrait:false
+ property bool largeArtwork:portrait
+ property bool showUtilityButtons:true
+ readonly property bool playing:sample ? sample.playing!==false:MprisState.isPlaying
+ RosaVisual.ArtTint{id:albumTint;source:root.artwork;fallback:"#a8a5ff"}
  property bool showPopout:true
  property var demo:({})
  readonly property var sample:demo && demo.media ? demo.media:null
@@ -31,7 +42,7 @@ Item {
  Component.onDestruction:if(held)MprisState.watchPosition(false)
  MouseArea{anchors.fill:parent;acceptedButtons:Qt.RightButton;onClicked:event=>contextMenu.toggleAt(root,event.x,event.y)}
  ShelfMenu{id:contextMenu
-  ShelfMenuItem{symbol:'notch/list.svg';text:qsTr('Playing Next');onTriggered:ShelfState.openDetail('queue')}
+  ShelfMenuItem{symbol:'notch/list.svg';text:qsTr('Playing Next');onTriggered:root.openQueue()}
   ShelfMenuItem{symbol:'notch/type.svg';text:qsTr('Lyrics');onTriggered:root.openLyrics()}
   ShelfMenuItem{symbol:'notch/layout.svg';text:qsTr('Customize Home');onTriggered:{ShelfState.reveal(0);ShelfState.editing=true}}
   ShelfMenu{id:sourcesMenu;title:qsTr('Source')
@@ -54,20 +65,22 @@ Item {
   ClippingRectangle {
    id:cover
    Layout.alignment:Qt.AlignHCenter
-   Layout.fillWidth:root.portrait
-   Layout.preferredHeight:root.portrait ? Math.min(root.width,Math.max(80,root.height-228)):0
-   visible:root.portrait
+   Layout.fillWidth:false
+   Layout.preferredWidth:root.portrait ? Math.min(root.width,Math.max(80,root.height-228)):0
+   Layout.preferredHeight:Layout.preferredWidth
+   visible:root.portrait && root.largeArtwork
    radius:20;color:'#151517'
-   Image{anchors.fill:parent;source:root.artwork;sourceSize:Qt.size(700,700);fillMode:Image.PreserveAspectCrop;asynchronous:true;mipmap:true}
+   Image{anchors.fill:parent;source:root.artwork;visible:!motionArt.visible;sourceSize:Qt.size(700,700);fillMode:Image.PreserveAspectCrop;asynchronous:true;mipmap:true}
+   AnimatedImage{id:motionArt;anchors.fill:parent;source:/\.(gif|webp|apng)(?:[?#]|$)/i.test(root.artwork) ? root.artwork:'';visible:source!=='' && status===Image.Ready;playing:root.visible && root.playing;fillMode:Image.PreserveAspectCrop;asynchronous:true;cache:true;mipmap:true}
    ShelfIcon{anchors.centerIn:parent;visible:!root.artwork;size:48;icon:'notch/music.svg';color:ShelfStyle.secondary}
   }
   RowLayout {
    Layout.fillWidth:true;Layout.maximumHeight:root.portrait ? Infinity:smallCover.width;spacing:14
    ClippingRectangle {
     id:smallCover
-    Layout.preferredWidth:root.height<170 ? 44:68
+    Layout.preferredWidth:root.queueSelected ? 60:root.height<170 ? 44:68
     Layout.preferredHeight:width
-    visible:!root.portrait;radius:14;color:'#151517'
+    visible:!root.portrait || !root.largeArtwork;radius:14;color:'#151517'
     Image{anchors.fill:parent;source:root.artwork;sourceSize:Qt.size(160,160);fillMode:Image.PreserveAspectCrop;asynchronous:true;mipmap:true}
     ShelfIcon{anchors.centerIn:parent;visible:!root.artwork;size:25;icon:'notch/music.svg';color:ShelfStyle.secondary}
    }
@@ -76,7 +89,7 @@ Item {
     Item{
      Layout.fillWidth:true;implicitHeight:Math.max(trackTitle.implicitHeight,18)
      Text{id:trackTitle;width:Math.min(implicitWidth,Math.max(0,parent.width-(lyricsBadge.visible ? lyricsBadge.width+7:0)));anchors.verticalCenter:parent.verticalCenter;text:root.title || qsTr('Nothing playing');textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:root.portrait ? 23:18;font.weight:Font.DemiBold;color:ShelfStyle.primary;elide:Text.ElideRight;wrapMode:Text.NoWrap}
-     Rectangle{id:lyricsBadge;visible:root.showPopout;x:trackTitle.x+trackTitle.width+7;anchors.verticalCenter:trackTitle.verticalCenter;width:16;height:18;radius:4;color:'#ededf0'
+     Rectangle{id:lyricsBadge;objectName:"player-lyrics-button";visible:root.showPopout;x:trackTitle.x+trackTitle.width+7;anchors.verticalCenter:trackTitle.verticalCenter;width:16;height:18;radius:4;color:'#ededf0'
       Text{anchors.fill:parent;leftPadding:1;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter;text:'L';font.family:ShelfStyle.textFamily;font.pixelSize:11;font.weight:Font.Bold;color:'#27272a'}
       Accessible.role:Accessible.Button;Accessible.name:qsTr('Lyrics')
       MouseArea{anchors.fill:parent;onClicked:root.openLyrics()}
@@ -84,7 +97,7 @@ Item {
     }
     Text{Layout.fillWidth:true;text:root.artist || (root.sample ? '':MprisState.identity);textFormat:Text.PlainText;font.family:ShelfStyle.displayFamily;font.pixelSize:16;font.weight:Font.Medium;color:'#b5b5bb';elide:Text.ElideRight}
    }
-   ShelfAudioMeter{visible:!root.portrait;Layout.preferredWidth:34;Layout.preferredHeight:28}
+   ShelfAudioMeter{visible:!root.portrait && root.playing;Layout.preferredWidth:34;Layout.preferredHeight:28;tint:albumTint.color}
   }
   Item{visible:!root.portrait;Layout.fillHeight:true;Layout.minimumHeight:12}
   RowLayout {
@@ -103,11 +116,11 @@ Item {
    Text{text:root.duration>0 ? '−'+root.timeText(root.duration-root.position):'—:—';font.family:ShelfStyle.textFamily;font.pixelSize:13;font.weight:Font.Medium;font.features:({tnum:1});color:'#b5b5bb'}
   }
   RowLayout {
-   id:transport;Layout.fillWidth:true;Layout.maximumHeight:Layout.preferredHeight;Layout.preferredHeight:root.portrait ? 54:root.height<170 ? 32:40;spacing:22
-   ShelfButton{visible:root.showPopout;flat:true;icon:'notch/list.svg';iconSize:26;accessibleLabel:qsTr('Playing Next');onClicked:ShelfState.openDetail('queue')}
+   id:transport;Layout.fillWidth:true;Layout.maximumHeight:Layout.preferredHeight;Layout.preferredHeight:root.queueSelected ? 56:root.portrait ? 54:root.height<170 ? 32:40;spacing:Math.max(4,Math.min(22,(root.width-144-(root.showUtilityButtons ? (root.queueSelected ? 84:64):0))/8))
+   ShelfButton{objectName:"player-queue-button";visible:root.showUtilityButtons;implicitWidth:root.queueSelected ? 52:32;implicitHeight:root.queueSelected ? 52:32;selected:root.queueSelected;flat:true;icon:'notch/list.svg';iconSize:26;accessibleLabel:qsTr('Playing Next');onClicked:root.openQueue()}
    Item{Layout.fillWidth:true}
    Repeater {
-    model:[{icon:'backward',label:qsTr('Previous track'),enabled:MprisState.canGoPrevious},{icon:MprisState.isPlaying ? 'pause':'play',label:MprisState.isPlaying ? qsTr('Pause'):qsTr('Play'),enabled:MprisState.canTogglePlaying},{icon:'forward',label:qsTr('Next track'),enabled:MprisState.canGoNext}]
+    model:[{icon:'backward',label:qsTr('Previous track'),enabled:MprisState.canGoPrevious},{icon:root.playing ? 'pause':'play',label:MprisState.isPlaying ? qsTr('Pause'):qsTr('Play'),enabled:MprisState.canTogglePlaying},{icon:'forward',label:qsTr('Next track'),enabled:MprisState.canGoNext}]
     delegate:Item {
      required property var modelData;required property int index
      Layout.preferredWidth:48;Layout.fillHeight:true;enabled:modelData.enabled && !root.sample;opacity:enabled ? 1:.35;activeFocusOnTab:true
@@ -120,7 +133,7 @@ Item {
     }
    }
    Item{Layout.fillWidth:true}
-   ShelfButton{visible:root.showPopout;flat:true;icon:'laptop.png';iconSize:28;foreground:ShelfStyle.secondary;accessibleLabel:qsTr('Floating player');onClicked:ShelfState.playerOpen=true}
+   ShelfButton{objectName:'player-output-button';visible:root.showUtilityButtons;flat:true;icon:'laptop.png';iconSize:28;foreground:'#eeeeef';accessibleLabel:qsTr('Floating player');onClicked:root.openOutput()}
   }
   RowLayout {
    visible:root.hasVolume && (root.portrait || root.height>=210);Layout.fillWidth:true;spacing:10

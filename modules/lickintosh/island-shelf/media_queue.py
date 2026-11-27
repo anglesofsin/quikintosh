@@ -21,13 +21,18 @@ class MediaQueue:
     def queue_property(self,bus,interface,name):return self.queue_call(bus,'org.freedesktop.DBus.Properties','Get',GLib.Variant('(ss)',(interface,name)))[0]
     def queue_fetch(self,bus):
         if not bus:return dict(type='queue',fetched=True,player='',supported=False,editable=False,items=[])
+        bridge=getattr(self,'spotify_bridge',None)
+        external=bridge.queue(bus) if bridge else None
+        if external is not None:return external
         try:
             tracks=self.queue_property(bus,TRACKS,'Tracks')[:200]
             editable=bool(self.queue_property(bus,TRACKS,'CanEditTracks'))
             metadata=self.queue_call(bus,TRACKS,'GetTracksMetadata',GLib.Variant('(ao)',(tracks,)))[0] if tracks else []
             current=self.queue_property(bus,'org.mpris.MediaPlayer2.Player','Metadata').get('mpris:trackid','')
             rows=[]
-            for item in metadata:
+            by_id={item.get("mpris:trackid"):item for item in metadata}
+            for track_id in tracks:
+                item=by_id.get(track_id,{})
                 track=item.get('mpris:trackid','')
                 if track not in tracks:continue
                 artists=item.get('xesam:artist',[])
@@ -40,7 +45,9 @@ class MediaQueue:
         bus=event.get('player','');connection=Gio.bus_get_sync(Gio.BusType.SESSION,None)
         # Subscriptions do not own the shared bus connection; retain it explicitly.
         self.queue_bus_connection=connection
-        self.queue_watch_bus=bus if event.get('enabled') else ''
+        selected=bus if event.get('enabled') else ''
+        if selected and selected==getattr(self,'queue_watch_bus','') and getattr(self,'queue_subscriptions',[]):return self.queue_fetch(selected)
+        self.queue_watch_bus=selected
         if self.queue_watch_bus:self.queue_connection(bus)
         if not getattr(self,'queue_context',None):
             self.queue_context=GLib.MainContext.new();self.queue_loop=GLib.MainLoop.new(self.queue_context,False)
@@ -63,6 +70,7 @@ class MediaQueue:
                         timer=threading.Timer(.08,update);timer.daemon=True;timer.start()
                     owner=connection.call_sync('org.freedesktop.DBus','/org/freedesktop/DBus','org.freedesktop.DBus','GetNameOwner',GLib.Variant('(s)',(bus,)),GLib.VariantType('(s)'),Gio.DBusCallFlags.NONE,2000,None).unpack()[0]
                     self.queue_subscriptions=[connection.signal_subscribe(owner,TRACKS,member,OBJECT,None,Gio.DBusSignalFlags.NONE,changed) for member in ('TrackListReplaced','TrackAdded','TrackRemoved','TrackMetadataChanged')]
+                    self.queue_subscriptions.append(connection.signal_subscribe(owner,'org.freedesktop.DBus.Properties','PropertiesChanged',OBJECT,'org.mpris.MediaPlayer2.Player',Gio.DBusSignalFlags.NONE,changed))
             except Exception as error:errors.append(error)
             finally:self.queue_context.pop_thread_default();installed.set()
             return False
@@ -77,7 +85,10 @@ class MediaQueue:
         if operation in ('jump','remove'):
             if track not in [item['id'] for item in data['items']]:raise ValueError('Choose a track currently in this queue')
             if operation=='remove' and not data['editable']:raise ValueError('This player has a read-only queue')
-            self.queue_call(bus,TRACKS,'GoTo' if operation=='jump' else 'RemoveTrack',GLib.Variant('(o)',(track,)))
+            if data.get('provider')=='spicetify':
+                row=next(item for item in data['items'] if item['id']==track)
+                self.queue_call(bus,'org.mpris.MediaPlayer2.Player','OpenUri',GLib.Variant('(s)',(row['uri'],)))
+            else:self.queue_call(bus,TRACKS,'GoTo' if operation=='jump' else 'RemoveTrack',GLib.Variant('(o)',(track,)))
         elif operation=='add':
             if not data['editable']:raise ValueError('This player has a read-only queue')
             path=self.path(str(event.get('path','')))

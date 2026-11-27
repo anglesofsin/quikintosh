@@ -26,7 +26,7 @@ Item {
      ShelfButton{icon:modelData.icon;onClicked:if(modelData.page>=0)root.openPage(modelData.page)}
      ColumnLayout{Layout.fillWidth:true;spacing:3
       Text{Layout.fillWidth:true;elide:Text.ElideRight;textFormat:Text.PlainText;text:modelData.title;color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:13;font.weight:Font.DemiBold}
-      Text{Layout.fillWidth:true;elide:Text.ElideRight;textFormat:Text.PlainText;text:modelData.subtitle;color:ShelfStyle.secondary;font.family:ShelfStyle.textFamily;font.pixelSize:11}
+      Text{Layout.fillWidth:true;elide:Text.ElideRight;textFormat:Text.PlainText;text:modelData.subtitle || '';color:ShelfStyle.secondary;font.family:ShelfStyle.textFamily;font.pixelSize:11}
       Rectangle{visible:modelData.progress!==undefined && modelData.progress!==null;Layout.fillWidth:true;implicitHeight:3;radius:1.5;color:'#38383d';Rectangle{width:parent.width*(modelData.progress || 0);height:parent.height;radius:parent.radius;color:'white'}}
      }
      ShelfButton{text:qsTr('Open');visible:modelData.page>=0;onClicked:root.openPage(modelData.page)}

@@ -90,6 +90,8 @@ Singleton {
  property var utilityPreferences:({})
  property var capabilities:({})
  property var installedApps:[]
+ property var queueObservers:({})
+ function watchQueue(id,player,enabled){const next=Object.assign({},queueObservers);if(enabled)next[id]=player;else delete next[id];queueObservers=next;const selected=Object.values(next).find(p=>p===player) || Object.values(next)[0] || '';send({action:'queueWatch',player:selected,enabled:!!selected})}
  property var queueData:({player:'',items:[],supported:false})
  property var appJobEvent:({})
  property var appPendingEvent:null
@@ -172,6 +174,8 @@ Singleton {
   function close():void{root.closeRequested()}
   function open(page:int):void{if(IslandBus.locked)return;root.reveal(Math.max(0,Math.min(14,page)))}
   function activity(encoded:string):string{try{root.send({action:'activity',activity:JSON.parse(encoded)});return 'queued'}catch(_){return 'invalid'}}
+  function queueStatus():string{return JSON.stringify({player:root.queueData.player || '',supported:root.queueData.supported===true,provider:root.queueData.provider || 'mpris',tracks:(root.queueData.items || []).length})}
+  function refreshQueue(player:string):void{root.send({action:'queueWatch',player:player,enabled:true})}
   function status():string{return JSON.stringify({ready:root.ready,files:root.items.length,activities:root.activities.length})}
  }
  Timer{interval:1000;running:root.activities.length>0 || root.awakeUntil>0;repeat:true;onTriggered:{root.now=Date.now();root.activities=root.activities.filter(a=>a.expires*1000>root.now)}}

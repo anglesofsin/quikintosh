@@ -269,7 +269,12 @@ def main():
     def emit(event):
         line=json.dumps(event,ensure_ascii=False)+'\n'
         with lock:sys.stdout.write(line);sys.stdout.flush()
-    shelf=Shelf();shelf.defer_previews=True;shelf.preview_pending=set();shelf.preview_executor=ThreadPoolExecutor(max_workers=1,thread_name_prefix='file-preview');shelf.emit_preview=emit;shelf.emit_event=emit
+    from spotify_bridge import SpotifyBridge
+    shelf=Shelf();shelf.spotify_bridge=SpotifyBridge(shelf.root);shelf.spotify_bridge.start();shelf.defer_previews=True;shelf.preview_pending=set();shelf.preview_executor=ThreadPoolExecutor(max_workers=1,thread_name_prefix='file-preview');shelf.emit_preview=emit;shelf.emit_event=emit
+    def spotify_updated():
+        data=shelf.spotify_bridge.queue(getattr(shelf,'queue_watch_bus',''))
+        if data is not None:emit(data)
+    shelf.spotify_bridge.on_update=spotify_updated
     emit(dict(type='ready',items=shelf.entries(),capabilities=shelf.capabilities()))
     for line in sys.stdin:
         busy=False

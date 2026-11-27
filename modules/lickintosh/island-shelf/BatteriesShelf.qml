@@ -9,7 +9,7 @@ Item{
  id:root;objectName:'shelf-batteries'
  property var devices:[]
  property var reviewDevices:null
- readonly property var shown:reviewDevices || devices
+ readonly property var shown:(reviewDevices || devices).filter(d=>d && d.id && d.name && Number.isFinite(Number(d.percent)) && d.connected!==false)
  property string error:''
  function refresh(){if(!worker.running)worker.running=true}
  Process{id:worker;command:[ShelfState.pythonExecutable,Quickshell.shellPath('island-shelf/battery_backend.py')]

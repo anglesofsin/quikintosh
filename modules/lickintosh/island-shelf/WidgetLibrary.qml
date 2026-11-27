@@ -23,6 +23,7 @@ Item {
   {key:'settings',title:qsTr('Settings'),icon:'settings',command:['quickintosh','ipc','call','rice','settings']}]
  readonly property var visibleWidgets:(ShelfState.editing ? widgets.filter(w=>homeKeys.includes(w.key)):widgets.concat(launchers)).filter(w=>(!favoritesOnly || ShelfState.editing || favoriteKeys.includes(w.key)) && (!search || w.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())))
  readonly property var widgets:[
+  {key:'ring',title:qsTr('Action Ring'),icon:'grid',page:13},
   {key:'transcribe',title:qsTr('Voice Transcription'),icon:'mic',page:13},
   {key:'terminal',title:qsTr('Quick Terminal'),icon:'type',page:13},
   {key:'breather',title:qsTr('Break Reminders'),icon:'coffee',page:13},

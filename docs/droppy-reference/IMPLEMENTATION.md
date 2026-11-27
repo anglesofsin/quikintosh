@@ -26,6 +26,9 @@ Implemented local capabilities:
 - Notifications with images, advertised actions and native freedesktop inline reply.
 - MPRIS player transport, source choice, seek, volume, lyrics and floating variants.
 - Real calendar, notes, focus, weather, stats, camera and idle inhibition widgets.
+- Action Ring: single/double/triple layouts, 18 selectable local actions,
+  cursor placement, explicit click or paired press/release activation. Default
+  Super+Alt+R is installed only when free; existing bindings are preserved.
 - Local MCP stdio bridge with separate UI/files/activity permissions, bounded
   requests and no network listener or arbitrary command execution. See MCP.md.
 - Quick Terminal runs explicitly submitted commands with bounded output, a stop

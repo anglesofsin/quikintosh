@@ -101,6 +101,8 @@ class Shelf(FileOperations,AppOperations,VaultOperations):
             values=event.get('values',{})
             if 'teleprompterText' in values:state['teleprompterText']=str(values['teleprompterText'])[:100000]
             if values.get('voiceLanguage') in ('auto','pt','en','es','fr','de','it','ja','ko','zh','ru'):state['voiceLanguage']=values['voiceLanguage']
+            if 'ringCount' in values:state['ringCount']=max(1,min(3,int(values['ringCount'])))
+            if 'ringActions' in values:state['ringActions']=[key[:32] for key in values['ringActions'][:18] if isinstance(key,str)]
             if 'commandColumns' in values:state['commandColumns']=max(4,min(7,int(values['commandColumns'])))
             if 'commandFavorites' in values:state['commandFavorites']=[str(key)[:64] for key in values['commandFavorites'][:64] if isinstance(key,str)]
             if 'breaksEnabled' in values:state['breaksEnabled']=values['breaksEnabled'] is True

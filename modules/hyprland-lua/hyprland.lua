@@ -180,6 +180,13 @@ local function shellBind(key, action, options)
     if shellActions[action] then configurableBind(key, riceAction(action), options) end
 end
 
+-- The shared binding value keeps press/release paired when customized.
+if shellActions["switcher-next"] then
+local ringKey = shortcutOverrides["Action Ring"] or (m .. " + ALT + R")
+hl.bind(ringKey, hl.dsp.exec_cmd("quickintosh ipc call actionRing show"), {description="Action Ring"})
+hl.bind(ringKey, hl.dsp.exec_cmd("quickintosh ipc call actionRing release"), {description="Action Ring release",release=true})
+end
+
 -- 1. Window Management
 hl.bind(m .. " + Q", hl.dsp.window.close(), { description = "Close window" })
 hl.bind(m .. " + F", hl.dsp.window.fullscreen(), { description = "Toggle fullscreen" })

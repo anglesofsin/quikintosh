@@ -35,9 +35,10 @@ def integrate(root):
         '    property var visitedPages:({0:true})\n    property int prewarmCursor:0\n    readonly property var prewarmPages:[2,5,11,13]\n    Timer{interval:250;running:panel.prewarmCursor<panel.prewarmPages.length;repeat:true;onTriggered:{const next=Object.assign({},panel.visitedPages);next[panel.prewarmPages[panel.prewarmCursor++]]=true;panel.visitedPages=next}}')
     s=s.replace('active:!!panel.visitedPages[index]','asynchronous:index!==0\n                            active:!!panel.visitedPages[index]')
     s=s.replace('awake,widgetDetail][index]','awake,widgetDetail,storage][index]')
+    s=s.replace('function onReveal(page){panel.selectPage(page)}','function onReveal(page){panel.selectPage(page)}function onDetailRequested(key){panel.detailWidget=key;panel.selectPage(13)}',1)
     s=s.replace('    Component {id:tray;','    Component{id:storage;StorageShelf{}}\n    Component {id:tray;',1)
-    s=s.replace('panel.detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather","terminal","transcribe"].includes(panel.detailWidget) ? 620:380')
-    s=s.replace('detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather","terminal","transcribe"].includes(detailWidget) ? 620:380')
+    s=s.replace('panel.detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring"].includes(panel.detailWidget) ? 620:380')
+    s=s.replace('detailWidget==="calendar" ? 620:380','["calendar","developer","teleprompter","vault","breather","terminal","transcribe","ring"].includes(detailWidget) ? 620:380')
     s=s.replace('13:(["calendar",','14:540,13:(["calendar",')
     s=s.replace('13:(detailWidget===','14:540,13:(detailWidget===')
     s=s.replace('({1:336,4:300','({14:300,1:336,4:300')
@@ -55,16 +56,16 @@ def integrate(root):
     s=s.replace('    ClippingRectangle {\n        id: body','    Shape{id:notchWings;visible:panel.attachedNotch && panel.geometryExpanded;anchors.top:body.top;anchors.horizontalCenter:body.horizontalCenter;width:visible ? body.width+56:0;height:visible ? 28:0;preferredRendererType:Shape.CurveRenderer\n        ShapePath{strokeWidth:-1;fillColor:"black";startX:0;startY:0\n            PathQuad{x:29;y:28;controlX:28;controlY:0}\n            PathLine{x:29;y:0}\n            PathLine{x:0;y:0}\n            PathMove{x:notchWings.width-29;y:0}\n            PathLine{x:notchWings.width-29;y:28}\n            PathQuad{x:notchWings.width;y:0;controlX:notchWings.width-28;controlY:0}\n            PathLine{x:notchWings.width-28;y:0}\n        }\n    }\n    ClippingRectangle {\n        id: body',1)
     p.write_text(s)
     qmldir=root/'island-shelf/qmldir'
-    qmldir.write_text(qmldir.read_text()+'\nHomeEditor HomeEditor.qml\nTransformWindow TransformWindow.qml\nStorageShelf StorageShelf.qml\nShelfMenu ShelfMenu.qml\nShelfMenuItem ShelfMenuItem.qml\nShelfMenuSeparator ShelfMenuSeparator.qml\nDragBasket DragBasket.qml\nHomeUtility HomeUtility.qml\nDeveloperTools DeveloperTools.qml\nTeleprompter Teleprompter.qml\nVaultShelf VaultShelf.qml\nBreatherShelf BreatherShelf.qml\nTerminalShelf TerminalShelf.qml\nTranscribeShelf TranscribeShelf.qml\n')
+    qmldir.write_text(qmldir.read_text()+'\nHomeEditor HomeEditor.qml\nTransformWindow TransformWindow.qml\nStorageShelf StorageShelf.qml\nShelfMenu ShelfMenu.qml\nShelfMenuItem ShelfMenuItem.qml\nShelfMenuSeparator ShelfMenuSeparator.qml\nDragBasket DragBasket.qml\nHomeUtility HomeUtility.qml\nDeveloperTools DeveloperTools.qml\nTeleprompter Teleprompter.qml\nVaultShelf VaultShelf.qml\nBreatherShelf BreatherShelf.qml\nTerminalShelf TerminalShelf.qml\nTranscribeShelf TranscribeShelf.qml\nActionRing ActionRing.qml\nRingSettings RingSettings.qml\n')
     p=root/'services/MprisState.qml';s=p.read_text()
     if p.is_symlink():p.unlink()
     s=s.replace('    readonly property MprisPlayer activePlayer: {','    property var preferredPlayer:null\n    function selectPlayer(player){preferredPlayer=player}\n    readonly property MprisPlayer activePlayer: {\n        if(root.preferredPlayer && root.players.includes(root.preferredPlayer))return root.preferredPlayer;',1)
     p.write_text(s)
     p=root/'shell.qml';s=p.read_text();s += '\n' if not s.endswith('\n') else ''
     # Add transformation window next to the existing floating tray/player.
-    s=s.replace('    FloatingMusic {','    DragBasket {}\n    TransformWindow {}\n    FloatingMusic {',1)
+    s=s.replace('    FloatingMusic {','    ActionRing {}\n    DragBasket {}\n    TransformWindow {}\n    FloatingMusic {',1)
     s=s.replace('    NotificationServer {','    NotificationServer {\n        inlineReplySupported:true',1)
-    if 'TransformWindow {}' not in s:s=s.replace('FloatingMusic{','DragBasket{}\n    TransformWindow{}\n    FloatingMusic{',1)
+    if 'TransformWindow {}' not in s:s=s.replace('FloatingMusic{','ActionRing{}\n    DragBasket{}\n    TransformWindow{}\n    FloatingMusic{',1)
     p.write_text(s)
 
 

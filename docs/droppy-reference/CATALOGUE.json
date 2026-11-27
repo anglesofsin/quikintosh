@@ -337,7 +337,8 @@
       "id": "ring",
       "name": "Ring",
       "url": "https://getdroppy.app/features/ring",
-      "status": "pending"
+      "status": "implemented-core",
+      "scope": "One to three rings, 18 local actions, cursor placement, paired shortcuts. Detail artwork unavailable; design parity not claimed."
     },
     {
       "id": "sales",

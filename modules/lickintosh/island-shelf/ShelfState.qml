@@ -13,6 +13,37 @@ Singleton {
  function startAwake(){const minutes=nextAwakeMinutes;nextAwakeMinutes=0;awakeUntil=minutes>0 ? Date.now()+minutes*60000:0;if(minutes>0){awake.command=['systemd-inhibit','--what=idle','--mode=block','--who=Quickintosh','--why=User requested Stay Awake','sleep',String(minutes*60)];awake.running=true}}
  function keepAwake(minutes){awakeError='';nextAwakeMinutes=minutes;if(awake.running)awake.running=false;else startAwake()}
  Process{id:awake;onExited:code=>{if(root.nextAwakeMinutes>0){Qt.callLater(root.startAwake);return}root.awakeUntil=0;if(code!==0 && code!==15)root.awakeError=qsTr('Idle inhibition is unavailable on this system')}}
+ property bool ringArmed:false
+ property bool ringRequested:false
+ property bool ringOpen:false
+ property point ringPosition:Qt.point(960,540)
+ property int ringSelected:-1
+ readonly property var ringCatalogue:[
+  {key:'spotlight',title:qsTr('Spotlight'),icon:'search',ipc:'spotlight'},
+  {key:'files',title:qsTr('Files'),icon:'inbox',page:6},
+  {key:'clipboard',title:qsTr('Clipboard'),icon:'clipboard',page:7},
+  {key:'media',title:qsTr('Now Playing'),icon:'music',page:3},
+  {key:'transcribe',title:qsTr('Voice Transcription'),icon:'mic',widget:'transcribe'},
+  {key:'calculator',title:qsTr('Calculator'),icon:'grid',command:'quickintosh-calculator'},
+  {key:'emoji',title:qsTr('Emoji Picker'),icon:'type',ipc:'emoji'},
+  {key:'settings',title:qsTr('Settings'),icon:'settings',ipc:'settings'},
+  {key:'terminal',title:qsTr('Terminal'),icon:'type',widget:'terminal'},
+  {key:'focus',title:qsTr('Focus'),icon:'clock',widget:'focus'},
+  {key:'notes',title:qsTr('Notes'),icon:'edit-3',widget:'notes'},
+  {key:'weather',title:qsTr('Weather'),icon:'cloud',page:1},
+  {key:'audio',title:qsTr('Audio Control'),icon:'volume-2',page:10},
+  {key:'storage',title:qsTr('Storage'),icon:'hard-drive',page:14},
+  {key:'calendar',title:qsTr('Calendar'),icon:'calender',widget:'calendar'},
+  {key:'notifications',title:qsTr('Notifications'),icon:'bell',page:4},
+  {key:'awake',title:qsTr('Stay Awake'),icon:'coffee',page:12},
+  {key:'camera',title:qsTr('Camera'),icon:'camera',page:5}]
+ readonly property var ringKeys:{const saved=utilityPreferences.ringActions || [];return ringCatalogue.map((a,i)=>saved[i] || a.key)}
+ signal detailRequested(string key)
+ function openDetail(key){detailRequested(key);reveal(13)}
+ function showRing(){if(IslandBus.locked)return;ringRequested=true;ringArmed=false;ringSelected=-1;if(!ringLocate.running)ringLocate.running=true}
+ function activateRing(index){const action=ringCatalogue.find(a=>a.key===ringKeys[index]);ringRequested=false;ringOpen=false;ringSelected=-1;if(!action)return;if(action.ipc)Quickshell.execDetached(['quickintosh','ipc','call','rice',action.ipc]);else if(action.command)Quickshell.execDetached([action.command]);else if(action.widget)openDetail(action.widget);else reveal(action.page)}
+ Process{id:ringLocate;command:['hyprctl','cursorpos','-j'];stdout:StdioCollector{onStreamFinished:{try{const p=JSON.parse(text);root.ringPosition=Qt.point(p.x,p.y)}catch(_){root.ringPosition=Qt.point(960,540)}root.ringOpen=root.ringRequested}}}
+ IpcHandler{target:'actionRing';function show():void{root.showRing()}function release():void{root.activateRing(root.ringSelected)}function close():void{root.ringRequested=false;root.ringOpen=false}function settings():void{root.openDetail('ring')}function status():string{return JSON.stringify({open:root.ringOpen,rings:root.utilityPreferences.ringCount || 1,selected:root.ringSelected})}}
  property point basketPosition:Qt.point(0,0)
  property bool basketOpen:false
  readonly property bool trayShakeEnabled:IslandConfig.s('trayShakeEnabled')!==false
@@ -63,7 +94,7 @@ Singleton {
  property bool ready:false
  property var pending:[]
  property int openPage:0
- Connections{target:IslandBus;function onLockedChanged(){if(IslandBus.locked){root.playerOpen=false;root.trayOpen=false;root.basketOpen=false;root.editing=false;root.editorOwners=({});root.interactionCount=0;root.menuCount=0}}}
+ Connections{target:IslandBus;function onLockedChanged(){if(IslandBus.locked){root.playerOpen=false;root.ringRequested=false;root.ringOpen=false;root.trayOpen=false;root.basketOpen=false;root.editing=false;root.editorOwners=({});root.interactionCount=0;root.menuCount=0}}}
  signal developerResult(string text,string error)
  signal closeRequested()
  signal reveal(int page)

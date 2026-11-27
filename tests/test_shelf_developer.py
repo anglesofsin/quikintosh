@@ -38,6 +38,24 @@ class DeveloperToolsTests(unittest.TestCase):
    shelf=Shelf(root);shelf.handle({'action':'utilityPreferences','values':{'teleprompterText':'script ☀'}})
    self.assertEqual(Shelf(root).handle({'action':'utilityPreferences'})['values'],{'teleprompterText':'script ☀'})
 
+class RingShortcutTests(unittest.TestCase):
+ def test_no_override(self):
+  from unittest.mock import patch
+  from types import SimpleNamespace
+  from ensure_ring_shortcut import ensure
+  calls=[]
+  def runner(args,**kwargs):calls.append(args);return SimpleNamespace(returncode=0,stdout='[{"modmask":72,"key":"R","description":"Personal"}]')
+  with patch.dict('os.environ',{'HYPRLAND_INSTANCE_SIGNATURE':'private-test'}):self.assertFalse(ensure(runner))
+  self.assertEqual(len(calls),1)
+ def test_paired_default(self):
+  from unittest.mock import patch
+  from types import SimpleNamespace
+  from ensure_ring_shortcut import ensure
+  calls=[]
+  def runner(args,**kwargs):calls.append(args);return SimpleNamespace(returncode=0,stdout='[]' if args[-1]=='binds' else 'ok')
+  with patch.dict('os.environ',{'HYPRLAND_INSTANCE_SIGNATURE':'private-test'}):self.assertTrue(ensure(runner))
+  self.assertIn('release=true',calls[-1][-1]);self.assertIn('actionRing show',calls[-1][-1])
+
 class TerminalTests(unittest.TestCase):
  def test_explicit_command_and_exit(self):
   from terminal_backend import run

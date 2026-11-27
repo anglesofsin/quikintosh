@@ -49,3 +49,13 @@ Local speech inference processed the official public whisper.cpp JFK sample in
 14.42 seconds in the backend test, then again through QML without microphone
 capture. Evidence: /tmp/qi-transcribe-validation.json and
 /tmp/qi-transcribe-ui-final.log. Input audio never came from the user's call.
+
+Action Ring: three native layouts (220/320/412 px), actual shelf action routing,
+paired Hyprland press/release registration, and early-release cancellation passed
+in /tmp/qi-action-ring-shortcut-final.log. References were inspected textually;
+the official detail image returned HTTP 403. No pixel-identity claim is made.
+
+The microphone capture/stop protocol also passed using a private PulseAudio
+null-sink monitor, never a real microphone or the user's call. Evidence:
+/tmp/qi-private-recording-validation.json. The test server has its own session
+and socket and is shut down afterward.

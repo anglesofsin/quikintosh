@@ -6,6 +6,7 @@ import Quickshell.Hyprland
 import qs.rosa.services
 Singleton {
  id:root
+ readonly property string pythonExecutable:'@PYTHON@'
  property double awakeUntil:0
  property string awakeError:''
  property int nextAwakeMinutes:0
@@ -99,6 +100,7 @@ Singleton {
  }
  IpcHandler{target:'shelf'
   function addFiles(encoded:string):string{try{root.add(JSON.parse(Qt.atob(encoded)));root.reveal(6);return 'queued'}catch(_){return 'invalid'}}
+  function addFloatingFiles(encoded:string):string{try{root.add(JSON.parse(Qt.atob(encoded)));root.trayOpen=true;return 'queued'}catch(_){return 'invalid'}}
   function close():void{root.closeRequested()}
   function open(page:int):void{if(IslandBus.locked)return;root.reveal(Math.max(0,Math.min(14,page)))}
   function activity(encoded:string):string{try{root.send({action:'activity',activity:JSON.parse(encoded)});return 'queued'}catch(_){return 'invalid'}}

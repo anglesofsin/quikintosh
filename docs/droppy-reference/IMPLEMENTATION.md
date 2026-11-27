@@ -8,6 +8,8 @@ it does not claim full design or functional parity with the named product.
 Implemented local capabilities:
 
 - Persistent right-click shelf, left-click activity expansion; explicit ownership.
+- Nautilus/Finder services forward explicitly selected local files to the island
+  or floating tray; personal scripts are preserved.
 - Files: round toolbar, selection, thumbnails, dimensions/text previews, pinning,
   tracked folders, Quick Look, ZIP/extract, rename, folder copy and native URI drag.
 - Global native drag shake opens a cursor-positioned four-target basket. Targets
@@ -24,6 +26,8 @@ Implemented local capabilities:
 - Notifications with images, advertised actions and native freedesktop inline reply.
 - MPRIS player transport, source choice, seek, volume, lyrics and floating variants.
 - Real calendar, notes, focus, weather, stats, camera and idle inhibition widgets.
+- Quick Terminal runs explicitly submitted commands with bounded output, a stop
+  action and a complete terminal launcher for interactive sessions.
 - Developer tools: offline JSON/Base64/URL/JWT inspection/UUID/SHA transformations.
 - Configurable break reminders, disabled initially, suspended during calls/DND.
 - Teleprompter: editable saved script, scrolling speed, text size and mirror mode.

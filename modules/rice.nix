@@ -139,6 +139,7 @@ let
     name = "lickintosh-finder";
     runtimeInputs = [ pkgs.nautilus pkgs.gsettings-desktop-schemas pkgs.glib ];
     text = ''
+      ${shelfPython}/bin/python3 ${./lickintosh/island-shelf/install_finder_services.py} ${shelfPython}/bin/python3 ${./lickintosh/island-shelf/finder_service.py}
       export XDG_DATA_DIRS="${tahoeGtk}/share:${tahoeIcons}/share:''${XDG_DATA_DIRS:-/run/current-system/sw/share}"
       export GI_TYPELIB_PATH="${pkgs.glib.out}/lib/girepository-1.0:''${GI_TYPELIB_PATH:-}"
       export GIO_EXTRA_MODULES="${pkgs.gvfs}/lib/gio/modules:''${GIO_EXTRA_MODULES:-}"

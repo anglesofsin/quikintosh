@@ -90,7 +90,7 @@
       "id": "command-center",
       "name": "Command Center",
       "url": "https://getdroppy.app/features/command-center",
-      "status": "pending"
+      "status": "implemented-core"
     },
     {
       "id": "customize",
@@ -150,7 +150,7 @@
       "id": "finder-services",
       "name": "Finder Services",
       "url": "https://getdroppy.app/features/finder-services",
-      "status": "pending"
+      "status": "implemented-core"
     },
     {
       "id": "floating-player",
@@ -372,7 +372,8 @@
       "id": "termi-notch",
       "name": "Termi Notch",
       "url": "https://getdroppy.app/features/termi-notch",
-      "status": "pending"
+      "status": "implemented-core",
+      "scope": "Quick command runner; interactive sessions use the full terminal."
     },
     {
       "id": "thaw",

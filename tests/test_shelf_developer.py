@@ -38,6 +38,30 @@ class DeveloperToolsTests(unittest.TestCase):
    shelf=Shelf(root);shelf.handle({'action':'utilityPreferences','values':{'teleprompterText':'script ☀'}})
    self.assertEqual(Shelf(root).handle({'action':'utilityPreferences'})['values'],{'teleprompterText':'script ☀'})
 
+class TerminalTests(unittest.TestCase):
+ def test_explicit_command_and_exit(self):
+  from terminal_backend import run
+  events=[];code=run({'command':'printf QUICK_TERMINAL_OK; exit 7'},events.append)
+  self.assertEqual(code,7);self.assertIn('QUICK_TERMINAL_OK',''.join(e.get('text','') for e in events))
+ def test_reject_empty(self):
+  from terminal_backend import run
+  with self.assertRaises(ValueError):run({'command':''},lambda _:None)
+
+class FinderBridgeTests(unittest.TestCase):
+ def test_local_selection_and_unicode(self):
+  from finder_service import selection
+  self.assertEqual(selection({},['/tmp/São Paulo.png']),['file:///tmp/S%C3%A3o%20Paulo.png'])
+  self.assertEqual(selection({'NAUTILUS_SCRIPT_SELECTED_URIS':'file:///tmp/a%0Ab\nhttps://example.com\nfile://remote/private'},[]),['file:///tmp/a%0Ab'])
+ def test_installer_preserves_user_script(self):
+  from install_finder_services import install
+  with tempfile.TemporaryDirectory() as home:
+   folder=Path(home)/'.local/share/nautilus/scripts';folder.mkdir(parents=True)
+   target=folder/'Send to Dynamic Island';target.write_text('personal script')
+   install('/usr/bin/python3','/tmp/bridge.py',home)
+   self.assertEqual(target.read_text(),'personal script')
+   floating=folder/'Send to Floating File Tray'
+   self.assertIn('--floating',floating.read_text());self.assertTrue(floating.stat().st_mode&0o100)
+
 class VaultTests(unittest.TestCase):
  def test_select_read_save_and_collision(self):
   with tempfile.TemporaryDirectory() as root,tempfile.TemporaryDirectory() as vault:

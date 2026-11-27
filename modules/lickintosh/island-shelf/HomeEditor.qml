@@ -6,6 +6,8 @@ import qs.services
 import qs.rosa.services
 Item {
  id:root
+ objectName:'shelf-home-editor'
+ property alias contextMenu:menu
  signal openPage(int page)
  property var savedSlots:[]
  readonly property var catalog:[{key:'weather',label:qsTr('Weather'),icon:'cloud'},{key:'media',label:qsTr('Now Playing'),icon:'music'},{key:'focus',label:qsTr('Pomodoro'),icon:'clock'},{key:'calendar',label:qsTr('Calendar'),icon:'calendar'},{key:'notes',label:qsTr('Notes'),icon:'edit-3'},{key:'performance',label:qsTr('System Stats'),icon:'cpu'},{key:'files',label:qsTr('Files'),icon:'inbox'}]
@@ -33,7 +35,7 @@ Item {
    ShelfButton{icon:'notch/check.svg';selected:true;accessibleLabel:qsTr('Finish customization');onClicked:ShelfState.editing=false}
   }
  }
- ShelfButton{visible:!ShelfState.editing;anchors.right:parent.right;anchors.top:parent.top;implicitWidth:26;implicitHeight:26;opacity:.65;icon:'notch/more-horizontal.svg';accessibleLabel:qsTr('Home options');onClicked:menu.popup()}
+ ShelfButton{id:optionsButton;objectName:'home-options';visible:!ShelfState.editing;anchors.right:parent.right;anchors.top:parent.top;implicitWidth:26;implicitHeight:26;opacity:.65;icon:'notch/more-horizontal.svg';accessibleLabel:qsTr('Home options');onClicked:menu.popup(optionsButton,optionsButton.width-menu.width,optionsButton.height+4)}
  ShelfMenu{id:menu
   ShelfMenuItem{text:qsTr('Customize Home');onTriggered:ShelfState.editing=true}
   ShelfMenuItem{text:qsTr('Audio sources');onTriggered:root.openPage(10)}

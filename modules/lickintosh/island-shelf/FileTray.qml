@@ -44,7 +44,7 @@ Item {
      Text{anchors.left:parent.left;anchors.right:parent.right;anchors.margins:4;y:128;text:(tile.modelData.pinned ? qsTr('Pinned · '):'')+(tile.modelData.directory ? qsTr('%1 items').arg(tile.modelData.count || 0):root.sizeText(tile.modelData.size));color:tile.picked ? '#d9eeff':'#a1a1a6';font.family:ShelfStyle.textFamily;font.pixelSize:12;horizontalAlignment:Text.AlignHCenter;elide:Text.ElideRight}
      MouseArea{id:mouse;anchors.fill:parent;acceptedButtons:Qt.LeftButton|Qt.RightButton;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;drag.target:dragProxy;drag.threshold:8
       onPressed:e=>{if(e.button===Qt.RightButton){if(!tile.picked)root.selected=[tile.modelData.path]}else root.choose(tile.modelData.path,!!(e.modifiers&Qt.ControlModifier))}
-      onClicked:e=>{if(e.button===Qt.RightButton)fileMenu.popup()}
+      onClicked:e=>{if(e.button===Qt.RightButton)fileMenu.popup(mouse,e.x,e.y)}
       onDoubleClicked:Quickshell.execDetached(['xdg-open',tile.modelData.path])
       onPositionChanged:e=>{if(drag.active){const dir=e.x>dragProxy.lastX ? 1:-1;if(dir!==dragProxy.direction && Math.abs(e.x-dragProxy.lastX)>6){dragProxy.reversals++;dragProxy.direction=dir;if(dragProxy.reversals>=6){ShelfState.trayOpen=true;dragProxy.reversals=0}}dragProxy.lastX=e.x}}
       onReleased:{dragProxy.reversals=0}

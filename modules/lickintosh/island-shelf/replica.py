@@ -9,6 +9,9 @@ def integrate(root):
     s=s.replace('(win.hub.kind === "clock" || win.hub.kind === "")','!win.dashboardRequested && !win.dashboardCover && (win.hub.kind === "clock" || win.hub.kind === "")',1)
     s=s.replace('onCollapseFinished:if(!win.dashboardRequested)win.dashboardCover=false','onCollapseFinished:Qt.callLater(function(){if(!win.dashboardRequested)win.dashboardCover=false})',1)
     s=s.replace('onPressedChanged: win.pressed = pressed','acceptedButtons:Qt.LeftButton\n                onPressedChanged: win.pressed = pressed',1)
+    start=s.index('            readonly property point visualRight:')
+    end=s.index('            readonly property bool cam:',start)
+    s=s[:start]+'            readonly property point visualRight: {\n                const edge=dot.visible && dot.opacity>0.01\n                    ? Math.max(surface.x+surface.width,dot.x+dot.width/2+dot.width/2*dot.scale*Math.max(1,dot.blobScaleX))\n                    : surface.x+surface.width;\n                const cx=stage.width/2,cy=stage.height/2;\n                const origin=stage.head+surface.width/2;\n                const progress=idleVisibility.progress*win.presentationProgress;\n                let px=origin+(edge-origin)*progress;\n                let py=cy+(stage.pillH/2-cy)*(0.85+0.15*progress);\n                px=cx+(px-cx)*(1+stage.jelly+Motion.isleSquashX*squash.value+0.016*magP.value);\n                py=cy+(py-cy)*(1-stage.jelly*Motion.isleJellyCross-Motion.isleSquashY*squash.value+0.03*magP.value);\n                px+=win.shakeX+drift.value*9+magX.value;\n                py+=magY.value;\n                return Qt.point(stage.x+cx+(px-cx)*stage.scale,stage.y+cy+(py-cy)*stage.scale);\n            }\n\n'+s[end:]
     p.write_text(s)
     p=root/'rosa/overlays/IslandDashboard.qml';s=p.read_text()
     s=s.replace('TapHandler{acceptedButtons:Qt.RightButton;onTapped:panel.dismissed()}','MouseArea{anchors.fill:parent;acceptedButtons:Qt.RightButton;onClicked:panel.dismissed()}')
@@ -22,6 +25,9 @@ def integrate(root):
     a='            ShelfButton{visible:ShelfState.editing && panel.page!==8;'
     s=s.replace(a,'            ShelfButton{implicitWidth:44;implicitHeight:36;icon:"notch/hard-drive.svg";accessibleLabel:qsTr("Storage");selected:panel.page===14;onClicked:panel.selectPage(14)}\n'+a,1)
     s=s.replace('index>13','index>14').replace('model:14','model:15')
+    s=s.replace('    property var visitedPages:({0:true})',
+        '    property var visitedPages:({0:true})\n    property int prewarmCursor:0\n    readonly property var prewarmPages:[2,5,11,13]\n    Timer{interval:250;running:panel.prewarmCursor<panel.prewarmPages.length;repeat:true;onTriggered:{const next=Object.assign({},panel.visitedPages);next[panel.prewarmPages[panel.prewarmCursor++]]=true;panel.visitedPages=next}}')
+    s=s.replace('active:!!panel.visitedPages[index]','asynchronous:index!==0\n                            active:!!panel.visitedPages[index]')
     s=s.replace('awake,widgetDetail][index]','awake,widgetDetail,storage][index]')
     s=s.replace('    Component {id:tray;','    Component{id:storage;StorageShelf{}}\n    Component {id:tray;',1)
     s=s.replace('13:(panel.detailWidget===','14:540,13:(panel.detailWidget===')

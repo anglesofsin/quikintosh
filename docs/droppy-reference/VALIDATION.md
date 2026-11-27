@@ -33,3 +33,16 @@ on its private window, 20 expand/collapse cycles and 12 interrupted reversals.
 A fake notification sender received the exact text submitted through the reply
 field; no message was sent to another person. Transform placement was asserted
 as a floating 414×680 window; the action footer is outside its scrolling content.
+
+Follow-up validation: all 35 compact activities and privacy spacing during
+three alignments passed. Privacy geometry now uses the explicit animated
+transforms instead of a mapToItem binding that cycled on the live desktop.
+The context menu is a 240-pixel popup window, verified visually outside the
+capsule's clipping bounds. Synthetic clicks on the actual ellipsis button and
+the Customize Home entry activated editing. Popups use explicit item-relative
+positions; cross-window mapToGlobal comparisons are not a reliable placement
+assertion on these Wayland layer surfaces.
+Heavy page creation is incubated asynchronously and prewarmed; camera device
+creation is deferred until the user explicitly requests a preview. A subsequent
+56-selection run had a maximum synchronous selection duration of 7 ms (this
+still does not measure end-to-end display latency).

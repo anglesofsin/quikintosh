@@ -34,7 +34,7 @@ Item {
      }
      Text{Layout.fillWidth:true;Layout.margins:12;text:card.modelData.kind==='image' ? qsTr('Click to copy'):qsTr('%1 characters').arg(String(card.modelData.text).length);font.family:ShelfStyle.textFamily;font.pixelSize:ShelfStyle.caption;color:ShelfStyle.secondary;elide:Text.ElideRight}
     }
-    MouseArea{id:area;anchors.fill:parent;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;acceptedButtons:Qt.LeftButton|Qt.RightButton;onClicked:e=>{root.selectedPath=card.modelData.path;if(e.button===Qt.RightButton)clipMenu.popup();else ShelfState.send({action:'copyClip',path:card.modelData.path})}}
+    MouseArea{id:area;anchors.fill:parent;hoverEnabled:true;cursorShape:Qt.PointingHandCursor;acceptedButtons:Qt.LeftButton|Qt.RightButton;onClicked:e=>{root.selectedPath=card.modelData.path;if(e.button===Qt.RightButton)clipMenu.popup(area,e.x,e.y);else ShelfState.send({action:'copyClip',path:card.modelData.path})}}
     ShelfMenu{id:clipMenu
      ShelfMenuItem{text:card.modelData.pinned ? qsTr('Unpin'):qsTr('Pin');onTriggered:ShelfState.send({action:'pinClip',path:card.modelData.path})}
      ShelfMenuItem{text:qsTr('Copy');onTriggered:ShelfState.send({action:'copyClip',path:card.modelData.path})}

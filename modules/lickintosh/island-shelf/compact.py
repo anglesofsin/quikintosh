@@ -22,16 +22,19 @@ def integrate(root):
     text = text[:start] + '''            // Track rendered bounds, not a cached central-pill width. Read the
             // animated inputs explicitly so mapToItem is evaluated every frame.
             readonly property point visualRight: {
-                const motion = stage.x + stage.y + stage.width + stage.scale
-                    + stage.jelly + squash.value + magP.value + magX.value
-                    + magY.value + drift.value + win.shakeX
-                    + idleVisibility.progress + win.presentationProgress;
-                const surfaceEdge = surface.x + surface.width;
-                const satelliteEdge = dot.visible && dot.opacity > 0.01
-                    ? dot.x + dot.width / 2 + dot.width / 2
-                        * dot.scale * Math.max(1, dot.blobScaleX) : surfaceEdge;
-                return stage.mapToItem(win.contentItem,
-                    Math.max(surfaceEdge, satelliteEdge), stage.pillH / 2);
+                const edge=dot.visible && dot.opacity>0.01
+                    ? Math.max(surface.x+surface.width,dot.x+dot.width/2+dot.width/2*dot.scale*Math.max(1,dot.blobScaleX))
+                    : surface.x+surface.width;
+                const cx=stage.width/2,cy=stage.height/2;
+                const origin=stage.head+surface.width/2;
+                const progress=idleVisibility.progress*win.presentationProgress;
+                let px=origin+(edge-origin)*progress;
+                let py=cy+(stage.pillH/2-cy)*(0.85+0.15*progress);
+                px=cx+(px-cx)*(1+stage.jelly+Motion.isleSquashX*squash.value+0.016*magP.value);
+                py=cy+(py-cy)*(1-stage.jelly*Motion.isleJellyCross-Motion.isleSquashY*squash.value+0.03*magP.value);
+                px+=win.shakeX+drift.value*9+magX.value;
+                py+=magY.value;
+                return Qt.point(stage.x+cx+(px-cx)*stage.scale,stage.y+cy+(py-cy)*stage.scale);
             }
 
 ''' + text[end:]

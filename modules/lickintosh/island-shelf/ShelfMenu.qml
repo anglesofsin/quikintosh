@@ -3,6 +3,10 @@ import QtQuick.Controls.Basic
 import qs.services
 Menu {
  id:root
+ implicitWidth:240
+ width:240
+ popupType:Popup.Window
+ closePolicy:Popup.CloseOnEscape | Popup.CloseOnPressOutside
  property bool held:false
  onVisibleChanged:{if(held!==visible){held=visible;ShelfState.interaction(held)}}
  Component.onDestruction:if(held)ShelfState.interaction(false)

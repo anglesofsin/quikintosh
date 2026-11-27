@@ -29,7 +29,7 @@ Item {
  onWatchingChanged:syncWatch()
  Component.onCompleted:syncWatch()
  Component.onDestruction:if(held)MprisState.watchPosition(false)
- TapHandler{acceptedButtons:Qt.RightButton;onTapped:contextMenu.popup()}
+ TapHandler{acceptedButtons:Qt.RightButton;onTapped:point=>contextMenu.popup(root,point.position.x,point.position.y)}
  ShelfMenu{id:contextMenu
   ShelfMenuItem{text:qsTr('Customize Home');onTriggered:{ShelfState.reveal(0);ShelfState.editing=true}}
   ShelfMenuItem{text:qsTr('Audio sources');onTriggered:root.openSources()}

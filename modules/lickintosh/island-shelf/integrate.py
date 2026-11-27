@@ -157,3 +157,7 @@ sparkline = root / "ui/topbar/notch/dashboard/Sparkline.qml"
 if sparkline.exists():
     text = sparkline.read_text().replace("property color lineColor: Theme.accent", "property color lineColor: Theme.accent\n    property color backgroundColor: \"#141414\"")
     sparkline.write_text(text.replace('color: "#141414"', 'color: root.backgroundColor'))
+
+# Apply compact presentation after the existing ownership/interaction patches.
+import runpy
+runpy.run_path(str(source / 'compact.py'))['integrate'](root)

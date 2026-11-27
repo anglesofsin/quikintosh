@@ -39,7 +39,7 @@ ShellRoot{
        last=json.loads(ipc('state'))
        if predicate(last):return last
       except (ValueError,KeyError,AssertionError,subprocess.TimeoutExpired):
-       if p.poll() is not None:raise
+       if p.poll() is not None:raise AssertionError((root/"log").read_text())
       time.sleep(.025)
      self.fail(str(last)+'\n'+(root/'log').read_text()[-3500:])
     wait(lambda s:s.get('visible') and s.get('compactOpacity',0)>.95,timeout=30)

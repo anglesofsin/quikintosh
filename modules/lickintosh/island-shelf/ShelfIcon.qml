@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import Quickshell
 import qs.components
 Item {
@@ -8,6 +9,7 @@ Item {
  property color color:ShelfStyle.primary
  readonly property string basename:icon.replace(/^.*\//,'').replace(/\.(svg|png)$/,'')
  readonly property var generated:({'home':'home','inbox':'tray','grid':'widgets','play':'play','pause':'pause','backward':'backward','forward':'forward','music':'music','calendar':'calendar','calender':'calendar','cloud':'cloud','camera':'camera','clipboard':'clipboard','bell':'bell','laptop':'laptop'})
+ readonly property bool needsTint:Math.abs(color.r-color.g)>.001 || Math.abs(color.g-color.b)>.001
  readonly property string asset:generated[basename] || ''
  readonly property var opticalBounds:{"widgets":[1254,1254,260,284,734,692],"forward":[1254,1254,282,464,690,373],"camera":[1254,1254,199,287,851,726],"music":[1254,1254,240,273,713,771],"laptop":[1536,1024,126,182,1284,661],"backward":[1262,1246,259,449,761,418],"bell":[1254,1254,252,200,745,839],"home":[1254,1254,267,312,720,668],"cloud":[1254,1254,148,403,955,486],"calendar":[1254,1254,240,221,773,830],"pause":[1536,1024,536,243,464,537],"play":[1254,1254,399,295,559,668],"clipboard":[1254,1254,270,186,710,906],"tray":[1254,1254,215,420,823,465]}
  readonly property var bounds:opticalBounds[asset] || [1,1,0,0,1,1]
@@ -22,7 +24,9 @@ Item {
   source:visible ? Qt.resolvedUrl('icons/ai/'+root.asset+'.png'):''
   sourceSize:Qt.size(Math.ceil(width*Screen.devicePixelRatio),Math.ceil(height*Screen.devicePixelRatio))
   fillMode:Image.PreserveAspectFit
-  opacity:Math.max(root.color.r,root.color.g,root.color.b)*root.color.a
+  opacity:(root.needsTint ? 1:root.color.r)*root.color.a
+  layer.enabled:root.needsTint
+  layer.effect:MultiEffect{colorization:1;colorizationColor:root.color}
   mipmap:true;smooth:true;cache:true
  }
  CFVI {

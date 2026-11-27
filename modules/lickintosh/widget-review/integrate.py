@@ -58,3 +58,14 @@ p='ui/widgets/types/WeatherWidget.qml';s=(r/p).read_text();s=s.replace('id: city
 p='ui/widgets/types/WorldClockWidget.qml';s=(r/p).read_text().replace('readonly property var cities: [','readonly property var defaultCities: [').replace('readonly property var shown: root.cities.slice(0, root.isLarge ? 6 : 3)',"readonly property var cities:widgetData?.worldCities?.length ? widgetData.worldCities:defaultCities\n    readonly property var shown:root.cities.slice(0,root.isLarge ? 6:3)\n    onShownChanged:if(!refresh.running)refresh.running=true\n    Connections{target:root;function onWidgetDataChanged(){if(!refresh.running)refresh.running=true}}")
 a=s.index('        command: ["sh", "-c",');b=s.index('        stdout:',a);s=s[:a]+"        command:['"+python+"',Quickshell.shellDir+'/tools/widget-zones.py',JSON.stringify(root.shown),String(!!root.widgetData?.world12Hour)]\n"+s[b:]
 a=s.index('            var map = {}');b=s.index('            root.times = map',a);s=s[:a]+"            var map={};try{map=JSON.parse(out.text)}catch(error){}\n"+s[b:];write(p,s)
+
+# Locked desktop widgets are decorative: no input, no grid reservation, below files.
+edit('services/WidgetState.qml','        var entries = []',"        var entries = []\n        if(widget && zone==='desktop')entries.push({label:I18n.tr('Lock Widget'),action:'lock',checkable:true,checked:widget.locked===true})")
+edit('services/WidgetState.qml','        if(action==="resize")',"        if(action==='lock'){const list=root.listOf(zone),i=root.indexOfId(list,id);if(i>=0){list[i]=Object.assign({},list[i],{locked:!list[i].locked});root.setList(zone,list);if(root.resizingId===id)root.resizingId=''}}\n        else if(action===\"resize\")")
+edit('services/WidgetState.qml','            if (o.id === skipId) continue','            if (o.id === skipId || o.locked===true) continue')
+p='ui/desktop/DesktopLayer.qml';s=(r/p).read_text();s=s.replace('z:slot.dragging || slot.resizing ? 500:20',"z:slot.spec.locked===true ? -1:(slot.dragging || slot.resizing ? 500:20)\n                    enabled:slot.spec.locked!==true");write(p,s)
+# Unlock remains reachable from the desktop menu even under files.
+edit('services/DesktopFiles.qml','    function desktopMenu() {',"    function desktopMenu() {\n        const locks=WidgetState.desktop.filter(w=>w.locked===true).map(w=>({label:I18n.tr(WidgetRegistry.resolve(w).title || w.type),action:'unlock-widget:'+w.id,checkable:true,checked:true}))")
+edit('services/DesktopFiles.qml','            { label: "New Folder", action: "new-folder" },','''            {label:I18n.tr('Locked Widgets'),children:locks,disabled:locks.length===0},
+            { label: "New Folder", action: "new-folder" },''')
+edit('services/DesktopFiles.qml','    function handle(action, target) {',"    function handle(action, target) {\n        if(action.indexOf('unlock-widget:')===0){WidgetState.applyAction('desktop',action.slice(14),'lock');return}")

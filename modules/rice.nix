@@ -322,6 +322,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/island-shelf}/integrate.py $out ${quickLookPython}/bin/python3
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-tahoe}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/emoji}/integrate.py $out ${quickLookPython}/bin/python3
+      ${pkgs.python3}/bin/python3 ${./lickintosh/calculator}/integrate.py $out ${quickLookPython}/bin/python3
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-organization}/integrate.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/settings-review}/review.py $out
       ${pkgs.python3}/bin/python3 ${./lickintosh/cursor}/integrate.py $out
@@ -373,7 +374,7 @@ let
       ${lib.optionalString supportsHyprimate ''
         ${pkgs.python3}/bin/python3 ${./lickintosh/compositor/load-plugin.py} quickintosh-capture-guard ${quickintoshGeometry}/lib/quickintosh-capture-guard.so
       ''}
-      ${pkgs.python3}/bin/python3 ${./lickintosh/compositor/load-plugin.py} hyprglass ${quickintoshWindowGlass}/lib/hyprglass.so
+      ${pkgs.python3}/bin/python3 ${./lickintosh/compositor/load-plugin.py} hyprglass ${quickintoshWindowGlass}/lib/hyprglass.so ${./lickintosh/compositor/native_glass.py}
       ${lib.optionalString supportsHyprimate ''
         ${pkgs.python3}/bin/python3 ${./lickintosh/compositor/load-plugin.py} hyprimate ${quickintoshHyprimate}/lib/hyprimate.so
       ''}
@@ -386,6 +387,37 @@ let
       exec ${lickintoshQs}/bin/qs -p ${lickintoshRoot} "$@"
     '';
   }).overrideAttrs { version = lickintoshRoot.version; };
+  calculatorLauncher = pkgs.writeShellApplication {
+    name = "quickintosh-calculator";
+    runtimeInputs = [ lickintoshQs pkgs.wl-clipboard pkgs.hyprland ];
+    text = ''
+      if [ "$#" -eq 0 ]; then
+        if qs -p ${lickintoshRoot}/calculator.qml ipc call calculator open 2>/dev/null; then exit 0; fi
+      else
+        if qs -p ${lickintoshRoot}/calculator.qml ipc call calculator command "$1" 2>/dev/null; then exit 0; fi
+      fi
+      export QML_IMPORT_PATH="${quickintoshRendering}/lib/qt-6/qml:${lib.makeSearchPath "lib/qt-6/qml" (with pkgs.qt6; [ qtgraphs qtquick3d qtquicktimeline qtmultimedia qt5compat qtsvg ])}:''${QML_IMPORT_PATH:-}"
+      export QT_PLUGIN_PATH="${lib.makeSearchPath "lib/qt-6/plugins" (with pkgs.qt6; [ qtmultimedia qtimageformats ])}:''${QT_PLUGIN_PATH:-}"
+      export FONTCONFIG_FILE=${pkgs.makeFontsConf { fontDirectories = [ (lickintosh-src + "/assets/fonts") ./lickintosh/widget-review/fonts appleEmojiFont (pkgs.nerd-fonts.symbols-only + "/share/fonts") ]; }}
+      QT_SCALE_FACTOR="$(${pkgs.python3}/bin/python3 ${./lickintosh/interface-scale.py})"
+      export QT_SCALE_FACTOR
+      QUICKINTOSH_RENDERER="$(${pkgs.python3}/bin/python3 ${./lickintosh/rendering/launcher-env.py})"
+      case "$QUICKINTOSH_RENDERER" in threaded|basic) export QSG_RENDER_LOOP="$QUICKINTOSH_RENDERER" ;; esac
+      export QUICKINTOSH_CALCULATOR_ACTION="''${1:-}"
+      exec qs -p ${lickintoshRoot}/calculator.qml --no-duplicate
+    '';
+  };
+  calculatorDesktop = pkgs.makeDesktopItem {
+    name = "org.quickintosh.Calculator";
+    desktopName = "Calculator";
+    genericName = "Calculator";
+    comment = "Quickintosh scientific calculator, conversions and math notes";
+    exec = "${calculatorLauncher}/bin/quickintosh-calculator";
+    icon = "accessories-calculator";
+    categories = [ "Utility" "Calculator" ];
+    keywords = [ "calculadora" "calculatrice" "math" "calculator" "convert" ];
+    startupWMClass = "org.quickintosh.Calculator";
+  };
   quickintoshPackage = pkgs.runCommand "quickintosh" {} ''
     mkdir -p $out/bin
     ln -s ${lickintoshPackage}/bin/lickintosh $out/bin/quickintosh
@@ -596,7 +628,7 @@ in
   services.dbus.packages = [ pkgs.gvfs ];
   systemd.packages = [ pkgs.gvfs ];
   services.udisks2.enable = true;
-  environment.systemPackages = [ desktopProfile finder finderDesktop riceFileManager quickLookOpener quickLookDesktop
+  environment.systemPackages = [ desktopProfile finder finderDesktop riceFileManager quickLookOpener quickLookDesktop calculatorLauncher calculatorDesktop
     pkgs.noctalia-shell
     noctaliaLegacyPackage
     lickintoshPackage

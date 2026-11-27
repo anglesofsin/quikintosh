@@ -38,3 +38,19 @@ edit(name,'property string appName: formatName(currentAppId, currentTitle)','''p
         onClicked:{if(activeWindowText.appMenuOpen)activeWindowText.appMenuOpen=false;else{MenuCoordinator.claim(activeWindowText);const p=activeWindowText.mapToItem(null,0,activeWindowText.height);appMenu.xPos=p.x;appMenu.yPos=36;appMenu.items=FinderMenus.applicationMenu;activeWindowText.appMenuOpen=true}}
     }
     PopupMenu{id:appMenu;opened:activeWindowText.appMenuOpen;onCloseRequested:activeWindowText.appMenuOpen=false}''')
+# Hyprland can retain the last toplevel after entering an empty workspace.
+# The visible workspaces, not that stale pointer, decide desktop menu ownership.
+p=r/base/'DesktopFocus.js';p.write_text((here/'DesktopFocus.js').read_text())
+p=r/base/'GlobalMenuService.qml';s=p.read_text().replace('import qs.services','import qs.services\nimport qs.components.glass\nimport "DesktopFocus.js" as DesktopFocus',1)
+s=s.replace('    readonly property bool desktopMode:DesktopFiles.desktopFocused || root.currentToplevel===null','''    property int workspaceHint:0
+    readonly property var focusedMonitor:GlassTracker.monitorSnapshots.find(m=>m.name===Hyprland.focusedMonitor?.name) || null
+    readonly property bool currentWindowVisible:DesktopFocus.windowVisible(root.currentToplevel ? root.currentToplevel.lastIpcObject || {}:null,root.focusedMonitor,root.workspaceHint)
+    onCurrentWindowVisibleChanged:DesktopFiles.desktopFocused=!currentWindowVisible
+    readonly property bool desktopMode:DesktopFiles.desktopFocused || !root.currentWindowVisible''',1)
+s=s.replace('        function onRawEvent(event) {','''        function onRawEvent(event) {
+            if(event.name==='workspacev2'){root.workspaceHint=parseInt(String(event.data).split(',')[0]) || 0;GlassTracker.refreshMonitorSnapshot()}
+            else if(event.name==='focusedmon'){root.workspaceHint=0;GlassTracker.refreshMonitorSnapshot()}
+            else if(event.name==='activespecial' || event.name==='activespecialv2')GlassTracker.refreshMonitorSnapshot()''',1)
+s=s.replace('    Component.onCompleted: Hyprland.refreshToplevels()','''    Component.onCompleted:{GlassTracker.inventoryUsers++;GlassTracker.refreshMonitorSnapshot();Hyprland.refreshToplevels()}
+    Component.onDestruction:GlassTracker.inventoryUsers=Math.max(0,GlassTracker.inventoryUsers-1)''',1);p.write_text(s)
+p=r/'ui/desktop/DesktopLayer.qml';s=p.read_text().replace('            id: stage','            id: stage\n            Connections{target:DesktopFiles;function onDesktopFocusedChanged(){if(DesktopFiles.desktopFocused)stage.forceActiveFocus()}}',1);p.write_text(s)

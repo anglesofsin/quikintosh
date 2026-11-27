@@ -8,6 +8,7 @@ let
     paths = [ (import ../modules/lickintosh/finder-portal/package.nix { inherit pkgs; }) (import ../modules/lickintosh/share-picker/cursor.nix { inherit pkgs; }) config.programs.hyprland.portalPackage config.system.build.appleEmoji config.system.build.quickintosh config.system.build.lickintosh
       config.system.build.riceShell (find "lickintosh-finder") (find "lickintosh-finder.desktop")
       (find "lickintosh-quicklook") (find "lickintosh-quicklook.desktop")
+      (find "quickintosh-calculator") (find "org.quickintosh.Calculator.desktop")
       (find "lickintosh-desktop-profile") (find "rice-file-manager")
       (find "quickintosh-discord-install") config.system.build.noctaliaLegacy
       config.system.build.eqsh pkgs.noctalia-shell

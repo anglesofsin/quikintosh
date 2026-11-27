@@ -1,6 +1,14 @@
 """Strict compositor policy: typed options, named window rules, reversible runtime."""
 import json,math,re
 from pathlib import Path
+try:
+ import native_glass
+except ModuleNotFoundError:
+ import importlib.util
+ _spec=importlib.util.spec_from_file_location('quickintosh_native_glass',Path(__file__).with_name('native_glass.py'))
+ native_glass=importlib.util.module_from_spec(_spec);_spec.loader.exec_module(native_glass)
+GLASS_OPTIONS = native_glass.OPTIONS
+from pathlib import Path
 OPTIONS={
  'decoration:rounding':('int',0,50), 'decoration:rounding_power':('number',2,10),
  'general:border_size':('int',0,12),'general:gaps_in':('int',0,80),'general:gaps_out':('int',0,120),
@@ -47,6 +55,9 @@ for field in HYPRIMATE_FIELDS:
  HYPRIMATE_OPTIONS[key] = spec
 
 OPTIONS.update({
+ 'plugin:hyprglass:layers:enabled':('bool',),
+ 'plugin:hyprglass:layers:live_resample_fps':('int',0,360),
+ 'plugin:hyprglass:layers:force_live_resample':('bool',),
  'plugin:hyprglass:windows:background_cache': ('bool',),
  'plugin:hyprglass:windows:live_resample': ('bool',),
  'plugin:hyprglass:windows:live_resample_fps': ('int', 0, 360),

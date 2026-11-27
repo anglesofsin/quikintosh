@@ -84,3 +84,18 @@ edit(name,'target: stage.minimalOn ? 1 : 0','target: win.sideActivitiesVisible &
 edit(name,'target: stage.leftOn ? 1 : 0','target: win.sideActivitiesVisible && stage.leftOn ? 1 : 0')
 edit(name,'visible: stage.dotShow > 0.015','visible: win.sideActivitiesVisible && stage.dotShow > 0.015')
 edit(name,'visible: stage.headDetach > 0.015','visible: win.sideActivitiesVisible && stage.headDetach > 0.015')
+# Spread the now-playing palette across the audio bars without an extra render
+# pass or animation clock. Bar heights still use the existing Cava stream.
+name='rosa/overlays/IslandBars.qml';p=root/name;s=p.read_text()
+s=s.replace('    property color tint: Colors.accent','''    property color tint: Colors.accent
+    readonly property bool mediaGradient:IslandConfig.s("mediaGradient")
+    readonly property color gradientEnd:IslandConfig.s("mediaGradientCustom") ? IslandConfig.s("mediaGradientEnd"):
+        tint.hsvSaturation<.08 ? Qt.darker(tint,1.45):Qt.hsva((tint.hsvHue+.12)%1,Math.min(1,tint.hsvSaturation*1.05),Math.max(.45,tint.hsvValue*.85),tint.a)
+    function barTint(index){
+        if(!mediaGradient)return tint
+        const t=count>1 ? index/(count-1):0
+        return Qt.rgba(tint.r+(gradientEnd.r-tint.r)*t,tint.g+(gradientEnd.g-tint.g)*t,tint.b+(gradientEnd.b-tint.b)*t,tint.a+(gradientEnd.a-tint.a)*t)
+    }''',1)
+s=s.replace('            readonly property real v:', '            readonly property color columnTint:bars.barTint(index)\n            readonly property real v:',1)
+s=s.replace('Qt.lighter(bars.tint, 1.18)','Qt.lighter(columnTint, bars.mediaGradient ? 1.35:1.18)').replace('Qt.darker(bars.tint, 1.12)','Qt.darker(columnTint, bars.mediaGradient ? 1.35:1.12)')
+p.write_text(s)

@@ -861,7 +861,7 @@ if shellActions["switcher-next"] then
         glass.layer("quickintosh-status-popover", { mask_mode="contour", mask_threshold=0.18 })
         glass.preset("quickintosh-dock", {inherits="pomme",blur_strength=0.65,bevel_strength=0.18,specular_strength=0.22,dark={brightness=1.0,contrast=1.0,tint_color=0x00000000},light={brightness=1.0,contrast=1.0,tint_color=0x00000000}})
         glass.layer("quickshell:dock", { preset="quickintosh-dock", mask_mode="contour", mask_threshold=0.015, live_resample=true })
-        glass.config({layers={live_resample_fps=0},windows={background_cache=true,live_resample=true,live_resample_fps=0}})
+        glass.config({layers={live_resample_fps=0},windows={background_cache=false,live_resample=true,live_resample_fps=0}})
     end
 end
 
@@ -878,3 +878,6 @@ dofile(os.getenv("HOME").."/.config/hypr/cursor-locate.lua")
 -- Keep desktop SDR output stable when applications enter fullscreen: do not
 -- trigger monitor picture-mode switching from app content-type hints.
 hl.config({render={send_content_type=false,cm_auto_hdr=0}})
+
+-- Calculator owns its translucent chrome; the compositor supplies live glass.
+hl.window_rule({name="quickintosh-calculator",match={title="^Quickintosh Calculator$"},float=true,center=true,focus_on_activate=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})

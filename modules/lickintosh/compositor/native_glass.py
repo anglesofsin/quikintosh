@@ -68,7 +68,7 @@ def commands(api,values,previous=()):
  # hyprglass.layer replaces the whole namespace registry at commit time. Always
  # submit the complete Quickintosh baseline and all currently customized areas.
  layers={ns:{'mask_mode':'contour','mask_threshold':.18,'live_resample':True} for ns in ['quickintosh-quickshot-controls','quickintosh-sharing-panel','quickintosh-status-popover']}
- layers['quickintosh-island-dashboard']={'preset':'quickintosh-island','mask_mode':'contour','mask_threshold':.004,'live_resample':True}
+ layers['quickintosh-island-dashboard']={'preset':'quickintosh-island','mask_mode':'contour','mask_threshold':.004,'mask_feather':.16,'live_resample':True}
  layers['quickshell:dock']={'preset':'quickintosh-dock','mask_mode':'contour','mask_threshold':.015,'live_resample':True}
  for t in TARGETS:
   target=t['id'];p=profiles.get(target);base=t.get('base','pomme');name='quickintosh-ui-'+target
@@ -83,6 +83,7 @@ def commands(api,values,previous=()):
    commands.append('hl.window_rule('+api.lua({'name':'quickintosh-glass-windows-disabled','enabled':not p.get('enabled',True),'match':{'title':'.*'},'tag':'+hyprglass_disabled'})+')')
   else:
    layer={'preset':name,'mask_mode':'contour','mask_threshold':t.get('threshold',.001),'live_resample':p.get('live_resample',True),'exclude':not p.get('enabled',True)}
+   if target=='island':layer['mask_feather']=.16
    for namespace in t['namespaces']:layers[namespace]=layer
  for namespace,settings in layers.items():commands.append('hl.plugin.hyprglass.layer('+api.lua(namespace)+','+api.lua(settings)+')')
  return 'if hl.plugin.hyprglass then '+';'.join(commands)+' end'

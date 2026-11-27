@@ -17,7 +17,7 @@ FloatingWindow {
  onContentChanged:resizeSoon.restart()
  onVisibleChanged:{if(!visible)ShelfState.playerOpen=false;else resizeSoon.restart()}
  Timer{id:resizeSoon;interval:60;onTriggered:if(root.visible)Quickshell.execDetached(['hyprctl','eval','for _,w in ipairs(hl.get_windows()) do if w.title=="Quickintosh Floating Player" then if not w.floating then hl.dispatch(hl.dsp.window.float({action="enable",window="address:"..w.address})) end;hl.dispatch(hl.dsp.window.resize({x='+root.implicitWidth+',y='+root.implicitHeight+',window="address:"..w.address})) end end'])}
- ClippingRectangle{anchors.fill:parent;radius:28;antialiasing:true;color:'#ee0b0b0d';layer.enabled:true;layer.samples:4
+ ShelfRoundedSurface{anchors.fill:parent;radius:28;antialiasing:true;color:'#ee0b0b0d'
   ShelfPanelMaterial{anchors.fill:parent;cornerRadius:28}
   Rectangle{anchors.fill:parent;gradient:Gradient{GradientStop{position:0;color:'#ff09090b'}GradientStop{position:.4;color:'#f009090b'}GradientStop{position:1;color:'#1009090b'}}}
   ColumnLayout{anchors.fill:parent;anchors.margins:18;spacing:12

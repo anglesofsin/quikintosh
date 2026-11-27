@@ -20,6 +20,7 @@ class GlassTests(unittest.TestCase):
   cmd=glass.commands(Api,{'native-glass:menus:blur_strength':.7})
   self.assertIn('"quickintosh-island"',cmd)
   self.assertIn('"mask_threshold"]=0.004',cmd)
+  self.assertIn('"mask_feather"]=0.16',cmd)
   self.assertIn('"tint_color"]=0',cmd)
   self.assertEqual(next(t for t in glass.TARGETS if t['id']=='island')['base'],'quickintosh-island')
  def test_removing_windows_profile_restores_live_default(self):

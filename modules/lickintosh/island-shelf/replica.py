@@ -85,6 +85,7 @@ def integrate(root):
     runpy.run_path(str(Path(__file__).with_name('settings_audit.py')))['integrate'](root)
     runpy.run_path(str(Path(__file__).with_name('media_polish.py')))['integrate'](root)
     runpy.run_path(str(Path(__file__).with_name('animation_polish.py')))['integrate'](root)
+    runpy.run_path(str(Path(__file__).with_name('surface_polish.py')))['integrate'](root)
 
 
 if __name__=='__main__':

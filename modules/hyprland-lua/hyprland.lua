@@ -891,7 +891,7 @@ if shellActions["switcher-next"] then
         glass.config({ enabled = true, default_preset = "pomme", layers = { enabled = true } })
         glass.layer("quickintosh-quickshot-controls", { mask_mode="contour", mask_threshold=0.18 })
         glass.preset("quickintosh-island", {inherits="pomme",blur_strength=0.65,bevel_strength=0.18,specular_strength=0.22,dark={brightness=1.0,contrast=1.0,tint_color=0x00000000},light={brightness=1.0,contrast=1.0,tint_color=0x00000000}})
-        glass.layer("quickintosh-island-dashboard", {preset="quickintosh-island",mask_mode="contour",mask_threshold=0.004,live_resample=true})
+        glass.layer("quickintosh-island-dashboard", {preset="quickintosh-island",mask_mode="contour",mask_threshold=0.004,mask_feather=0.16,live_resample=true})
         glass.layer("quickintosh-sharing-panel", { mask_mode="contour", mask_threshold=0.18 })
         glass.layer("quickintosh-status-popover", { mask_mode="contour", mask_threshold=0.18 })
         glass.preset("quickintosh-dock", {inherits="pomme",blur_strength=0.65,bevel_strength=0.18,specular_strength=0.22,dark={brightness=1.0,contrast=1.0,tint_color=0x00000000},light={brightness=1.0,contrast=1.0,tint_color=0x00000000}})

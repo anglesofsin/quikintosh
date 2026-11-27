@@ -30,7 +30,7 @@ Item{
    blurDownscale:Math.max(.5,RenderingState.blurScale)
    blurRadius:32
   }
-  Rectangle{anchors.fill:parent;radius:material.cornerRadius;color:'#d92b2b32';visible:!backdrop.captureSettled}
+  Rectangle{anchors.fill:parent;radius:material.cornerRadius;antialiasing:true;color:'#d92b2b32';visible:!backdrop.captureSettled}
   TahoeGlass{anchors.fill:parent;backdrop:backdrop.ready ? backdrop:null;cornerRadius:material.cornerRadius;autoDarken:false;refractionWidth:1.5;highlightStrength:.15;materialOpacity:1;centerOpacity:1}
-  Rectangle{anchors.fill:parent;radius:material.cornerRadius;color:'#b21c1c20';border.width:1;border.color:'#27ffffff'}
+  Rectangle{anchors.fill:parent;radius:material.cornerRadius;antialiasing:true;color:'#b21c1c20';border.width:1;border.color:'#27ffffff'}
  }

@@ -199,6 +199,9 @@ local function toggleDecoratedZoom()
     local selector = "address:" .. w.address
     local maximized = w.fullscreen == 1
     hl.dispatch(hl.dsp.window.fullscreen_state({internal=maximized and 0 or 1,client=0,action="set",layout_aware=false,window=selector}))
+    -- fullscreen_state decouples modes and turns sync off. Restore sync only
+    -- for subsequent app requests (YouTube F), without changing this geometry.
+    hl.dispatch(hl.dsp.window.set_prop({prop="sync_fullscreen",value="1",window=selector}))
     hl.dispatch(hl.dsp.window.tag({tag=(maximized and "-" or "+").."quickintosh-maximized",window=selector}))
 end
 local function restoreMaximizedForNewTile(w)
@@ -206,6 +209,7 @@ local function restoreMaximizedForNewTile(w)
     for _,other in ipairs(hl.get_workspace_windows(w.workspace)) do
         if other.address ~= w.address and other.fullscreen == 1 then
             hl.dispatch(hl.dsp.window.fullscreen_state({internal=0,client=0,action="set",layout_aware=false,window="address:"..other.address}))
+            hl.dispatch(hl.dsp.window.set_prop({prop="sync_fullscreen",value="1",window="address:"..other.address}))
             hl.dispatch(hl.dsp.window.tag({tag="-quickintosh-maximized",window="address:"..other.address}))
         end
     end

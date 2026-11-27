@@ -100,7 +100,7 @@ Item {
       }
       HoverHandler{id:titleHover;onHoveredChanged:if(!hovered)trackTitle.x=0;readonly property bool containsMouse:hovered}
      }
-     Rectangle{id:lyricsBadge;objectName:"player-lyrics-button";visible:root.showPopout;x:titleViewport.x+titleViewport.width+7;anchors.verticalCenter:trackTitle.verticalCenter;width:16;height:18;radius:4;color:'#ededf0'
+     Rectangle{id:lyricsBadge;objectName:"player-lyrics-button";visible:root.showPopout;x:titleViewport.x+titleViewport.width+7;anchors.verticalCenter:parent.verticalCenter;width:16;height:18;radius:4;color:'#ededf0'
       Text{anchors.fill:parent;leftPadding:1;horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter;text:'L';font.family:ShelfStyle.textFamily;font.pixelSize:11;font.weight:Font.Bold;color:'#27272a'}
       Accessible.role:Accessible.Button;Accessible.name:qsTr('Lyrics')
       MouseArea{anchors.fill:parent;onClicked:root.openLyrics()}
@@ -127,8 +127,8 @@ Item {
    Text{text:root.duration>0 ? '−'+root.timeText(root.duration-root.position):'—:—';font.family:ShelfStyle.textFamily;font.pixelSize:13;font.weight:Font.Medium;font.features:({tnum:1});color:'#b5b5bb'}
   }
   RowLayout {
-   id:transport;Layout.fillWidth:true;Layout.maximumHeight:Layout.preferredHeight;Layout.preferredHeight:root.queueSelected ? 56:root.portrait ? 54:root.height<170 ? 32:40;spacing:Math.max(4,Math.min(22,(root.width-144-(root.showUtilityButtons ? (root.queueSelected ? 84:64):0))/8))
-   ShelfButton{objectName:"player-queue-button";visible:root.showUtilityButtons;implicitWidth:root.queueSelected ? 52:32;implicitHeight:root.queueSelected ? 52:32;selected:root.queueSelected;flat:true;icon:'notch/list.svg';iconSize:26;accessibleLabel:qsTr('Playing Next');onClicked:root.openQueue()}
+   id:transport;Layout.fillWidth:true;Layout.maximumHeight:Layout.preferredHeight;Layout.preferredHeight:root.queueSelected ? 56:root.portrait ? 54:40;spacing:Math.max(2,Math.min(18,(transport.width-144-(root.showUtilityButtons ? (root.queueSelected ? 108:96):0))/6))
+   ShelfButton{objectName:"player-queue-button";visible:root.showUtilityButtons;implicitWidth:root.queueSelected ? 52:40;implicitHeight:root.queueSelected ? 52:40;Layout.leftMargin:6;selected:root.queueSelected;flat:true;icon:'notch/list.svg';iconSize:26;accessibleLabel:qsTr('Playing Next');onClicked:root.openQueue()}
    Item{Layout.fillWidth:true}
    Repeater {
     model:[{icon:'backward',label:qsTr('Previous track'),enabled:MprisState.canGoPrevious},{icon:root.playing ? 'pause':'play',label:MprisState.isPlaying ? qsTr('Pause'):qsTr('Play'),enabled:MprisState.canTogglePlaying},{icon:'forward',label:qsTr('Next track'),enabled:MprisState.canGoNext}]
@@ -144,7 +144,7 @@ Item {
     }
    }
    Item{Layout.fillWidth:true}
-   ShelfButton{objectName:'player-output-button';visible:root.showUtilityButtons;flat:true;icon:'laptop.png';iconSize:28;foreground:'#eeeeef';accessibleLabel:qsTr('Floating player');onClicked:root.openOutput()}
+   ShelfButton{objectName:'player-output-button';visible:root.showUtilityButtons;flat:true;implicitWidth:44;implicitHeight:40;Layout.rightMargin:6;icon:'laptop.png';iconSize:32;foreground:'#eeeeef';accessibleLabel:qsTr('Floating player');onClicked:root.openOutput()}
   }
   RowLayout {
    visible:root.hasVolume && (root.portrait || root.height>=210);Layout.fillWidth:true;spacing:10

@@ -38,6 +38,11 @@ def integrate(root):
   s=s.replace('privacy.visualRight.x+8','privacy.visualRight.x+8+(1-win.privacyPhase)*14').replace('scale: privacy.on ? 1 : 0','opacity:win.privacyPhase\n            scale: privacy.on ? 1 : 0')
   s=s.replace('visible: !win.privacyHandoff && scale > 0.01 && (NativeSettings.PrivacyPreferences.showExpanded || (!win.wide && !win.seeking && Math.abs(morph.value) < 0.02 && Math.abs(seek.value) < 0.02))', 'property real activityOpacity:privacy.on && !win.privacyHandoff && (NativeSettings.PrivacyPreferences.showExpanded || (!win.wide && !win.seeking && Math.abs(morph.value) < 0.02 && Math.abs(seek.value) < 0.02)) ? 1:0\n            Behavior on activityOpacity{NumberAnimation{duration:260;easing.type:Easing.OutCubic}}\n            visible:opacity>0.005 && scale>0.01')
   s=s.replace('opacity:win.privacyPhase','opacity:win.privacyPhase*activityOpacity')
+  # A media expansion is pointer-driven; only actual text/password input
+  # may acquire exclusive keyboard focus from the foreground application.
+  s=s.replace('win.replying || win.big || win.asking ? WlrKeyboardFocus.Exclusive', 'win.replying || win.asking ? WlrKeyboardFocus.Exclusive')
+  # Motion echoes used the album tint and survived the ordinary rim guards.
+  s=s.replace('visible: IslandConfig.s("trail") && !win.bigMotion', 'visible: win.wideKind!=="media" && win.hub.kind!=="media" && IslandConfig.s("trail") && !win.bigMotion')
   # Decorative sheen/rim must not flash a contour around a media morph.
   s=s.replace('visible: !pill.newEvent && IslandConfig.s("sheen")','visible: win.wideKind!=="media" && !pill.newEvent && IslandConfig.s("sheen")')
   s=s.replace('IslandRim {\n                visible:!pill.newEvent','IslandRim {\n                visible:win.wideKind!=="media" && !pill.newEvent')

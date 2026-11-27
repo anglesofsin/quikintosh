@@ -85,16 +85,35 @@ def commands(api,values,previous=()):
  return 'if hl.plugin.hyprglass then '+';'.join(commands)+' end'
 
 def apply(api,values,restore=False):
- path=api.STATE/'native-glass-runtime.json';saved=api.read_json(path)
+ # preset()/layer() enqueue declarations; only config.reloaded commits them.
+ # A complete generated include is evaluated during the real config reload.
+ path=api.STATE/'native-glass-runtime.json'
+ include=api.STATE/'native-glass-config.lua'
  instance=api.os.environ.get('HYPRLAND_INSTANCE_SIGNATURE','')
- old=saved.get('targets',[]) if saved.get('instance')==instance else []
- profiles=validate({} if restore else values)
- command=commands(api,{} if restore else values,old)
- if command:
-  result=api.run(['hyprctl','eval',command])
-  if 'error' in result.lower():raise RuntimeError(result)
+ canonical={k:values[k] for k in sorted(values)} if not restore else {}
+ profiles=validate(canonical)
+ command=commands(api,canonical) if profiles else ''
+ desired=('-- Generated native material profiles. Do not edit.\n'+command+'\n') if command else None
+ previous=include.read_text() if include.exists() else None
+ if desired!=previous:
+  errors_before=api.run(['hyprctl','configerrors']).strip()
+  def write(content):
+   if content is None:include.unlink(missing_ok=True)
+   else:
+    temporary=include.with_suffix('.tmp')
+    temporary.write_text(content);temporary.chmod(0o600);temporary.replace(include)
+  write(desired)
+  try:
+   result=api.run(['hyprctl','reload'])
+   errors=api.run(['hyprctl','configerrors']).strip()
+   if 'error' in result.lower() or (errors and errors!=errors_before):raise RuntimeError(errors or result)
+  except Exception:
+   write(previous)
+   api.run(['hyprctl','reload'])
+   raise
  if restore or not profiles:path.unlink(missing_ok=True)
  else:api.write_json(path,{'instance':instance,'targets':list(profiles)})
+
 def query(api):
  values=api.input_values(GLOBAL_KEYS)
  return {'values':values,'available':values.get('plugin:hyprglass:enabled') is not None,'targets':TARGETS,'presets':PRESETS,'fields':[dict(key=n,label=l,group=g,min=lo,max=hi,default=d,step=s) for n,l,g,lo,hi,d,s in FIELDS]}

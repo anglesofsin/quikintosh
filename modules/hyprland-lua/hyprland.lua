@@ -913,3 +913,12 @@ hl.config({render={send_content_type=false,cm_auto_hdr=0}})
 
 -- Calculator owns its translucent chrome; the compositor supplies live glass.
 hl.window_rule({name="quickintosh-calculator",match={title="^Quickintosh Calculator$"},float=true,center=true,focus_on_activate=true,opacity="1.0 1.0",tag="+hyprglass_enabled"})
+
+-- Profiles must be declared inside the real reload: hyprglass queues preset/layer
+-- declarations and commits them only after config.reloaded, not hyprctl eval.
+if shellActions["switcher-next"] then
+    local state = os.getenv("XDG_STATE_HOME") or (os.getenv("HOME") .. "/.local/state")
+    local materialPath = state .. "/lickintosh/settings/native-glass-config.lua"
+    local materialFile = io.open(materialPath, "r")
+    if materialFile then materialFile:close();dofile(materialPath) end
+end

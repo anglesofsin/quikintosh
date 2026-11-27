@@ -17,7 +17,7 @@ def translate(event):
    try:os.killpg(process.pid,signal.SIGKILL)
    except ProcessLookupError:pass
    process.wait()
- return {'text':output[:20000],'provider':'Google Translate · Online'}
+ return {'text':output[:20000]}
 if __name__=='__main__':
  signal.signal(signal.SIGTERM,lambda *_:sys.exit(143))
  try:print(json.dumps(translate(json.loads(sys.stdin.readline(65536)))))

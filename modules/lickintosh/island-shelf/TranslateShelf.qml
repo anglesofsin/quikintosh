@@ -28,7 +28,7 @@ Item {
   ScrollView{Layout.fillWidth:true;Layout.fillHeight:true;clip:true;visible:!!root.result
    ShelfTextArea{objectName:'translate-result';text:root.result;readOnly:true;background:null;padding:0;font.family:ShelfStyle.displayFamily;font.pixelSize:22}
   }
-  Text{Layout.fillWidth:true;text:root.error || qsTr('Google Translate · Online. Text is sent only when you press Translate.');wrapMode:Text.Wrap;font.family:ShelfStyle.textFamily;font.pixelSize:12;color:root.error ? '#ff827b':ShelfStyle.secondary}
+  Text{visible:!!root.error;Layout.fillWidth:true;text:root.error;wrapMode:Text.Wrap;font.family:ShelfStyle.textFamily;font.pixelSize:12;color:'#ff827b'}
   RowLayout{Layout.fillWidth:true
    ShelfButton{text:root.result ? qsTr('Edit'):qsTr('Clear');flat:true;onClicked:{if(!root.result)input.clear();root.result='';root.error=''}}
    Item{Layout.fillWidth:true}

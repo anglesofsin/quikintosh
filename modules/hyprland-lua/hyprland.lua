@@ -206,7 +206,7 @@ local function toggleDecoratedZoom()
     zoomedWindows[w.address] = {floating=w.floating,x=w.at.x,y=w.at.y,width=w.size.x,height=w.size.y}
     local mon = w.monitor
     local area = mon.reserved
-    local inset = 10
+    local inset = 0
     if w.fullscreen ~= 0 then hl.dispatch(hl.dsp.window.fullscreen({action="unset",layout_aware=false,window=selector})) end
     hl.dispatch(hl.dsp.window.float({action="enable",window=selector}))
     hl.dispatch(hl.dsp.window.resize({x=math.max(80,mon.mode.width-area.left-area.right-2*inset),y=math.max(80,mon.mode.height-area.top-area.bottom-2*inset),window=selector}))

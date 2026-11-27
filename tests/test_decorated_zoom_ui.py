@@ -55,7 +55,9 @@ ShellRoot{
      before=window()
      self.assertNotIn('error',ctl('eval','qiZoomTest()'));time.sleep(.3);w=window()
      self.assertEqual(w['fullscreen'],0);self.assertTrue(w['floating'])
-     self.assertGreaterEqual(w['at'][1],38);self.assertGreater(w['size'][0],1000)
+     mon=next(m for m in json.loads(ctl('-j','monitors')) if m['id']==w['monitor']);reserved=mon['reserved']
+     self.assertEqual(w['at'],[mon['x']+reserved[0],mon['y']+reserved[1]])
+     self.assertEqual(w['size'],[round(mon['width']/mon['scale'])-reserved[0]-reserved[2],round(mon['height']/mon['scale'])-reserved[1]-reserved[3]])
      self.assertNotIn('error',ctl('eval','qiZoomTest()'));time.sleep(.3);after=window()
      self.assertEqual(after['floating'],floating);self.assertEqual(after['fullscreen'],0)
      if floating:self.assertEqual(after['at'],before['at']);self.assertEqual(after['size'],before['size'])

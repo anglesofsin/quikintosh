@@ -1,7 +1,7 @@
 # Animated wallpaper performance
 
 Alt+F enlarges/restores a decorated window inside the monitor work area, keeping
-a 10-pixel inset and its rounded glass edge. It does not request client fullscreen
+no extra inset and its rounded glass edge. It does not request client fullscreen
 or native maximization, which can hide app titlebars. Floating windows restore
 their geometry; tiled windows return to their layout. Super+F keeps its fullscreen action. The maximize shortcut can be overridden through the existing
 shortcut settings (`Toggle maximize`).

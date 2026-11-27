@@ -111,6 +111,8 @@ class Shelf(FileOperations,AppOperations,VaultOperations,MediaQueue):
             try:state=json.loads(path.read_text())
             except (ValueError,OSError):state={}
             values=event.get('values',{})
+            from icon_preferences import sanitize
+            state.update(sanitize(values))
             if 'teleprompterText' in values:state['teleprompterText']=str(values['teleprompterText'])[:100000]
             if values.get('voiceLanguage') in ('auto','pt','en','es','fr','de','it','ja','ko','zh','ru'):state['voiceLanguage']=values['voiceLanguage']
             if 'teleprompterWpm' in values:state['teleprompterWpm']=max(60,min(300,float(values['teleprompterWpm'])))
@@ -208,7 +210,9 @@ class Shelf(FileOperations,AppOperations,VaultOperations,MediaQueue):
                     progress=max(0,min(1,progress))
                 kind=item.get('kind','task')
                 if kind not in ('task','download','share','cloud','launch'):kind='task'
-                self.activities[key]=dict(id=key,kind=kind,title=title,subtitle=str(item.get('subtitle',''))[:240],progress=progress,expires=time.time()+ttl)
+                status=item.get('status','')
+                if status not in ('active','completed','failed','paused','disconnected'):status=''
+                self.activities[key]=dict(id=key,kind=kind,status=status,title=title,subtitle=str(item.get('subtitle',''))[:240],progress=progress,expires=time.time()+ttl)
                 if len(self.activities)>32:self.activities.pop(next(iter(self.activities)))
             self.activities={k:v for k,v in self.activities.items() if v['expires']>time.time()}
             return dict(type='activities',items=list(self.activities.values()))

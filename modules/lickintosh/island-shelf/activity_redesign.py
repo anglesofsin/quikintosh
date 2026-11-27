@@ -1,5 +1,6 @@
 """Install new event surfaces without changing protected call/media/CPU/privacy/shot views."""
 from pathlib import Path
+import json,ast,re
 
 def write(path,text):
  if path.is_symlink():path.unlink()
@@ -7,8 +8,13 @@ def write(path,text):
 
 def integrate(root):
  root=Path(root)
+ spec=json.loads((root/'island-shelf/icon_policy.json').read_text())
+ generated=ast.literal_eval(re.search(r'generated:\((\{.*?\})\)',(root/'island-shelf/ShelfIcon.qml').read_text(),re.S)[1])
+ missing=[icon for icon in spec['icons'] if not ((root/'island-shelf/icons/ai'/(generated[icon]+'.png')).is_file() if icon in generated else (root/'assets/icons/notch'/(icon+'.svg')).is_file())]
+ if missing:raise ValueError('Missing activity icon assets: '+', '.join(missing))
+ policy=root/'island-shelf/ActivityIconPolicy.qml';policy.write_text(policy.read_text().replace('@ICON_SPEC@',json.dumps(spec)))
  p=root/'island-shelf/qmldir'
- p.write_text(p.read_text()+'\nActivitySurface ActivitySurface.qml\nActivityData ActivityData.qml\n')
+ p.write_text(p.read_text()+'\nActivitySurface ActivitySurface.qml\nActivityData ActivityData.qml\nsingleton ActivityIconPolicy ActivityIconPolicy.qml\nIconSettings IconSettings.qml\n')
  p=root/'rosa/overlays/Island.qml';s=p.read_text().replace('    id: root','''    id: root
     readonly property var shelfActivity:ShelfState.activities.length ? ShelfState.activities[0]:null
     property int activityTrayCount:ShelfState.items.length

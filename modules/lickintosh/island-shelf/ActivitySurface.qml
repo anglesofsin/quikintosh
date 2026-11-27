@@ -11,7 +11,8 @@ Item {
  property bool interactive:true
  readonly property bool expanded:presentation==='expanded'
  readonly property bool satellite:presentation==='satellite'
- readonly property color accent:activity.color || '#f5f5f7'
+ readonly property var iconView:ActivityIconPolicy.resolve(activity,presentation)
+ readonly property color accent:iconView.color
  readonly property bool meter:activity.meter===true
  readonly property bool richNotification:expanded && notification && !!activity.image
  readonly property bool notification:activity.kind==='notif'
@@ -19,7 +20,7 @@ Item {
  readonly property string compactLabel:(activity.label || activity.title || '')===(activity.value || '') ? '':activity.label || activity.title || ''
  TextMetrics{id:labelMeasure;font.family:ShelfStyle.textFamily;font.pixelSize:['power','low'].includes(root.activity.kind) ? 11:12;font.weight:Font.DemiBold;text:root.compactLabel}
  TextMetrics{id:valueMeasure;font.family:ShelfStyle.textFamily;font.pixelSize:12;font.weight:Font.Medium;text:root.activity.value || ''}
- readonly property real preferredCompactWidth:meter ? 118:Math.max(118,Math.ceil(labelMeasure.width+valueMeasure.width+20+(['power','low'].includes(activity.kind) ? 16:16)+(compactLabel ? 12:6)+(activity.value ? 6:0)))
+ readonly property real preferredCompactWidth:meter ? 118:Math.max(118,Math.ceil(labelMeasure.width+valueMeasure.width+20+iconView.size+(compactLabel ? 12:6)+(activity.value ? 6:0)))
  implicitWidth:satellite ? 28:expanded ? 320:preferredCompactWidth
  implicitHeight:expanded ? notification ? 64+(richNotification ? 128:0)+(replying ? 42:0):64:compactHeight
  signal activate()
@@ -36,14 +37,14 @@ Item {
   anchors.fill:parent;anchors.leftMargin:root.satellite ? 5:root.expanded ? 16:10;anchors.rightMargin:root.satellite ? 5:root.expanded ? 16:10;anchors.topMargin:root.richNotification ? 16:0;anchors.bottomMargin:root.replying ? 42:0;spacing:root.expanded ? 12:6
   Item{
    visible:!root.meter && !['power','low'].includes(root.activity.kind) && !(root.expanded && root.activity.kind==='record')
-   Layout.alignment:root.richNotification ? Qt.AlignTop:Qt.AlignVCenter;Layout.preferredWidth:root.expanded && root.notification ? 40:root.expanded ? root.activity.kind==='vpn' ? 32:28:16;Layout.preferredHeight:width
+   Layout.alignment:root.richNotification ? Qt.AlignTop:Qt.AlignVCenter;Layout.preferredWidth:root.expanded && root.notification ? 40:root.iconView.size;Layout.preferredHeight:width
    Rectangle{visible:root.notification;anchors.fill:parent;radius:width/2;color:'#77777b'}
    Text{visible:root.notification;anchors.centerIn:parent;text:root.activity.initials || '';color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:root.expanded ? 17:8}
-   Rectangle{visible:root.expanded && root.notification;x:parent.width-10;y:parent.height-8;width:12;height:12;radius:3;color:'#0a84ff';Image{visible:!!root.activity.appIcon;anchors.fill:parent;source:root.activity.appIcon || '';sourceSize:Qt.size(24,24);fillMode:Image.PreserveAspectFit}ShelfIcon{visible:!root.activity.appIcon;anchors.centerIn:parent;size:8;icon:'notch/mail.svg';color:'white'}}
-   ShelfIcon{visible:!root.notification && root.activity.kind!=='record';anchors.centerIn:parent;size:root.expanded ? root.activity.kind==='vpn' ? 32:28:16;icon:'notch/'+(root.activity.icon || 'bell')+'.svg';color:root.activity.kind==='vpn' ? 'white':root.accent}
+   Rectangle{visible:root.expanded && root.notification && root.iconView.appBadges;x:parent.width-10;y:parent.height-8;width:12;height:12;radius:3;color:'#0a84ff';Image{id:appBadgeIcon;visible:status===Image.Ready;asynchronous:true;anchors.fill:parent;source:root.activity.appIcon || '';sourceSize:Qt.size(24,24);fillMode:Image.PreserveAspectFit}ShelfIcon{visible:appBadgeIcon.status!==Image.Ready;anchors.centerIn:parent;size:8;icon:'notch/mail.svg';color:'white'}}
+   ShelfIcon{visible:!root.notification && root.activity.kind!=='record';anchors.centerIn:parent;size:root.iconView.size;icon:'notch/'+root.iconView.icon+'.svg';color:root.activity.kind==='vpn' && !root.iconView.monochrome ? 'white':root.accent;forceTint:root.iconView.monochrome}
    Rectangle{visible:root.activity.kind==='record';anchors.centerIn:parent;width:root.expanded ? 12:6;height:width;radius:width/2;color:'#ff453a';anchors.verticalCenterOffset:root.expanded ? -9:0}
   }
-  ShelfIcon{objectName:'activity-meter-icon';visible:root.meter;Layout.preferredWidth:16;Layout.preferredHeight:16;icon:'notch/'+(root.activity.icon || 'volume-2')+'.svg';color:root.accent;Layout.alignment:Qt.AlignVCenter}
+  ShelfIcon{objectName:'activity-meter-icon';visible:root.meter;Layout.preferredWidth:root.iconView.size;Layout.preferredHeight:root.iconView.size;icon:'notch/'+root.iconView.icon+'.svg';color:root.accent;size:root.iconView.size;forceTint:root.iconView.monochrome;Layout.alignment:Qt.AlignVCenter}
   ColumnLayout{
    Layout.alignment:root.richNotification ? Qt.AlignTop:Qt.AlignVCenter
    visible:!root.satellite && !root.meter;Layout.fillWidth:true;spacing:root.expanded ? 3:0

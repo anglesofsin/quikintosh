@@ -1,0 +1,30 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const root=require('node:path').join(__dirname,'../modules/lickintosh/island-shelf/');
+const spec=JSON.parse(fs.readFileSync(root+'icon_policy.json'));
+const context={};vm.createContext(context);vm.runInContext(fs.readFileSync(root+'IconRules.js','utf8').replace('.pragma library',''),context);
+const run=(e,p={},mode='compact')=>context.resolve(spec,p,e,mode);
+assert.equal(run({kind:'download',status:'completed'}).icon,'check');
+assert.equal(run({kind:'task',status:'failed',fraction:1}).icon,'x');
+assert.equal(run({kind:'timer',status:'paused'}).icon,'pause');
+assert.equal(run({kind:'task',icon:'terminal',status:'failed'},{iconPolicySmart:false}).icon,'terminal');
+assert.equal(run({kind:'bt',deviceType:'input-mouse'}).icon,'bluetooth');
+assert.equal(run({kind:'bt',deviceType:'mouse'}, {iconPolicyDevices:false}).icon,'bluetooth');
+assert.equal(run({kind:'osd',channel:'source',muted:true}).icon,'mic-off');
+assert.equal(run({kind:'osd',channel:'sink',fraction:0}).icon,'volume-x');
+assert.equal(run({kind:'osd',channel:'light'}).icon,'sun');
+assert.equal(run({kind:'unknown',icon:'../../bad.svg'}).icon,'bell');
+assert.equal(run({kind:'task',status:'failed'},{iconPolicyOverrides:{task:'cloud'}}).icon,'x');
+assert.equal(run({kind:'task',status:'failed'},{iconPolicyStatusOverrides:{failed:'bell'}}).icon,'bell');
+assert.equal(run({kind:'task',status:'failed'},{iconPolicyOverrides:{task:'cloud'},iconPolicyStatus:false}).icon,'cloud');
+assert.equal(run({kind:'task',color:'#ff0000'},{iconPolicyColors:false}).color,'#f5f5f7');
+assert.equal(run({kind:'record',color:'#ff453a'},{iconPolicyColors:false,iconPolicyOverrides:{record:'play'}}).icon,'video');
+assert.equal(run({kind:'record',color:'#ff453a'},{iconPolicyColors:false}).color,'#ff453a');
+assert.equal(run({kind:'task'},{iconPolicyCompactSize:999}).size,20);
+assert.equal(run({kind:'task'},{iconPolicyCompactSize:'19'}).size,16);
+assert.equal(run({kind:'task',color:'invalid'}).color,'#f5f5f7');
+assert.equal(run({kind:'task',status:'failed'},{iconPolicySmart:'false'}).icon,'x');
+assert.equal(run({kind:'task'},{iconPolicyExpandedSize:NaN},'expanded').size,28);
+for(const kind of spec.kinds)for(const mode of ['compact','expanded','satellite'])for(const status of ['active','completed','failed','paused','disconnected']){
+ const value=run({kind,status}, {},mode);assert.ok(spec.icons.includes(value.icon));assert.ok(Number.isFinite(value.size));
+}
+console.log('Icon policy priorities, overrides, fallback and 450 kind/state/presentation combinations passed');

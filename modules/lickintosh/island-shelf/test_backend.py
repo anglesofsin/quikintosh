@@ -6,6 +6,15 @@ class ShelfTest(unittest.TestCase):
  def setUp(self):
   self.temp=tempfile.TemporaryDirectory();self.home=Path(self.temp.name);self.s=module.Shelf(self.home/'state');self.a=self.home/'a file.txt';self.a.write_text('original')
  def tearDown(self):self.temp.cleanup()
+ def test_icon_preferences_persist_and_bound_sizes(self):
+  self.s.handle({'action':'utilityPreferences','values':{'iconPolicySmart':False,'iconPolicyCompactSize':99,'iconPolicyExpandedSize':2,'iconPolicyOverrides':{'task':'cloud','record':'play','bt':'../../bad'}}})
+  p=module.Shelf(self.s.root).handle({'action':'utilityPreferences'})['values']
+  self.assertFalse(p['iconPolicySmart']);self.assertEqual(p['iconPolicyCompactSize'],20);self.assertEqual(p['iconPolicyExpandedSize'],20);self.assertEqual(p['iconPolicyOverrides'],{'task':'cloud'})
+ def test_invalid_icon_preferences_do_not_write(self):
+  for value in [float('nan'),float('inf'),'16',True]:
+   with self.assertRaises(ValueError):self.s.handle({'action':'utilityPreferences','values':{'iconPolicyCompactSize':value}})
+  with self.assertRaises(ValueError):self.s.handle({'action':'utilityPreferences','values':{'iconPolicyOverrides':[]}})
+  with self.assertRaises(ValueError):self.s.handle({'action':'utilityPreferences','values':{'iconPolicySmart':'false'}})
  def test_navigation_preferences_persist_and_limit_favorites(self):
   flags={'navigationShown':False,'navigationWidgets':False,'navigationTrayOnlyWithFiles':True,'navigationGestures':True,'navigationFavorites':['media','clipboard','batteries','storage','weather']}
   self.s.handle({'action':'utilityPreferences','values':flags})
@@ -32,8 +41,8 @@ class ShelfTest(unittest.TestCase):
   link=self.home/'link';link.symlink_to(self.a);self.s.add([str(link)])
   with self.assertRaises(ValueError):self.s.archive([str(link)])
  def test_activity_kinds_are_bounded(self):
-  result=self.s.handle({'action':'activity','activity':{'id':'transfer','kind':'share','title':'KDE Connect','progress':.8}})
-  self.assertEqual(result['items'][0]['kind'],'share');self.assertEqual(result['items'][0]['progress'],.8)
+  result=self.s.handle({'action':'activity','activity':{'id':'transfer','kind':'share','title':'KDE Connect','progress':.8,'status':'failed'}})
+  self.assertEqual(result['items'][0]['status'],'failed');self.assertEqual(result['items'][0]['kind'],'share');self.assertEqual(result['items'][0]['progress'],.8)
   result=self.s.handle({'action':'activity','activity':{'id':'transfer','kind':'unknown','title':'Build'}})
   self.assertEqual(result['items'][0]['kind'],'task')
  def test_activity_bounds_and_remove(self):

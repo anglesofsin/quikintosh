@@ -13,6 +13,7 @@ class ActivityRedesignUI(unittest.TestCase):
    for e in source.iterdir():
     if e.name!='shell.qml':(root/e.name).symlink_to(e,target_is_directory=e.is_dir())
    (root/'shell.qml').write_text('''import QtQuick
+import QtQuick.Controls.Basic
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
@@ -20,17 +21,20 @@ import QtTest
 import "island-shelf"
 import qs.rosa.services
 ShellRoot{
- PanelWindow{id:win;anchors{top:true;left:true;right:true}implicitHeight:500;color:'#100cc4';exclusionMode:ExclusionMode.Ignore
+ PanelWindow{id:win;anchors{top:true;left:true;right:true}implicitHeight:settingsReview.active ? 780:500;color:'#100cc4';exclusionMode:ExclusionMode.Ignore
   property var fixture:({kind:'timer',title:'Timer',label:'20:00',value:'20:00',color:'#ff9f0a',icon:'clock'})
   property int actions:0
   property string lastReply:''
   function named(item,name){if(item.objectName===name)return item;for(const child of item.children || []){const match=named(child,name);if(match)return match}return null}
+  ActivityData{id:policyData;kind:'task';context:({progress:1,status:'failed'})}
   TestCase{id:pointer;when:false}
   ActivitySurface{id:compact;objectName:'compact';x:400;y:70;activity:win.fixture;width:compact.preferredCompactWidth;height:26;onActivate:win.actions++}
   ActivitySurface{id:expanded;x:620;y:55;activity:win.fixture;presentation:'expanded';width:320;height:implicitHeight;onAction:(name,value)=>{win.actions++;if(name==='reply')win.lastReply=value}}
   ActivitySurface{id:left;x:360;y:70;activity:win.fixture;presentation:'satellite';width:26;height:26}
   ActivitySurface{id:right;x:980;y:70;activity:win.fixture;presentation:'satellite';width:26;height:26}
-  IpcHandler{target:'eventsQA';function fixture(value:string):void{win.fixture=JSON.parse(value)}function state():string{return JSON.stringify({width:compact.width,height:compact.height,actions:win.actions,lastReply:win.lastReply,compactLabel:compact.compactLabel,expandedMeterY:win.named(expanded,'activity-meter').mapToItem(expanded,0,2).y,expandedIconY:win.named(expanded,'activity-meter-icon').mapToItem(expanded,0,8).y,expandedValueY:win.named(expanded,'activity-value').mapToItem(expanded,0,win.named(expanded,'activity-value').height/2).y,meterY:win.named(compact,'activity-meter').mapToItem(compact,0,2).y,iconY:win.named(compact,'activity-meter-icon').mapToItem(compact,0,8).y,valueY:win.named(compact,'activity-value').mapToItem(compact,0,win.named(compact,'activity-value').height/2).y,recordDotX:win.named(expanded,'activity-record-dot').mapToItem(expanded,0,0).x,subtitleX:win.named(expanded,'activity-subtitle').mapToItem(expanded,0,0).x})}function vpnReview(on:bool):void{Vpn.up=on}function vpnState():string{return JSON.stringify({value:Vpn.up ? Vpn.activityElapsed:'Off'})}function reply():void{const open=win.named(expanded,'activity-reply-open');pointer.mouseClick(open,open.width/2,open.height/2,Qt.LeftButton);win.named(expanded,'activity-reply-input').text='Count me in!';const send=win.named(expanded,'activity-reply-send');pointer.mouseClick(send,send.width/2,send.height/2,Qt.LeftButton)}function click():void{pointer.mouseClick(compact,compact.width/2,compact.height/2,Qt.LeftButton)}}
+  Loader{id:brokenReview;x:1245;y:70;active:false;sourceComponent:Component{ShelfIcon{icon:'notch/vpn.svg';size:24}}}
+  Loader{id:settingsReview;x:620;y:20;width:620;height:720;active:false;sourceComponent:Component{Rectangle{color:'#1c1c1e';radius:20;Flickable{anchors.fill:parent;anchors.margins:18;clip:true;contentHeight:form.implicitHeight;ScrollBar.vertical:ScrollBar{}IconSettings{id:form;width:parent.width}}}}}
+  IpcHandler{target:'eventsQA';function policySet(key:string,value:string):void{ActivityIconPolicy.set(key,JSON.parse(value))}function policyState():string{return JSON.stringify(Object.assign({},ActivityIconPolicy.spec.defaults,ActivityIconPolicy.preferences))}function policyResolve(event:string,mode:string):string{return JSON.stringify(ActivityIconPolicy.resolve(JSON.parse(event),mode))}function policyAdapterState():string{return JSON.stringify(policyData.value)}function policyBroken():void{brokenReview.active=true;Qt.callLater(()=>win.named(brokenReview.item,'generated-icon-image').source='file:///nonexistent-quickintosh-icon-test.png')}function policyBrokenState():string{if(!brokenReview.item)return '{}';return JSON.stringify({fallback:win.named(brokenReview.item,'generated-icon-fallback').visible,source:String(win.named(brokenReview.item,'generated-icon-fallback').source)})}function policyVisual():string{return JSON.stringify(compact.iconView)}function policySettings():void{settingsReview.active=true}function policyCustomize():void{const button=win.named(settingsReview.item,'icon-policy-customize');pointer.mouseClick(button,button.width/2,button.height/2,Qt.LeftButton)}function policyChoose(kind:string,icon:string):void{const control=win.named(settingsReview.item,'icon-event-'+kind);control.activated(ActivityIconPolicy.spec.icons.indexOf(icon)+1)}function policyReset():void{const button=win.named(settingsReview.item,'icon-policy-reset');pointer.mouseClick(button,button.width/2,button.height/2,Qt.LeftButton)}function fixture(value:string):void{win.fixture=JSON.parse(value)}function state():string{return JSON.stringify({width:compact.width,height:compact.height,actions:win.actions,lastReply:win.lastReply,compactLabel:compact.compactLabel,expandedMeterY:win.named(expanded,'activity-meter').mapToItem(expanded,0,2).y,expandedIconY:win.named(expanded,'activity-meter-icon').mapToItem(expanded,0,win.named(expanded,'activity-meter-icon').height/2).y,expandedValueY:win.named(expanded,'activity-value').mapToItem(expanded,0,win.named(expanded,'activity-value').height/2).y,meterY:win.named(compact,'activity-meter').mapToItem(compact,0,2).y,iconY:win.named(compact,'activity-meter-icon').mapToItem(compact,0,win.named(compact,'activity-meter-icon').height/2).y,valueY:win.named(compact,'activity-value').mapToItem(compact,0,win.named(compact,'activity-value').height/2).y,recordDotX:win.named(expanded,'activity-record-dot').mapToItem(expanded,0,0).x,subtitleX:win.named(expanded,'activity-subtitle').mapToItem(expanded,0,0).x})}function vpnReview(on:bool):void{Vpn.up=on}function vpnState():string{return JSON.stringify({value:Vpn.up ? Vpn.activityElapsed:'Off'})}function reply():void{const open=win.named(expanded,'activity-reply-open');pointer.mouseClick(open,open.width/2,open.height/2,Qt.LeftButton);win.named(expanded,'activity-reply-input').text='Count me in!';const send=win.named(expanded,'activity-reply-send');pointer.mouseClick(send,send.width/2,send.height/2,Qt.LeftButton)}function click():void{pointer.mouseClick(compact,compact.width/2,compact.height/2,Qt.LeftButton)}}
  }
 }''')
    env=dict(os.environ,HOME=tmp,XDG_CONFIG_HOME=tmp+'/.config',XDG_CACHE_HOME=tmp+'/.cache',XDG_STATE_HOME=tmp+'/.state',XDG_RUNTIME_DIR=str(runtime),WAYLAND_DISPLAY=os.environ[REQUIRED[3]],HYPRLAND_INSTANCE_SIGNATURE=os.environ[REQUIRED[4]],DBUS_SESSION_BUS_ADDRESS='unix:path=/nonexistent');env.pop('DISPLAY',None)
@@ -44,6 +48,47 @@ ShellRoot{
     for attempt in range(150):
      try:json.loads(ipc('state'));break
      except (RuntimeError,ValueError,subprocess.TimeoutExpired):time.sleep(.1)
+    subprocess.run(['hyprctl','dismissnotify','-1'],env=env,capture_output=True,timeout=5)
+    if os.environ.get('QUICKINTOSH_ICON_POLICY_REVIEW')=='1':
+     def wait_policy(key,value):
+      for attempt in range(100):
+       if json.loads(ipc('policyState')).get(key)==value:return
+       time.sleep(.05)
+      self.fail(ipc('policyState'))
+     self.assertTrue(json.loads(ipc('policyState'))['iconPolicySmart'])
+     self.assertEqual(json.loads(ipc('policyAdapterState'))['status'],'failed');self.assertEqual(json.loads(ipc('policyAdapterState'))['value'],'Failed')
+     event=dict(kind='task',icon='terminal',status='failed',title='Build failed',color='#a78bfa')
+     ipc('fixture',json.dumps(event))
+     self.assertEqual(json.loads(ipc('policyResolve',json.dumps(event),'compact'))['icon'],'x')
+     ipc('policySet','iconPolicyOverrides',json.dumps({'task':'cloud'}));wait_policy('iconPolicyOverrides',{'task':'cloud'})
+     self.assertEqual(json.loads(ipc('policyResolve',json.dumps(event),'compact'))['icon'],'x')
+     ipc('policySet','iconPolicyStatusOverrides',json.dumps({'failed':'bell'}));wait_policy('iconPolicyStatusOverrides',{'failed':'bell'});self.assertEqual(json.loads(ipc('policyResolve',json.dumps(event),'compact'))['icon'],'bell')
+     ipc('policySet','iconPolicyStatusOverrides','{}');wait_policy('iconPolicyStatusOverrides',{})
+     ipc('policySet','iconPolicyStatus','false');wait_policy('iconPolicyStatus',False)
+     self.assertEqual(json.loads(ipc('policyResolve',json.dumps(event),'compact'))['icon'],'cloud')
+     self.assertEqual(json.loads(ipc('policyVisual'))['icon'],'cloud')
+     ipc('policySet','iconPolicyColors','false');wait_policy('iconPolicyColors',False)
+     self.assertEqual(json.loads(ipc('policyVisual'))['color'],'#f5f5f7')
+     self.assertEqual(json.loads(ipc('policyResolve',json.dumps(event),'compact'))['color'],'#f5f5f7')
+     ipc('policySet','iconPolicyCompactSize','20');wait_policy('iconPolicyCompactSize',20)
+     ipc('fixture',json.dumps(event));time.sleep(.3)
+     subprocess.run(['grim','-l','1',str(out/'icon-policy-custom.png')],env=env,check=True,timeout=15)
+     ipc('policySettings');time.sleep(.5)
+     subprocess.run(['grim','-l','1',str(out/'icon-policy-settings.png')],env=env,check=True,timeout=15)
+     ipc('policyCustomize');time.sleep(.1);ipc('policyChoose','bt','smartphone');wait_policy('iconPolicyOverrides',{'task':'cloud','bt':'smartphone'})
+     ipc('policyCustomize')
+     ipc('policyReset');wait_policy('iconPolicyStatus',True);wait_policy('iconPolicyColors',True);wait_policy('iconPolicyCompactSize',16);wait_policy('iconPolicyOverrides',{})
+     time.sleep(.2)
+     subprocess.run(['grim','-l','1',str(out/'icon-policy-defaults.png')],env=env,check=True,timeout=15)
+     text=(root/'log').read_text()
+     for issue in ['ReferenceError:','TypeError:','Cannot assign','Failed to load configuration']:self.assertNotIn(issue,text)
+     ipc('policyBroken')
+     for attempt in range(100):
+      fallback=json.loads(ipc('policyBrokenState'))
+      if fallback.get('fallback'):break
+      time.sleep(.05)
+     self.assertTrue(fallback.get('fallback'));self.assertTrue(fallback['source'].endswith('/notch/shield.svg'))
+     print('ICON_POLICY_NATIVE_PRIORITY_PERSISTENCE_SETTINGS_RESET_AND_IMAGE_FALLBACK_OK');return
     fixtures=[
      dict(kind='power',title='Charging',label='Charging',value='80%',color='#30d158'),
      dict(kind='power',title='Full Battery',label='Full Battery',value='100%',complete=True,subtitle='Your computer is fully charged.',color='#30d158'),

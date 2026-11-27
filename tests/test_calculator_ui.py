@@ -14,8 +14,12 @@ class CalculatorUI(unittest.TestCase):
     if e.name!='shell.qml':(app/e.name).symlink_to(e,target_is_directory=e.is_dir())
    p=app/'components';original=p.resolve();p.unlink();p.mkdir()
    for e in original.iterdir():(p/e.name).symlink_to(e,target_is_directory=e.is_dir())
-   p=app/'components/CalculatorApp.qml';text=p.read_text();p.unlink();p.write_text(text.replace(' id:app',' id:app\n readonly property var testWindow:window',1))
-   (app/'shell.qml').write_text((ROOT/'tests/fixtures/calculator-ui.qml').read_text())
+   p=app/'components/CalculatorApp.qml';text=p.read_text();p.unlink()
+   text=text.replace("Repeater {model:['#ff5f57'","Repeater {id:qaLights;model:['#ff5f57'",1)
+   text='import QtTest\n'+text
+   text=text.replace(' id:app',' id:app\n readonly property var testWindow:window\n TestCase{id:qaHover;when:false}\n function testHover(index){const button=qaLights.itemAt(index);const area=button.children.find(c=>typeof c.containsMouse===\"boolean\");qaHover.mouseMove(area,area.width/2,area.height/2,10)}\n function testLights(){let result=[];for(let i=0;i<3;i++){const button=qaLights.itemAt(i);const glyph=button.children.find(c=>typeof c.text===\"string\");const p=button.mapToItem(window.contentItem,button.width/2,button.height/2);result.push({width:button.width,height:button.height,x:p.x,y:p.y,icon:!!glyph.visible})}return result}',1)
+   p.write_text(text)
+   (app/'shell.qml').write_text((ROOT/'tests/fixtures/calculator-ui.qml').read_text().replace('history:calc.history.length','history:calc.history.length,lights:calc.testLights()').replace('function begin():void','function hover(index:int):void{calc.testHover(index)}\n  function begin():void'))
    env=dict(os.environ,HOME=directory,XDG_CONFIG_HOME=directory+'/.config',XDG_STATE_HOME=directory+'/.state',XDG_CACHE_HOME=directory+'/.cache',XDG_RUNTIME_DIR=RUNTIME,WAYLAND_DISPLAY=WAYLAND,HYPRLAND_INSTANCE_SIGNATURE=SIGNATURE)
    env.pop('DISPLAY',None);env.pop('DBUS_SESSION_BUS_ADDRESS',None)
    log=root/'app.log'
@@ -36,6 +40,12 @@ class CalculatorUI(unittest.TestCase):
     deadline=time.monotonic()+4
     while status()['value']!='95.8' and time.monotonic()<deadline:time.sleep(.02)
     self.assertEqual(status()['value'],'95.8');self.assertTrue(status()['visible'])
+    client=next(w for w in json.loads(subprocess.check_output(['hyprctl','-j','clients'],env=env,text=True)) if w['title']=='Quickintosh Calculator')
+    for index in [0,1]:
+     light=status()['lights'][index];self.assertEqual(light['width'],14);self.assertEqual(light['height'],14)
+     ipc('hover',str(index));time.sleep(.1)
+     shown=status()['lights'];self.assertTrue(shown[index]['icon']);self.assertFalse(shown[1-index]['icon']);self.assertFalse(shown[2]['icon'])
+    print('CALCULATOR_INDIVIDUAL_TRAFFIC_LIGHT_HOVER_OK')
     for mode in range(6):
      ipc('page',str(mode));time.sleep(.2);s=status();self.assertFalse(s['error']);self.assertTrue(s['visible']);self.assertGreaterEqual(s['width'],330);self.assertGreaterEqual(s['height'],570)
     durations=[]

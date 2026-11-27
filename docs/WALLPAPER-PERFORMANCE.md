@@ -1,10 +1,11 @@
 # Animated wallpaper performance
 
-Alt+F enlarges/restores a decorated window inside the monitor work area, keeping
-no extra inset and its rounded glass edge. It does not request client fullscreen
-or native maximization, which can hide app titlebars. Floating windows restore
-their geometry; tiled windows return to their layout. Super+F keeps its fullscreen action. The maximize shortcut can be overridden through the existing
-shortcut settings (`Toggle maximize`).
+Alt+F toggles native internal maximization while leaving client fullscreen off.
+The compositor retains the layout node and restores it without converting a tiled
+window to floating. Opening a new tiled window on that workspace exits maximize;
+opening a floating dialog does not. The work area and rounded glass edge are
+preserved. Super+F keeps true fullscreen. The maximize shortcut is configurable
+through `Toggle maximize`.
 
 Wallpaper pause policy checks each output's visible regular and special workspace,
 ignores unmapped/hidden windows and distinguishes fullscreen (bit 2) from maximized

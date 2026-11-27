@@ -217,11 +217,10 @@ Scope {
    Item {
     id:titlebar;height:58;anchors{top:parent.top;left:parent.left;right:parent.right}
     MouseArea{anchors.fill:parent;onPressed:window.startSystemMove();onDoubleClicked:app.historyShown=!app.historyShown}
-    Row {id:trafficLights;x:20;y:21;spacing:10
-     HoverHandler{id:trafficHover}
+    Row {id:trafficLights;x:20;y:23;spacing:8
      Repeater {model:['#ff5f57','#febc2e','#55565a']
-      Rectangle {required property string modelData;required property int index;width:19;height:19;radius:10;color:modelData
-       Text{anchors.fill:parent;text:index===0 ? '×':index===1 ? '−':'';font.family:'SF Pro Text';font.weight:Font.DemiBold;font.pixelSize:14;color:'#95000000';horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter;visible:trafficHover.hovered && index!==2}
+      Rectangle {required property string modelData;required property int index;width:14;height:14;radius:7;color:modelData
+       Text{anchors.fill:parent;text:index===0 ? '×':index===1 ? '−':'';font.family:'SF Pro Text';font.weight:Font.DemiBold;font.pixelSize:12;color:'#95000000';horizontalAlignment:Text.AlignHCenter;verticalAlignment:Text.AlignVCenter;visible:traffic.containsMouse && index!==2}
        MouseArea{id:traffic;anchors.fill:parent;hoverEnabled:true;enabled:index!==2;onClicked:if(index===0)app.opened=false;else window.minimized=true}
       }
      }

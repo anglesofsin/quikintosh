@@ -27,7 +27,11 @@ import "ui/topbar/statusarea/spotlight"
 ShellRoot{
  FloatingWindow{visible:true;title:'Wallpaper Controls QA';implicitWidth:600;implicitHeight:500;color:'#202022';WallpaperDiagnostics{id:diagnostics;ipcPrefix:[Quickshell.env('QUICKINTOSH_TEST_QS'),'-p',Quickshell.shellDir,'ipc','call','wallpaperVideo'];anchors{left:parent.left;right:parent.right;top:parent.top;margins:20}enabledByUser:true}SpotlightCategoryGrid{id:appGrid;anchors.fill:parent;visible:false;items:Array.from({length:400},(_,index)=>({name:"Scroll fixture "+index,icon:"folder"}));categoryOrder:[];fontFamily:'SF Pro';fontFamilyMedium:'SF Pro';mode:'apps'}}
  IpcHandler{target:'wallpaperControls';function state():string{return JSON.stringify({rows:diagnostics.snapshot.length,received:diagnostics.received})}function stop():void{diagnostics.enabledByUser=false}
+ function dialog(on:bool):void{dialog.visible=on}
+ function tile(on:bool):void{newTile.visible=on}
  function scroll():string{appGrid.visible=true;diagnostics.visible=false;let queue=[appGrid];while(queue.length){let c=queue.shift();if(typeof c.contentY==='number' && c.contentHeight>c.height && c.height>100){c.contentY=Math.min(c.contentHeight-c.height,c.contentY+120);return JSON.stringify({position:c.contentY,total:c.contentHeight,height:c.height})}for(let child of (c.children || []))queue.push(child)}return '{}'}}
+ FloatingWindow{id:dialog;visible:false;title:'QA Floating Dialog';implicitWidth:240;implicitHeight:150;color:'blue'}
+ FloatingWindow{id:newTile;visible:false;title:'QA New Tile';implicitWidth:400;implicitHeight:400;color:'green'}
  PanelWindow{anchors{left:true;right:true;top:true}implicitHeight:28;color:'#303033';exclusiveZone:28;WlrLayershell.keyboardFocus:WlrKeyboardFocus.None}
 }''')
    env=dict(os.environ,HOME=tmp,XDG_CONFIG_HOME=tmp+'/.config',XDG_CACHE_HOME=tmp+'/.cache',XDG_STATE_HOME=tmp+'/.state',XDG_RUNTIME_DIR=runtime,WAYLAND_DISPLAY=os.environ['QUICKINTOSH_TEST_PRIVATE_WAYLAND'],HYPRLAND_INSTANCE_SIGNATURE=os.environ['QUICKINTOSH_TEST_PRIVATE_HYPRLAND'],QSG_RENDER_LOOP='basic',DBUS_SESSION_BUS_ADDRESS='unix:path=/nonexistent')
@@ -35,7 +39,7 @@ ShellRoot{
    def launch(config):
     log=root/(config+'.log');logs.append(log)
     with log.open('w') as f:players.append(subprocess.Popen([qs,'-p',str(app if config=='shell.qml' else app/config)],env=env,stdout=f,stderr=f,start_new_session=True))
-   def ipc(config,target,action):return subprocess.check_output([qs,'-p',str(app if config=='shell.qml' else app/config),'ipc','call',target,action],env=env,text=True,stderr=subprocess.DEVNULL,timeout=5)
+   def ipc(config,target,action,*args):return subprocess.check_output([qs,'-p',str(app if config=='shell.qml' else app/config),'ipc','call',target,action,*args],env=env,text=True,stderr=subprocess.DEVNULL,timeout=5)
    def ctl(*args):return subprocess.check_output(['hyprctl',*args],env=env,text=True,timeout=5)
    def window():return next((w for w in json.loads(ctl('-j','clients')) if w.get('title')=='Wallpaper Controls QA'),None)
    try:
@@ -48,19 +52,27 @@ ShellRoot{
      except (subprocess.CalledProcessError,subprocess.TimeoutExpired):pass
      self.assertLess(time.monotonic(),deadline,'\n'.join(p.read_text() for p in logs));time.sleep(.15)
     config=(ROOT/'modules/hyprland-lua/hyprland.lua').read_text()
-    helper=config[config.index('local zoomedWindows = {}'):config.index('configurableBind("ALT + F", toggleDecoratedZoom')]
-    self.assertNotIn('error',ctl('eval',helper+'\nqiZoomTest=toggleDecoratedZoom'))
+    helper=config[config.index('hl.workspace_rule({workspace="f[1]"'):config.index('configurableBind("ALT + F", toggleDecoratedZoom')]
+    self.assertNotIn('error',ctl('eval',helper+'\nhl.config({general={border_size=0}});qiZoomTest=toggleDecoratedZoom'))
     for floating in [True,False]:
      ctl('eval','hl.dispatch(hl.dsp.window.float({action="'+('enable' if floating else 'disable')+'"}))');time.sleep(.2)
      before=window()
      self.assertNotIn('error',ctl('eval','qiZoomTest()'));time.sleep(.3);w=window()
-     self.assertEqual(w['fullscreen'],0);self.assertTrue(w['floating']);self.assertIn('quickintosh-maximized',w['tags'])
+     self.assertEqual(w['fullscreen'],1);self.assertEqual(w['fullscreenClient'],0);self.assertEqual(w['floating'],floating);self.assertIn('quickintosh-maximized',w['tags'])
      mon=next(m for m in json.loads(ctl('-j','monitors')) if m['id']==w['monitor']);reserved=mon['reserved']
      self.assertEqual(w['at'],[mon['x']+reserved[0],mon['y']+reserved[1]])
      self.assertEqual(w['size'],[round(mon['width']/mon['scale'])-reserved[0]-reserved[2],round(mon['height']/mon['scale'])-reserved[1]-reserved[3]])
      self.assertNotIn('error',ctl('eval','qiZoomTest()'));time.sleep(.3);after=window()
      self.assertEqual(after['floating'],floating);self.assertEqual(after['fullscreen'],0);self.assertNotIn('quickintosh-maximized',after['tags'])
      if floating:self.assertEqual(after['at'],before['at']);self.assertEqual(after['size'],before['size'])
+    self.assertNotIn('error',ctl('eval',"hl.window_rule({name='qa-new-tile',match={title='^QA New Tile$'},float=false});hl.window_rule({name='qa-dialog',match={title='^QA Floating Dialog$'},float=true})"))
+    self.assertNotIn('error',ctl('eval',helper+"\nhl.on('window.open',function(w) restoreMaximizedForNewTile(w) end);qiZoomTest=toggleDecoratedZoom"))
+    ctl('eval','hl.dispatch(hl.dsp.window.float({action="disable",window="address:'+window()['address']+'"}));hl.dispatch(hl.dsp.focus({window="address:'+window()['address']+'"}));qiZoomTest()')
+    time.sleep(.3);self.assertEqual(window()['fullscreen'],1)
+    ipc('settings.qml','wallpaperControls','dialog','true');time.sleep(.3);self.assertEqual(window()['fullscreen'],1)
+    ipc('settings.qml','wallpaperControls','dialog','false')
+    ipc('settings.qml','wallpaperControls','tile','true');time.sleep(.4);self.assertEqual(window()['fullscreen'],0);self.assertFalse(window()['floating'])
+    ipc('settings.qml','wallpaperControls','tile','false')
     ipc('settings.qml','wallpaperControls','stop');time.sleep(.4)
     self.assertFalse(json.loads(ipc('shell.qml','wallpaperVideo','state'))['measuring'])
     positions=[]

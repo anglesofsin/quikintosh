@@ -5,6 +5,6 @@ function windowVisible(window, monitor, workspaceHint) {
     const workspace = Number(window.workspace && window.workspace.id);
     if (!Number.isFinite(workspace)) return true;
     const regular = workspaceHint || Number(monitor.activeWorkspace && monitor.activeWorkspace.id);
-    const special = Number(monitor.specialWorkspace && monitor.specialWorkspace.id);
-    return workspace === regular || (special !== 0 && workspace === special);
+    const special = Number((monitor.specialWorkspace || monitor.activeSpecialWorkspace) && (monitor.specialWorkspace || monitor.activeSpecialWorkspace).id);
+    return workspace === regular || (Number.isFinite(special) && special !== 0 && workspace === special);
 }

@@ -183,36 +183,25 @@ end
 -- 1. Window Management
 hl.bind(m .. " + Q", hl.dsp.window.close(), { description = "Close window" })
 hl.bind(m .. " + F", hl.dsp.window.fullscreen(), { description = "Toggle fullscreen" })
--- Decorated zoom is intentionally independent of the fullscreen controller:
--- clients must not hide their titlebar and the glass must retain its rounded edge.
-local zoomedWindows = {}
+-- Keep the layout node in place. Internal maximize fills the work area while
+-- client mode stays normal, preserving rounded client chrome and titlebars.
+hl.workspace_rule({workspace="f[1]",gaps_out=0,float_gaps=0})
 local function toggleDecoratedZoom()
     local w = hl.get_active_window()
-    if not w or not w.address or not w.monitor then return end
+    if not w or not w.address then return end
     local selector = "address:" .. w.address
-    local saved = zoomedWindows[w.address]
-    if saved then
-        zoomedWindows[w.address] = nil
-        hl.dispatch(hl.dsp.window.tag({tag="-quickintosh-maximized",window=selector}))
-        if w.fullscreen ~= 0 then hl.dispatch(hl.dsp.window.fullscreen({action="unset",layout_aware=false, window=selector})) end
-        if saved.floating then
-            hl.dispatch(hl.dsp.window.resize({x=saved.width,y=saved.height,window=selector}))
-            hl.dispatch(hl.dsp.window.move({x=saved.x,y=saved.y,window=selector}))
-        else
-            hl.dispatch(hl.dsp.window.float({action="disable",window=selector}))
+    local maximized = w.fullscreen == 1
+    hl.dispatch(hl.dsp.window.fullscreen_state({internal=maximized and 0 or 1,client=0,action="set",layout_aware=false,window=selector}))
+    hl.dispatch(hl.dsp.window.tag({tag=(maximized and "-" or "+").."quickintosh-maximized",window=selector}))
+end
+local function restoreMaximizedForNewTile(w)
+    if not w or w.floating or not w.workspace then return end
+    for _,other in ipairs(hl.get_workspace_windows(w.workspace)) do
+        if other.address ~= w.address and other.fullscreen == 1 then
+            hl.dispatch(hl.dsp.window.fullscreen_state({internal=0,client=0,action="set",layout_aware=false,window="address:"..other.address}))
+            hl.dispatch(hl.dsp.window.tag({tag="-quickintosh-maximized",window="address:"..other.address}))
         end
-        return
     end
-    -- Snapshot before changing layout; floating and tiled windows restore differently.
-    zoomedWindows[w.address] = {floating=w.floating,x=w.at.x,y=w.at.y,width=w.size.x,height=w.size.y}
-    local mon = w.monitor
-    local area = mon.reserved
-    local inset = 0
-    if w.fullscreen ~= 0 then hl.dispatch(hl.dsp.window.fullscreen({action="unset",layout_aware=false,window=selector})) end
-    hl.dispatch(hl.dsp.window.float({action="enable",window=selector}))
-    hl.dispatch(hl.dsp.window.resize({x=math.max(80,mon.mode.width-area.left-area.right-2*inset),y=math.max(80,mon.mode.height-area.top-area.bottom-2*inset),window=selector}))
-    hl.dispatch(hl.dsp.window.move({x=mon.x+area.left+inset,y=mon.y+area.top+inset,window=selector}))
-    hl.dispatch(hl.dsp.window.tag({tag="+quickintosh-maximized",window=selector}))
 end
 configurableBind("ALT + F", toggleDecoratedZoom, {description="Toggle maximize"})
 hl.bind(m .. " + T", hl.dsp.exec_cmd("/home/pg/scripts/infinite-desktop-focus-toggle.sh"), { description = "Toggle float / canvas focus mode" })
@@ -785,6 +774,7 @@ hl.on("window.open", function(w)
     applyWindowMode(w, ws)
     applyPersistedOpaque(w.class)
     floatingMemory.open(w)
+    restoreMaximizedForNewTile(w)
     syncWindowStreamVisibility(w, ws, hiddenSpecialWorkspaces())
 end)
 

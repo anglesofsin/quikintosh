@@ -1,6 +1,6 @@
 --- a/src/GlassLayerSurface.cpp
 +++ b/src/GlassLayerSurface.cpp
-@@ -347,7 +347,12 @@
+@@ -347,7 +347,14 @@
                               layerSurface->alpha()[Desktop::View::LS_ALPHA_FADE]->isBeingAnimated() ||
                               WorkspaceAnimation::anyWorkspaceAnimating(monitor);
      const auto& config    = g_pGlobalState->config;
@@ -10,7 +10,9 @@
 +                            // frame can be rendered without a window geometry or
 +                            // scene-generation change. Reuse only between real
 +                            // monitor frames, never across frames being drawn.
-+                            (layerSurface->m_namespace == "quickshell:dock" && liveResampleEnabled());
++                            ((layerSurface->m_namespace == "quickshell:dock" ||
++                              layerSurface->m_namespace == "quickintosh-island-dashboard") &&
++                             liveResampleEnabled());
  
      // A region resize/move is otherwise invisible here (a layer's own commit
      // doesn't mark itself dirty) — without this the mask shape would update

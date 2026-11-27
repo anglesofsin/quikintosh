@@ -66,7 +66,7 @@ def commands(api,values,previous=()):
  commands=['hl.plugin.hyprglass.preset("quickintosh-dock",'+api.lua({'inherits':'pomme','blur_strength':.65,'bevel_strength':.18,'specular_strength':.22,'dark':{'brightness':1.,'contrast':1.,'tint_color':0},'light':{'brightness':1.,'contrast':1.,'tint_color':0}})+')']
  # hyprglass.layer replaces the whole namespace registry at commit time. Always
  # submit the complete Quickintosh baseline and all currently customized areas.
- layers={ns:{'mask_mode':'contour','mask_threshold':.18} for ns in ['quickintosh-quickshot-controls','quickintosh-island-dashboard','quickintosh-sharing-panel','quickintosh-status-popover']}
+ layers={ns:{'mask_mode':'contour','mask_threshold':.18,'live_resample':True} for ns in ['quickintosh-quickshot-controls','quickintosh-island-dashboard','quickintosh-sharing-panel','quickintosh-status-popover']}
  layers['quickshell:dock']={'preset':'quickintosh-dock','mask_mode':'contour','mask_threshold':.015,'live_resample':True}
  for t in TARGETS:
   target=t['id'];p=profiles.get(target);base=t.get('base','pomme');name='quickintosh-ui-'+target
@@ -74,6 +74,7 @@ def commands(api,values,previous=()):
    if target=='windows' and target in previous:commands+=['hl.plugin.hyprglass.config({default_preset="pomme",windows={live_resample=true,background_cache=false}})','hl.window_rule({name="quickintosh-glass-windows-disabled",enabled=false})']
    continue
   definition={'inherits':p.get('preset',base)};definition.update({k:v for k,v in p.items() if k not in ('preset','enabled','live_resample')})
+  if target=='menubar':definition.update(refraction_strength=0,lens_distortion=0,chromatic_aberration=0,fresnel_strength=0,specular_strength=0,bevel_strength=0)
   commands.append('hl.plugin.hyprglass.preset('+api.lua(name)+','+api.lua(definition)+')')
   if target=='windows':
    commands.append('hl.plugin.hyprglass.config('+api.lua({'default_preset':name,'windows':{'live_resample':p.get('live_resample',True)}})+')')

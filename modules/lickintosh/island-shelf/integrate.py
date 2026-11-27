@@ -13,7 +13,7 @@ p=base/'services/IslandConfig.qml';s=p.read_text();spec={
  'floatingPlayerSize':dict(type='pick',def_='player',values=['mini','player','expanded']),
  'surfaceMode':dict(type='pick',def_='island',values=['island','notch']),
  'externalSurfaceMode':dict(type='pick',def_='island',values=['island','notch']),
- 'shelfMaterial':dict(type='pick',def_='black',values=['black','glass','dynamic']),
+ 'shelfMaterial':dict(type='pick',def_='dynamic',values=['black','glass','dynamic']),
  'shelfWidgetCards':dict(type='bool',def_=True),
  'shelfExpandedTabs':dict(type='bool',def_=False),
  'shelfAnimationMs':dict(type='int',def_=220,min=0,max=600),

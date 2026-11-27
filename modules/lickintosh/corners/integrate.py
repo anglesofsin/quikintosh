@@ -56,7 +56,7 @@ p=root/'ui/settings/pages/TopBarPage.qml';s=p.read_text();a=s.index('    Content
 s=s[:z]+"""
         ConfigSwitch{text:"Blur background";checked:ShellConfig.options.topbar.blurEnabled;onToggled:value=>{ShellConfig.options.topbar.blurEnabled=value;SettingsPreferences.input('native-glass:menubar:enabled',value);if(value && SettingsPreferences.inputOverrides['native-glass:menubar:preset']===undefined)SettingsPreferences.input('native-glass:menubar:preset','subtle')}}
         ConfigSlider{visible:ShellConfig.options.topbar.blurEnabled;text:"Blur strength";from:0;to:8;decimals:2;value:SettingsPreferences.inputOverrides['native-glass:menubar:blur_strength'] ?? 1;onMoved:value=>SettingsPreferences.input('native-glass:menubar:blur_strength',value)}
-        ConfigSwitch{visible:ShellConfig.options.topbar.blurEnabled;text:"Liquid Glass refraction";checked:(SettingsPreferences.inputOverrides['native-glass:menubar:refraction_strength'] ?? 0)>0;onToggled:value=>SettingsPreferences.input('native-glass:menubar:refraction_strength',value ? 2:0)}
+
 """+s[z:]
 s=s.replace('text:"Round background corners"','text:"Round outside corners"').replace('visible:ShellConfig.options.topbar.backgroundEnabled && ShellConfig.options.edges.roundMenuBackground','visible:(ShellConfig.options.topbar.backgroundEnabled || ShellConfig.options.topbar.blurEnabled) && ShellConfig.options.edges.roundMenuBackground').replace('visible:ShellConfig.options.topbar.backgroundEnabled;text:"Round outside corners"','visible:ShellConfig.options.topbar.backgroundEnabled || ShellConfig.options.topbar.blurEnabled;text:"Round outside corners"').replace('text:"Opacity";from:0.1','text:"Color opacity";from:0')
 p.write_text(s)

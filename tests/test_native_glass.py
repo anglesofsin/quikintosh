@@ -23,6 +23,11 @@ class GlassTests(unittest.TestCase):
   self.assertNotIn('quickintosh-ui-menus',cmd)
  def test_color_preserves_full_rgba(self):
   self.assertEqual(glass.validate({'native-glass:dock:tint_color':0xffffff80})['dock']['tint_color'],0xffffff80)
+ def test_menubar_is_blur_only_and_island_live(self):
+  cmd=glass.commands(Api,{'native-glass:menubar:enabled':True,'native-glass:menubar:refraction_strength':2})
+  self.assertIn('"refraction_strength"]=0',cmd)
+  self.assertIn('"lens_distortion"]=0',cmd)
+  self.assertIn('"live_resample"]=true',cmd)
  def test_profiles_are_committed_by_real_reload_only_when_changed(self):
   with tempfile.TemporaryDirectory() as tmp:
    calls=[]

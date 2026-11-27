@@ -9,7 +9,7 @@ def command(radius, enabled):
     if not isinstance(enabled, bool):
         raise ValueError('Invalid corner policy')
     rule = "hl.window_rule({name='quickintosh-menubar-corners',enabled=" + ('true' if enabled else 'false') + ",match={tag='quickintosh-maximized'},rounding=" + str(radius) + "})"
-    tag = "for _,w in ipairs(hl.get_windows()) do local m=w.monitor; if m and w.fullscreen==0 then local a=m.reserved; if math.abs(w.at.x-(m.x+a.left))<1 and math.abs(w.at.y-(m.y+a.top))<1 and math.abs(w.size.x-(m.mode.width-a.left-a.right))<1 and math.abs(w.size.y-(m.mode.height-a.top-a.bottom))<1 then local tagged=false;for _,t in ipairs(w.tags or {}) do if t=='quickintosh-maximized' then tagged=true end end;if not tagged then hl.dispatch(hl.dsp.window.tag({tag='+quickintosh-maximized',window='address:'..w.address})) end end end end"
+    tag = "for _,w in ipairs(hl.get_windows()) do local m=w.monitor; if m and w.fullscreen<=1 then local a=m.reserved; if math.abs(w.at.x-(m.x+a.left))<1 and math.abs(w.at.y-(m.y+a.top))<1 and math.abs(w.size.x-(m.mode.width-a.left-a.right))<1 and math.abs(w.size.y-(m.mode.height-a.top-a.bottom))<1 then local tagged=false;for _,t in ipairs(w.tags or {}) do if t=='quickintosh-maximized' then tagged=true end end;if not tagged then hl.dispatch(hl.dsp.window.tag({tag='+quickintosh-maximized',window='address:'..w.address})) end end end end"
     return rule + ';' + tag
 
 def main():

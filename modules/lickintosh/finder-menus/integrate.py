@@ -50,7 +50,7 @@ s=s.replace('    readonly property bool desktopMode:DesktopFiles.desktopFocused 
 s=s.replace('        function onRawEvent(event) {','''        function onRawEvent(event) {
             if(event.name==='workspacev2'){root.workspaceHint=parseInt(String(event.data).split(',')[0]) || 0;GlassTracker.refreshMonitorSnapshot()}
             else if(event.name==='focusedmon'){root.workspaceHint=0;GlassTracker.refreshMonitorSnapshot()}
-            else if(event.name==='activespecial' || event.name==='activespecialv2')GlassTracker.refreshMonitorSnapshot()''',1)
+            else if(event.name==='activespecial' || event.name==='activespecialv2'){root.workspaceHint=0;GlassTracker.refreshMonitorSnapshot();Hyprland.refreshToplevels()}''',1)
 s=s.replace('    Component.onCompleted: Hyprland.refreshToplevels()','''    Component.onCompleted:{GlassTracker.inventoryUsers++;GlassTracker.refreshMonitorSnapshot();Hyprland.refreshToplevels()}
     Component.onDestruction:GlassTracker.inventoryUsers=Math.max(0,GlassTracker.inventoryUsers-1)''',1);p.write_text(s)
 p=r/'ui/desktop/DesktopLayer.qml';s=p.read_text().replace('            id: stage','            id: stage\n            Connections{target:DesktopFiles;function onDesktopFocusedChanged(){if(DesktopFiles.desktopFocused)stage.forceActiveFocus()}}',1);p.write_text(s)

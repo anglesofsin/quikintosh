@@ -35,7 +35,7 @@ ColumnLayout {
  }
  Text{text:qsTr('Shelf material');color:root.ink;font.family:'SF Pro Text';font.pixelSize:14;font.weight:Font.DemiBold}
  RowLayout{Layout.fillWidth:true;spacing:8
-  Repeater{model:[{key:'black',title:qsTr('Black'),icon:'notch/moon.svg'},{key:'glass',title:qsTr('Liquid Glass'),icon:'notch/droplet.svg'},{key:'dynamic',title:qsTr('Gradient'),icon:'notch/layers.svg'}]
+  Repeater{model:[{key:'black',title:qsTr('Black'),icon:'notch/moon.svg'},{key:'glass',title:qsTr('Liquid Glass'),icon:'notch/droplet.svg'},{key:'dynamic',title:qsTr('Fade'),icon:'notch/layers.svg'}]
    delegate:ShelfButton{required property var modelData;Layout.fillWidth:true;text:modelData.title;icon:modelData.icon;selected:IslandConfig.s('shelfMaterial')===modelData.key;onClicked:IslandConfig.setStyle('shelfMaterial',modelData.key)}
   }
  }

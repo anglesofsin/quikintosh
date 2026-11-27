@@ -177,3 +177,4 @@ Item {
 ''')
 
 runpy.run_path(str(source / 'interaction.py'))['integrate'](root)
+runpy.run_path(str(source / 'motion.py'))['integrate'](root)

@@ -14,7 +14,7 @@ class IslandMorphUI(unittest.TestCase):
     p=root/relative;original=p.resolve();p.unlink();p.mkdir()
     for e in original.iterdir():(p/e.name).symlink_to(e,target_is_directory=e.is_dir())
    p=root/'rosa/overlays/Island.qml';s=p.read_text();p.unlink();s=s.replace('    id: root','    id: root\n    property var qaWindow:null',1).replace('        IslandWindow {','        IslandWindow {\n            Component.onCompleted:root.qaWindow=this',1);p.write_text(s)
-   p=root/'rosa/overlays/IslandWindow.qml';s=p.read_text();p.unlink();s=s.replace('    id: win','    id: win\n    readonly property var qaGeometry:({cover:dashboardCover,requested:dashboardRequested,compactOpacity:stage.opacity,morph:morph.value,visible:visible})',1);p.write_text(s)
+   p=root/'rosa/overlays/IslandWindow.qml';s=p.read_text();p.unlink();s=s.replace('    id: win','    id: win\n    readonly property var qaGeometry:({cover:dashboardCover,requested:dashboardRequested,compactOpacity:stage.opacity,morph:morph.value,visible:visible,opened:opened})',1);p.write_text(s)
    (root/'shell.qml').write_text('''import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -22,7 +22,7 @@ import qs.rosa.overlays
 import qs.rosa.services
 ShellRoot{
  Island{id:hub;demoKind:'clock'}
- IpcHandler{target:'morphQA';function state():string{return JSON.stringify(hub.qaWindow?.qaGeometry || {})}function expandIsland(on:bool):void{hub.qaWindow.dashboardRequested=on}function dashboardEnabled(on:bool):void{IslandConfig.setStyle("dashboardEnabled",on)}}
+ IpcHandler{target:'morphQA';function state():string{return JSON.stringify(hub.qaWindow?.qaGeometry || {})}function expandIsland(on:bool):void{hub.qaWindow.dashboardRequested=on}function activity(kind:string,on:bool):void{hub.demoKind=kind;hub.demoWide=on;hub.qaWindow.forced=on}function dashboardEnabled(on:bool):void{IslandConfig.setStyle("dashboardEnabled",on)}}
 }''')
    env=dict(os.environ,HOME=tmp,XDG_CONFIG_HOME=tmp+'/.config',XDG_CACHE_HOME=tmp+'/.cache',XDG_STATE_HOME=tmp+'/.state',XDG_RUNTIME_DIR=str(runtime),WAYLAND_DISPLAY=os.environ[REQUIRED[3]],HYPRLAND_INSTANCE_SIGNATURE=os.environ[REQUIRED[4]],DBUS_SESSION_BUS_ADDRESS='unix:path=/nonexistent');env.pop('DISPLAY',None)
    qs=os.environ[REQUIRED[1]]
@@ -47,6 +47,15 @@ ShellRoot{
      ipc('expandIsland','true');wait(lambda s:s.get('cover') and s.get('compactOpacity')==0)
      time.sleep(.08)
      ipc('expandIsland','false');wait(lambda s:not s.get('cover') and s.get('compactOpacity',0)>.95)
+    # Reverse an unfinished morph repeatedly; the last request owns the surface.
+    for _ in range(12):
+     ipc('expandIsland','true');time.sleep(.03);ipc('expandIsland','false');time.sleep(.03)
+    wait(lambda s:not s.get('cover') and s.get('compactOpacity',0)>.95)
+    for kind in ['media','voice','timer']:
+     ipc('activity',kind,'true');wait(lambda s:s.get('opened') and s.get('morph',0)>.9)
+     ipc('expandIsland','true');wait(lambda s:s.get('cover') and s.get('compactOpacity')==0)
+     ipc('activity',kind,'false');ipc('expandIsland','false')
+     wait(lambda s:not s.get('cover') and s.get('compactOpacity',0)>.95)
     ipc('dashboardEnabled','false');ipc('expandIsland','true')
     wait(lambda s:not s.get('cover') and not s.get('requested') and s.get('compactOpacity',0)>.95)
     ipc('dashboardEnabled','true')

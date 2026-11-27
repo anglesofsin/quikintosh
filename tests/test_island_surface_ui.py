@@ -62,7 +62,7 @@ class IslandSurfaceUI(unittest.TestCase):
    mediaLog=(out/'mpris.log').open('w')
    media=subprocess.Popen([os.environ.get('QUICKINTOSH_TEST_PYTHON',sys.executable),str(Path(__file__).parent/'fixtures/mpris_player.py'),str(out/'mpris-actions.jsonl')],env=env,stdout=mediaLog,stderr=mediaLog)
 
-   def ctl(*args):return subprocess.check_output(['hyprctl',*args],env=env,text=True,timeout=5)
+   def ctl(*args):return subprocess.check_output(['hyprctl',*args],env=env,text=True,timeout=30)
    ctl('dismissnotify','-1')
    ctl('plugin','load',os.environ['QUICKINTOSH_TEST_GLASS_PLUGIN'])
    config=Path(os.environ['QUICKINTOSH_TEST_CONFIG']);config.write_text(config.read_text()+"\nif hl.plugin.hyprglass then hl.plugin.hyprglass.config({enabled=true,layers={enabled=true,force_live_resample=false}});hl.plugin.hyprglass.preset('quickintosh-island',{inherits='pomme',blur_strength=0.65,bevel_strength=0.18,specular_strength=0.22,dark={brightness=1,contrast=1,tint_color=0},light={brightness=1,contrast=1,tint_color=0}});hl.plugin.hyprglass.layer('quickintosh-island-dashboard',{preset='quickintosh-island',mask_mode='contour',mask_threshold=0.004,live_resample=true}) end\n")

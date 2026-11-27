@@ -23,6 +23,7 @@ Item {
   {key:'settings',title:qsTr('Settings'),icon:'settings',command:['quickintosh','ipc','call','rice','settings']}]
  readonly property var visibleWidgets:ShelfState.orderWidgets(widgets.concat(launchers)).filter(w=>(!favoritesOnly || ShelfState.editing || favoriteKeys.includes(w.key)) && (!search || w.title.toLocaleLowerCase().includes(search.toLocaleLowerCase())))
  readonly property var widgets:[
+  {key:"translate",title:qsTr("Quick Translate"),icon:"type",widget:"translate"},
   {key:'jobs',title:qsTr('Tasks & Agents'),icon:'cpu',page:13},
   {key:'queue',title:qsTr('Playing Next'),icon:'list',page:13},
   {key:'selection',title:qsTr('Selection Actions'),icon:'copy',page:13},

@@ -335,7 +335,8 @@
       "id": "quick-translate",
       "name": "Quick Translate",
       "url": "https://getdroppy.app/features/quick-translate",
-      "status": "pending"
+      "status": "partial",
+      "scope": "Explicit online Translate Shell/Google provider; widget, language picker, selection entry and copy. Local inference, direct replacement and dedicated shortcut remain pending."
     },
     {
       "id": "ring",

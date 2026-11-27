@@ -28,13 +28,16 @@ Item{
     Repeater{model:root.shown
      ColumnLayout{required property var modelData;Layout.preferredWidth:112;spacing:8;opacity:modelData.connected===false ? .4:1
       Item{id:ringVisual;Layout.alignment:Qt.AlignHCenter;width:96;height:96
+       readonly property real chargeAngle:360*modelData.percent/100
+       readonly property bool charging:!!modelData.charging
        readonly property color level:modelData.percent<=15 ? '#ff453a':modelData.percent<=30 ? '#ff9f0a':'#30d158'
        Shape{anchors.fill:parent;preferredRendererType:Shape.CurveRenderer
-        ShapePath{fillColor:'transparent';strokeColor:'#29292b';strokeWidth:9;capStyle:ShapePath.RoundCap;PathAngleArc{centerX:48;centerY:48;radiusX:42;radiusY:42;startAngle:-90;sweepAngle:360}}
-        ShapePath{fillColor:'transparent';strokeColor:modelData.percent>0 ? ringVisual.level:"transparent";strokeWidth:9;capStyle:ShapePath.RoundCap;PathAngleArc{centerX:48;centerY:48;radiusX:42;radiusY:42;startAngle:-90;sweepAngle:Math.max(.01,360*modelData.percent/100)}}
+        ShapePath{fillColor:'transparent';strokeColor:'#29292b';strokeWidth:9;capStyle:ShapePath.RoundCap;PathAngleArc{centerX:48;centerY:48;radiusX:42;radiusY:42;startAngle:ringVisual.charging ? 67:-90;sweepAngle:ringVisual.charging ? 316:360}}
+        ShapePath{fillColor:'transparent';strokeColor:modelData.percent>0 ? ringVisual.level:"transparent";strokeWidth:9;capStyle:ShapePath.RoundCap;PathAngleArc{centerX:48;centerY:48;radiusX:42;radiusY:42;startAngle:-90;sweepAngle:Math.max(.01,ringVisual.charging ? Math.min(113,ringVisual.chargeAngle):ringVisual.chargeAngle)}}
+        ShapePath{fillColor:'transparent';strokeColor:ringVisual.charging && ringVisual.chargeAngle>157 ? ringVisual.level:'transparent';strokeWidth:9;capStyle:ShapePath.RoundCap;PathAngleArc{centerX:48;centerY:48;radiusX:42;radiusY:42;startAngle:67;sweepAngle:Math.max(.01,ringVisual.chargeAngle-157)}}
        }
        ShelfIcon{anchors.centerIn:parent;size:38;icon:modelData.kind==='laptop' ? 'laptop.png':modelData.kind==='phone' ? 'notch/smartphone.svg':modelData.kind==='headphones' ? 'notch/headphones.svg':'notch/battery.svg'}
-       ShelfIcon{visible:modelData.charging;anchors.right:parent.right;anchors.bottom:parent.bottom;icon:'notch/zap.svg';size:22;color:'#ffd60a'}
+       ShelfIcon{visible:ringVisual.charging;x:48+42*Math.SQRT1_2-width/2;y:48+42*Math.SQRT1_2-height/2;icon:'notch/zap.svg';size:20;color:'#ffd60a'}
       }
       Text{Layout.fillWidth:true;text:modelData.percent+'%';horizontalAlignment:Text.AlignHCenter;font.family:ShelfStyle.displayFamily;font.pixelSize:22;font.weight:Font.DemiBold;color:ShelfStyle.primary}
       Text{Layout.fillWidth:true;text:modelData.name;textFormat:Text.PlainText;elide:Text.ElideRight;horizontalAlignment:Text.AlignHCenter;font.family:ShelfStyle.textFamily;font.pixelSize:13;color:ShelfStyle.secondary}

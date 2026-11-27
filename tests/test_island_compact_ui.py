@@ -19,7 +19,7 @@ class CompactIslandUI(unittest.TestCase):
    p=root/'rosa/overlays/IslandWindow.qml';s=p.read_text();p.unlink();s=s.replace('    id: win','''    id: win
     property bool qaRight:false
     property bool qaLeft:false
-    readonly property var qaGeometry:({crab:pill.crabOn,tint:String(pill.tint),windowWidth:win.width,stageX:stage.x,droppy:win.droppyCompact,visible:visible,pillWidth:surface.width,pillHeight:stage.pillH,privacyX:privacy.x,edge:privacy.visualRight.x,gap:privacy.x-privacy.visualRight.x,right:dot.visible,rightProgress:dotLife.value,leftProgress:slotLife.value,wide:wide,stageWidth:stage.width})''',1)
+    readonly property var qaGeometry:({crab:pill.crabOn,tint:String(pill.newEvent ? pill.eventTint:pill.tint),windowWidth:win.width,stageX:stage.x,droppy:win.droppyCompact,visible:visible,pillWidth:surface.width,pillHeight:stage.pillH,privacyX:privacy.x,edge:privacy.visualRight.x,gap:privacy.x-privacy.visualRight.x,right:dot.visible,rightProgress:dotLife.value,leftProgress:slotLife.value,wide:wide,stageWidth:stage.width})''',1)
    s=s.replace('    readonly property bool wide:\n', '    readonly property bool wide:\n        false && ',1)
    a=s.index('        readonly property bool minimalOn:');b=s.index('        readonly property real swallowed:',a)
    s=s[:a]+'''        readonly property bool minimalOn:win.qaRight

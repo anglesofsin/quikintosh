@@ -31,6 +31,11 @@ class ShelfTest(unittest.TestCase):
  def test_symlinks_not_archived(self):
   link=self.home/'link';link.symlink_to(self.a);self.s.add([str(link)])
   with self.assertRaises(ValueError):self.s.archive([str(link)])
+ def test_activity_kinds_are_bounded(self):
+  result=self.s.handle({'action':'activity','activity':{'id':'transfer','kind':'share','title':'KDE Connect','progress':.8}})
+  self.assertEqual(result['items'][0]['kind'],'share');self.assertEqual(result['items'][0]['progress'],.8)
+  result=self.s.handle({'action':'activity','activity':{'id':'transfer','kind':'unknown','title':'Build'}})
+  self.assertEqual(result['items'][0]['kind'],'task')
  def test_activity_bounds_and_remove(self):
   result=self.s.handle({'action':'activity','activity':{'id':'build','title':'Compiling','progress':2,'ttl':99999}})
   self.assertEqual(result['items'][0]['progress'],1)

@@ -1,0 +1,13 @@
+{
+  "vpn": {
+    "method": "image_gen",
+    "source": "exec-5821fa36-4550-4519-bc3f-f14a46724137.png",
+    "reference": "Droppy globe/shield activity icon; earlier attempts rejected for glow/noise"
+  },
+  "battery-status": {
+    "method": "image_gen",
+    "source": "exec-fc64fa9f-6917-47b4-b2fb-4eeb54f46fd0.png",
+    "reference": "Filled green horizontal battery activity icon"
+  },
+  "processing": "Original generated PNG pixels preserved. Optical alpha bounds only; no procedural artwork."
+}

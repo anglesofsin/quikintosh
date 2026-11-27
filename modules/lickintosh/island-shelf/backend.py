@@ -206,7 +206,9 @@ class Shelf(FileOperations,AppOperations,VaultOperations,MediaQueue):
                     progress=float(progress)
                     if not math.isfinite(progress):raise ValueError('Activity progress must be finite')
                     progress=max(0,min(1,progress))
-                self.activities[key]=dict(id=key,title=title,subtitle=str(item.get('subtitle',''))[:240],progress=progress,expires=time.time()+ttl)
+                kind=item.get('kind','task')
+                if kind not in ('task','download','share','cloud','launch'):kind='task'
+                self.activities[key]=dict(id=key,kind=kind,title=title,subtitle=str(item.get('subtitle',''))[:240],progress=progress,expires=time.time()+ttl)
                 if len(self.activities)>32:self.activities.pop(next(iter(self.activities)))
             self.activities={k:v for k,v in self.activities.items() if v['expires']>time.time()}
             return dict(type='activities',items=list(self.activities.values()))

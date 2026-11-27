@@ -30,7 +30,7 @@ ShellRoot{
   ActivitySurface{id:expanded;x:620;y:55;activity:win.fixture;presentation:'expanded';width:320;height:implicitHeight;onAction:(name,value)=>{win.actions++;if(name==='reply')win.lastReply=value}}
   ActivitySurface{id:left;x:360;y:70;activity:win.fixture;presentation:'satellite';width:26;height:26}
   ActivitySurface{id:right;x:980;y:70;activity:win.fixture;presentation:'satellite';width:26;height:26}
-  IpcHandler{target:'eventsQA';function fixture(value:string):void{win.fixture=JSON.parse(value)}function state():string{return JSON.stringify({width:compact.width,height:compact.height,actions:win.actions,lastReply:win.lastReply})}function vpnReview(on:bool):void{Vpn.up=on}function vpnState():string{return JSON.stringify({value:Vpn.up ? Vpn.activityElapsed:'Off'})}function reply():void{const open=win.named(expanded,'activity-reply-open');pointer.mouseClick(open,open.width/2,open.height/2,Qt.LeftButton);win.named(expanded,'activity-reply-input').text='Count me in!';const send=win.named(expanded,'activity-reply-send');pointer.mouseClick(send,send.width/2,send.height/2,Qt.LeftButton)}function click():void{pointer.mouseClick(compact,compact.width/2,compact.height/2,Qt.LeftButton)}}
+  IpcHandler{target:'eventsQA';function fixture(value:string):void{win.fixture=JSON.parse(value)}function state():string{return JSON.stringify({width:compact.width,height:compact.height,actions:win.actions,lastReply:win.lastReply,compactLabel:compact.compactLabel,meterY:win.named(compact,'activity-meter').mapToItem(compact,0,2).y,iconY:win.named(compact,'activity-meter-icon').mapToItem(compact,0,8).y,valueY:win.named(compact,'activity-value').mapToItem(compact,0,win.named(compact,'activity-value').height/2).y,recordDotX:win.named(expanded,'activity-record-dot').mapToItem(expanded,0,0).x,subtitleX:win.named(expanded,'activity-subtitle').mapToItem(expanded,0,0).x})}function vpnReview(on:bool):void{Vpn.up=on}function vpnState():string{return JSON.stringify({value:Vpn.up ? Vpn.activityElapsed:'Off'})}function reply():void{const open=win.named(expanded,'activity-reply-open');pointer.mouseClick(open,open.width/2,open.height/2,Qt.LeftButton);win.named(expanded,'activity-reply-input').text='Count me in!';const send=win.named(expanded,'activity-reply-send');pointer.mouseClick(send,send.width/2,send.height/2,Qt.LeftButton)}function click():void{pointer.mouseClick(compact,compact.width/2,compact.height/2,Qt.LeftButton)}}
  }
 }''')
    env=dict(os.environ,HOME=tmp,XDG_CONFIG_HOME=tmp+'/.config',XDG_CACHE_HOME=tmp+'/.cache',XDG_STATE_HOME=tmp+'/.state',XDG_RUNTIME_DIR=str(runtime),WAYLAND_DISPLAY=os.environ[REQUIRED[3]],HYPRLAND_INSTANCE_SIGNATURE=os.environ[REQUIRED[4]],DBUS_SESSION_BUS_ADDRESS='unix:path=/nonexistent');env.pop('DISPLAY',None)
@@ -76,8 +76,11 @@ ShellRoot{
     fixtures += [dict(kind='notif',title='Alex Morgan',label='Alex Morgan',subtitle='Look at this sunset! Dinner at seven?',initials='AM',image='file:///tmp/qi-review-notification.png'),dict(kind='share',title='Transfer',label='Transfer',value='80%',icon='link',color='#30d158'),dict(kind='cloud',title='Completed',label='Completed',icon='cloud',color='#a78bfa')]
     for index,item in enumerate(fixtures):
      ipc('fixture',json.dumps(item));time.sleep(.15)
-     state=json.loads(ipc('state'));self.assertEqual(state['height'],26);self.assertGreaterEqual(state['width'],118);self.assertLessEqual(state['width'],180)
-     if item['kind'] not in ['power','low']:self.assertEqual(state['width'],118)
+     state=json.loads(ipc('state'));self.assertEqual(state['height'],26);self.assertGreaterEqual(state['width'],118);self.assertLessEqual(state['width'],700)
+     if item.get('meter'):
+      self.assertEqual(state['width'],118);self.assertAlmostEqual(state['meterY'],state['iconY'],delta=.5);self.assertAlmostEqual(state['meterY'],state['valueY'],delta=.5)
+     if item['kind']=='record':self.assertAlmostEqual(state['recordDotX'],state['subtitleX'],delta=.5)
+     if item.get('label')==item.get('value'):self.assertEqual(state['compactLabel'],'')
      subprocess.run(['grim','-l','1',str(out/(f'{index:02}-{item["kind"]}.png'))],env=env,check=True,timeout=15)
     ipc('vpnReview','true');time.sleep(1.15);self.assertRegex(json.loads(ipc('vpnState'))['value'],r'^0:0[1-9]$');ipc('vpnReview','false');self.assertEqual(json.loads(ipc('vpnState'))['value'],'Off')
     ipc('click');self.assertEqual(json.loads(ipc('state'))['actions'],1)

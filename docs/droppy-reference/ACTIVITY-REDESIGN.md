@@ -86,3 +86,12 @@ native surface and assembled expansion suites passed again. The gallery contains
 left/right fixtures deliberately show the satellite representation. Old/source
 comparisons are included only where captured, and Droppy columns only where a real
 supplied reference exists. Native captures are not AI mockups.
+
+Follow-up alignment correction: expanded recording puts its dot and timestamp in
+one header row, with the recording label beginning under the dot. Meter tracks
+are siblings of their icon and value in the same vertically centered row, rather
+than occupying a lower row inside the text column. Compact labels can expand the
+pill width to their measured contents; equal label/value strings render only once.
+Native tests assert meter/icon/value centerlines, recording subtitle/dot alignment,
+and duplicate-percentage normalization. The 31 native scenarios and ten assembled
+expansions were rendered again after these changes.

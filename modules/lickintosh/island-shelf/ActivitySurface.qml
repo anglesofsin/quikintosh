@@ -16,9 +16,10 @@ Item {
  readonly property bool richNotification:expanded && notification && !!activity.image
  readonly property bool notification:activity.kind==='notif'
  readonly property int compactHeight:26
- TextMetrics{id:labelMeasure;font.family:ShelfStyle.textFamily;font.pixelSize:11;font.weight:Font.DemiBold;text:root.activity.label || root.activity.title || ''}
+ readonly property string compactLabel:(activity.label || activity.title || '')===(activity.value || '') ? '':activity.label || activity.title || ''
+ TextMetrics{id:labelMeasure;font.family:ShelfStyle.textFamily;font.pixelSize:['power','low'].includes(root.activity.kind) ? 11:12;font.weight:Font.DemiBold;text:root.compactLabel}
  TextMetrics{id:valueMeasure;font.family:ShelfStyle.textFamily;font.pixelSize:12;font.weight:Font.Medium;text:root.activity.value || ''}
- readonly property real preferredCompactWidth:['power','low'].includes(activity.kind) ? Math.max(118,Math.ceil(labelMeasure.width+valueMeasure.width+16+20+18)):118
+ readonly property real preferredCompactWidth:meter ? 118:Math.max(118,Math.ceil(labelMeasure.width+valueMeasure.width+20+(['power','low'].includes(activity.kind) ? 16:16)+(compactLabel ? 12:6)+(activity.value ? 6:0)))
  implicitWidth:satellite ? 28:expanded ? 320:preferredCompactWidth
  implicitHeight:expanded ? notification ? 64+(richNotification ? 128:0)+(replying ? 42:0):64:compactHeight
  signal activate()
@@ -34,7 +35,7 @@ Item {
  RowLayout{
   anchors.fill:parent;anchors.leftMargin:root.satellite ? 5:root.expanded ? 16:10;anchors.rightMargin:root.satellite ? 5:root.expanded ? 16:10;anchors.topMargin:root.richNotification ? 16:0;anchors.bottomMargin:root.replying ? 42:0;spacing:root.expanded ? 12:6
   Item{
-   visible:!root.meter && !['power','low'].includes(root.activity.kind)
+   visible:!root.meter && !['power','low'].includes(root.activity.kind) && !(root.expanded && root.activity.kind==='record')
    Layout.alignment:root.richNotification ? Qt.AlignTop:Qt.AlignVCenter;Layout.preferredWidth:root.expanded && root.notification ? 40:root.expanded ? root.activity.kind==='vpn' ? 32:28:16;Layout.preferredHeight:width
    Rectangle{visible:root.notification;anchors.fill:parent;radius:width/2;color:'#77777b'}
    Text{visible:root.notification;anchors.centerIn:parent;text:root.activity.initials || '';color:'white';font.family:ShelfStyle.textFamily;font.pixelSize:root.expanded ? 17:8}
@@ -42,21 +43,23 @@ Item {
    ShelfIcon{visible:!root.notification && root.activity.kind!=='record';anchors.centerIn:parent;size:root.expanded ? root.activity.kind==='vpn' ? 32:28:16;icon:'notch/'+(root.activity.icon || 'bell')+'.svg';color:root.activity.kind==='vpn' ? 'white':root.accent}
    Rectangle{visible:root.activity.kind==='record';anchors.centerIn:parent;width:root.expanded ? 12:6;height:width;radius:width/2;color:'#ff453a';anchors.verticalCenterOffset:root.expanded ? -9:0}
   }
-  ShelfIcon{visible:root.meter;Layout.preferredWidth:16;Layout.preferredHeight:16;icon:'notch/'+(root.activity.icon || 'volume-2')+'.svg';color:root.accent;Layout.alignment:Qt.AlignLeft}
+  ShelfIcon{objectName:'activity-meter-icon';visible:root.meter;Layout.preferredWidth:16;Layout.preferredHeight:16;icon:'notch/'+(root.activity.icon || 'volume-2')+'.svg';color:root.accent;Layout.alignment:Qt.AlignVCenter}
   ColumnLayout{
    Layout.alignment:root.richNotification ? Qt.AlignTop:Qt.AlignVCenter
-   visible:!root.satellite;Layout.fillWidth:true;spacing:root.expanded ? 3:0
+   visible:!root.satellite && !root.meter;Layout.fillWidth:true;spacing:root.expanded ? 3:0
    RowLayout{Layout.fillWidth:true;spacing:6
-    Text{visible:!root.meter && !(root.activity.kind==='timer' && !root.expanded);Layout.fillWidth:!(root.expanded && ['power','low'].includes(root.activity.kind));text:root.expanded ? root.activity.title || '':root.activity.label || root.activity.title || '';textFormat:Text.PlainText;elide:Text.ElideRight;color:root.activity.kind==='record' ? root.accent:'white';font.family:ShelfStyle.textFamily;font.pixelSize:root.expanded ? root.notification ? 14:['vpn','net','bt'].includes(root.activity.kind) ? 11:12:['power','low'].includes(root.activity.kind) ? 11:12;font.weight:root.expanded && ['vpn','net','bt'].includes(root.activity.kind) ? Font.Normal:Font.DemiBold;font.features:({tnum:1})}
+    Rectangle{objectName:'activity-record-dot';visible:root.expanded && root.activity.kind==='record';Layout.preferredWidth:12;Layout.preferredHeight:12;radius:6;color:'#ff453a';Layout.alignment:Qt.AlignVCenter}
+    Text{visible:!root.meter && (root.expanded || root.compactLabel!=='') && !(root.activity.kind==='timer' && !root.expanded);Layout.fillWidth:!(root.expanded && ['power','low'].includes(root.activity.kind));text:root.expanded ? root.activity.title || '':root.compactLabel;textFormat:Text.PlainText;elide:Text.ElideRight;color:root.activity.kind==='record' ? root.accent:'white';font.family:ShelfStyle.textFamily;font.pixelSize:root.expanded ? root.notification ? 14:['vpn','net','bt'].includes(root.activity.kind) ? 11:12:['power','low'].includes(root.activity.kind) ? 11:12;font.weight:root.expanded && ['vpn','net','bt'].includes(root.activity.kind) ? Font.Normal:Font.DemiBold;font.features:({tnum:1})}
     Text{visible:root.expanded && ['power','low'].includes(root.activity.kind);Layout.fillWidth:true;text:root.activity.value || '';color:root.accent;font.family:ShelfStyle.textFamily;font.pixelSize:12;font.weight:Font.DemiBold}
     Text{visible:root.expanded && root.notification;text:root.activity.time || qsTr('now');color:ShelfStyle.secondary;font.family:ShelfStyle.textFamily;font.pixelSize:11}
    }
    Image{visible:root.richNotification;Layout.fillWidth:true;Layout.preferredHeight:128;source:visible ? root.activity.image || '':'';sourceSize:Qt.size(320,256);fillMode:Image.PreserveAspectFit;asynchronous:true}
-   Text{visible:root.expanded && !!root.activity.subtitle;Layout.fillWidth:true;text:root.activity.subtitle || '';textFormat:Text.PlainText;wrapMode:Text.Wrap;maximumLineCount:2;elide:Text.ElideRight;color:root.notification || ['record','vpn','net','bt'].includes(root.activity.kind) ? 'white':ShelfStyle.secondary;font.family:ShelfStyle.textFamily;font.pixelSize:root.notification ? 12:['record','vpn','net','bt'].includes(root.activity.kind) ? 12:10;font.weight:['record','vpn','net','bt'].includes(root.activity.kind) ? Font.DemiBold:Font.Normal}
-   Rectangle{visible:root.meter;Layout.fillWidth:true;implicitHeight:4;radius:2;color:'#323234';Rectangle{width:parent.width*Math.max(0,Math.min(1,root.activity.fraction || 0));height:4;radius:2;color:root.accent}}
+   Text{objectName:'activity-subtitle';visible:root.expanded && !!root.activity.subtitle;Layout.fillWidth:true;text:root.activity.subtitle || '';textFormat:Text.PlainText;wrapMode:Text.Wrap;maximumLineCount:2;elide:Text.ElideRight;color:root.notification || ['record','vpn','net','bt'].includes(root.activity.kind) ? 'white':ShelfStyle.secondary;font.family:ShelfStyle.textFamily;font.pixelSize:root.notification ? 12:['record','vpn','net','bt'].includes(root.activity.kind) ? 12:10;font.weight:['record','vpn','net','bt'].includes(root.activity.kind) ? Font.DemiBold:Font.Normal}
+
   }
 
-  Text{visible:!root.satellite && !!root.activity.value && !(root.expanded && ['power','low'].includes(root.activity.kind));text:root.activity.value || '';textFormat:Text.PlainText;color:root.accent;font.family:root.expanded ? ShelfStyle.displayFamily:ShelfStyle.textFamily;font.pixelSize:root.expanded && !root.notification ? 25:12;font.weight:Font.Medium;font.features:({tnum:1})}
+  Rectangle{objectName:'activity-meter';visible:root.meter && !root.satellite;Layout.fillWidth:true;Layout.preferredHeight:4;Layout.alignment:Qt.AlignVCenter;radius:2;color:'#323234';Rectangle{width:parent.width*Math.max(0,Math.min(1,root.activity.fraction || 0));height:4;radius:2;color:root.accent}}
+  Text{objectName:'activity-value';visible:!root.satellite && !!root.activity.value && !(root.expanded && ['power','low'].includes(root.activity.kind));text:root.activity.value || '';textFormat:Text.PlainText;color:root.accent;font.family:root.expanded ? ShelfStyle.displayFamily:ShelfStyle.textFamily;font.pixelSize:root.expanded && !root.notification ? 25:12;font.weight:Font.Medium;font.features:({tnum:1})}
   ShelfIcon{visible:['power','low'].includes(root.activity.kind);size:root.expanded ? 32:16;icon:'notch/battery-status.svg';color:root.accent.r>root.accent.g ? root.accent:'white'}
   ShelfIcon{visible:root.expanded && !!root.activity.complete;size:18;icon:'notch/check.svg';color:'white'}
   Rectangle{objectName:'activity-primary-action';visible:root.expanded && !!root.activity.action;Layout.preferredWidth:38;Layout.preferredHeight:38;radius:19;color:'transparent';border.color:'white';border.width:2

@@ -15,3 +15,13 @@ build peaked at 1347ms). These timings measure the selection handler, not
 end-to-end presentation or hardware FPS. All 14 page captures, player controls,
 editor hold and collapse checks passed; runtime log contained no checked QML
 reference/type/load errors. Evidence: `~/.local/state/quickintosh/reviews/tab-response-review`.
+
+## Stable destination layout
+
+Each retained page is now laid out at its destination width/height, centered
+inside the clipped animated body. The shell morph no longer resizes all cached
+layouts every frame. This prevents GridView column-count changes and repeated
+text wrapping during a tab switch. Widget grid cell widths use integer pixels;
+weather hourly cells use a fixed layout preference rather than a circular
+parent-width preference. The private validation includes rapid returns to the
+widget library and final screenshot inspection. No fade delay was reintroduced.

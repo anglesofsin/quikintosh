@@ -141,6 +141,12 @@ class IslandSurfaceUI(unittest.TestCase):
      ipc('close');ipc('banner','true');wait_state(lambda s:s['banners']==1);time.sleep(.6)
      subprocess.run(['grim','-l','1',str(out/'notification-banner.png')],env=env,check=True,timeout=30)
      ipc('banner','false');wait_state(lambda s:s['banners']==0);ipc('expandIsland')
+    if os.environ.get('QUICKINTOSH_REVIEW_TAB_LAYOUT')=='1':
+     for page in [8,3,8,1,8,7,8,0,8]:
+      ipc('page',str(page));time.sleep(.035)
+      state=json.loads(ipc('state'));assert state['page']==page,state
+     time.sleep(.3)
+     subprocess.run(['grim','-l','1',str(out/'widgets-after-rapid-switch.png')],env=env,check=True,timeout=30)
     if os.environ.get('QUICKINTOSH_REVIEW_TAB_RESPONSE')=='1':
      samples=json.loads(ipc('tabBench'));assert all(s['immediate'] for s in samples),samples
      (out/'tab-response.json').write_text(json.dumps(samples,indent=2));ipc('page','8')

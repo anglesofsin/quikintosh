@@ -56,7 +56,7 @@ Item {
    Item{Layout.fillWidth:true}
    ShelfButton{flat:true;icon:'notch/trash-2.svg';accessibleLabel:qsTr('Remove widget');onClicked:IslandConfig.setStyle('shelfSlot'+(root.selectedSlot+1),'none')}
   }
-  GridView{id:grid;Layout.fillWidth:true;Layout.fillHeight:true;clip:true;boundsBehavior:Flickable.StopAtBounds;cellWidth:width/Math.max(4,Math.floor(width/126));cellHeight:100
+  GridView{id:grid;Layout.fillWidth:true;Layout.fillHeight:true;clip:true;boundsBehavior:Flickable.StopAtBounds;reuseItems:true;cellWidth:Math.floor(width/Math.max(1,Math.floor(width/126)));cellHeight:100
    model:ShelfState.editing ? root.widgets.filter(w=>root.homeKeys.includes(w.key)):root.widgets
    ScrollBar.vertical:ScrollBar{policy:ScrollBar.AsNeeded}
    delegate:Item{required property var modelData;width:grid.cellWidth;height:grid.cellHeight

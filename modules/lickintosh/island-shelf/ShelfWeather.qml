@@ -26,7 +26,7 @@ Rectangle {
   Item{Layout.fillHeight:true;Layout.minimumHeight:0}
   RowLayout{id:hours;Layout.fillWidth:true;spacing:8
    Repeater{model:WeatherState.hourly.slice(0,4)
-    delegate:ColumnLayout{required property var modelData;required property int index;Layout.fillWidth:true;Layout.preferredWidth:(hours.width-24)/4;Layout.horizontalStretchFactor:1;spacing:3
+    delegate:ColumnLayout{required property var modelData;required property int index;Layout.fillWidth:true;Layout.preferredWidth:1;Layout.minimumWidth:0;Layout.horizontalStretchFactor:1;spacing:3
      Text{Layout.alignment:Qt.AlignHCenter;text:root.hour(modelData.time,index);font.family:ShelfStyle.textFamily;font.pixelSize:10;color:'#c0c0c8'}
      ShelfIcon{Layout.alignment:Qt.AlignHCenter;size:16;Layout.preferredWidth:16;Layout.preferredHeight:16;icon:root.icon(modelData.code);color:'white'}
      Text{Layout.alignment:Qt.AlignHCenter;text:Math.round(modelData.temp)+'°';font.family:ShelfStyle.textFamily;font.pixelSize:11;font.weight:Font.Medium;color:'white'}

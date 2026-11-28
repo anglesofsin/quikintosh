@@ -25,6 +25,15 @@ def check():
  for name in helpers:
   key='modules/infinite-desktop/'+name
   if key not in tracked:errors.append('Hyprland helper is not tracked: '+key)
+ transitive=set()
+ for p in (ROOT/'modules/infinite-desktop').rglob('*'):
+  if p.is_file() and p.suffix in ['.py','.sh'] and p.read_text().startswith('#!/nix/store/'):
+   errors.append('Historical interpreter path: '+str(p.relative_to(ROOT)))
+  if p.is_file() and p.suffix in ['.sh','.py']:
+   transitive.update(re.findall(r'/home/pg/scripts/([A-Za-z0-9_./-]+)',p.read_text()))
+ for rel in transitive:
+  name='modules/infinite-desktop/'+rel
+  if name not in tracked and not any(x.startswith(name+'/') for x in tracked):errors.append('Untracked transitive helper: '+name)
  lock=json.loads((ROOT/'flake.lock').read_text())
  if not lock.get('nodes',{}).get('root'):errors.append('Invalid flake lock')
  sensitive=re.compile(r'gh[pousr]_[A-Za-z0-9]{32,}|github_pat_[A-Za-z0-9_]{40,}|-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----|AKIA[0-9A-Z]{16}')
@@ -34,7 +43,7 @@ def check():
     text=p.read_text()
     if sensitive.search(text):errors.append('Possible credential in '+str(p.relative_to(ROOT)))
     if '/home/pg/' in text or '/tmp/qi-' in text or '/nix/store/' in text:errors.append('Machine-local path in public profile: '+str(p.relative_to(ROOT)))
- return {'trackedFiles':len(tracked)-1,'nixPathInputsChecked':checked,'hyprlandHelpersChecked':len(helpers),'errors':errors,'scope':'Static inventory; use the pinned Nix builds to validate assembly and dependencies.'}
+ return {'trackedFiles':len(tracked)-1,'nixPathInputsChecked':checked,'hyprlandHelpersChecked':len(helpers),'transitiveHelpersChecked':len(transitive),'errors':errors,'scope':'Static inventory; use the pinned Nix builds to validate assembly and dependencies.'}
 
 if __name__=='__main__':
  report=check();print(json.dumps(report,indent=2));sys.exit(bool(report['errors']))

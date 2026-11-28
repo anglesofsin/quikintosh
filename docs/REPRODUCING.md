@@ -62,7 +62,7 @@ Em x86_64 Linux com Nix e flakes habilitados:
 ```sh
 nix build .#shell-source --no-link --print-out-paths
 nix build .#glass-plugin .#geometry-plugin .#finder-theme --no-link
-nix build .#quickintosh .#hyprland .#hyprland-config --no-link
+nix build .#quickintosh .#hyprland .#hyprland-config .#workspace-scripts --no-link
 nix flake check --no-build
 ```
 
@@ -150,3 +150,9 @@ Para problemas, veja [TROUBLESHOOTING.md](TROUBLESHOOTING.md), [DISCORD.md](DISC
 ## Arch e outros sistemas
 
 No Arch use [docs/ARCH.md](ARCH.md) e o bundle `#arch`, com os serviços do host e wrappers de GPU indicados ali. Não execute `nixos-rebuild` no Arch. Outras distribuições não foram validadas como instalações completas por esta revisão.
+
+## Validação deste ponto de recuperação
+
+A auditoria conferiu 137 referências de arquivos Nix, 19 helpers de atalhos e 14 dependências transitivas locais, sem arquivos ausentes. A montagem real de `#shell-source` passou após corrigir duas incompatibilidades na ordem dos integradores: o banner de notificações e a criação de `SettingsPathRow`. Os testes de exportação/restauração sanitizada e do integrador de notificações passaram; a revisão estrutural de Settings também passou.
+
+Os scripts agora têm interpretadores ajustados pelo Nix e dependências de execução explícitas. O repositório contém as fontes e receitas necessárias; não exige copiar o Nix store da máquina original. Uma reinstalação completa em disco vazio não foi executada. Os builds nativos e a disponibilidade dos downloads externos devem ser conferidos com os comandos da seção 3 antes de ativar em outra máquina.

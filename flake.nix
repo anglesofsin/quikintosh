@@ -39,6 +39,8 @@
       glass-plugin = demo.config.system.build.quickintoshGlass;
       geometry-plugin = demo.config.system.build.quickintoshGeometry;
       finder-theme = demo.config.system.build.quickintoshFinderTheme;
+      workspace-scripts = builtins.head (builtins.filter
+        (p: p.name == "infinite-desktop-scripts") demo.config.environment.systemPackages);
       hyprland-config = builtins.head (builtins.filter
         (p: p.name == "hyprland-config") demo.config.environment.systemPackages);
       rice-shell = demo.config.system.build.riceShell;

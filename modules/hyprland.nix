@@ -46,6 +46,7 @@ PYPORTABLE
   };
   infinite-desktop-scripts = pkgs.stdenv.mkDerivation {
     name = "infinite-desktop-scripts";
+    nativeBuildInputs = [ pkgs.python3 ];
     src = cleanModuleSource ./infinite-desktop;
     dontBuild = true;
     installPhase = ''
@@ -61,6 +62,7 @@ for p in Path(sys.argv[1]).rglob('*'):
         p.write_text(s.replace('/home/pg', sys.argv[2]))
 PYPORTABLE
       chmod +x $out/*.sh $out/*.py
+      patchShebangs $out
     '';
   };
 in
@@ -73,6 +75,11 @@ in
 
   environment.systemPackages = with pkgs; [
     (import ./lickintosh/share-picker/cursor.nix { inherit pkgs; })
+    jq
+    bc
+    python3
+    procps
+    libnotify
     unzip
     ffmpeg
     zenity

@@ -26,7 +26,7 @@ def integrate(root):
  edit(root,'ui/settings/widgets/ContentPage.qml',lambda s:s.replace('width: root.width - 48','width: Math.min(760,root.width - 48)').replace('x: 24','x: (root.width-width)/2').replace('spacing: 18','spacing: 20').replace('contentHeight: _col.implicitHeight + 56','contentHeight: _col.implicitHeight + 48'))
  edit(root,'ui/settings/pages/RosaPage.qml',island_page)
  edit(root,'ui/settings/pages/BatteryPage.qml',lambda _:Path(__file__).with_name('BatterySettingsPage.qml').read_text())
- edit(root,'settingsapp/SettingsPathRow.qml',path_row)
+ # SettingsPathRow is created later by settings-review, with its own stable layout.
  edit(root,'settingsapp/SettingsContent.qml',scroll_style)
  edit(root,'ui/settings/pages/WifiPage.qml',wifi_layout)
  edit(root,'services/SettingsState.qml',error_scope)

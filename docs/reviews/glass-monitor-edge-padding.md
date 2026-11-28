@@ -25,3 +25,12 @@ Private regression covers two tiled panes moved to an invisible workspace, with 
 
 Candidate library: `/nix/store/bnd098x4dhcmpwhvkpg2phh31rh9lpxd-hyprglass-1.1.0/lib/hyprglass.so`.
 Live trace and native captures: `/home/pg/.local/state/quickintosh/reviews/glass-workspace-reentry/`.
+
+## Follow-up: moving workspace sampling bounds
+
+The user reported partial improvement with full-monitor transition damage. The next patch passes the tiled workspace's moving viewport into both sample-coverage validation and framebuffer sampling. Previously only the final composite was clipped to that viewport; padded refraction could still read the adjacent workspace. The valid source rectangle now intersects the monitor and moving viewport, with the existing nearest-edge padding extension supplying the remainder. Floating/pinned windows and non-transition samples keep their previous monitor bounds.
+
+A private comparison uses two tiled glass panes and an opaque dark window in the neighboring workspace, with deliberately strong refraction. Cold entry, repeated exit/entry slides, steady-state colors and idle rendering pass. The six steady-state RGB samples are identical before/after. The capture is not proof of eliminating the user's specific live artifact; confirmation was requested after activation.
+
+Activated library: `/nix/store/x4iwqrn85baakcw1240bycq9g8nfzyci-hyprglass-1.1.0/lib/hyprglass.so`.
+Artifacts: `/home/pg/.local/state/quickintosh/reviews/glass-workspace-sampling/`.

@@ -1,0 +1,85 @@
+--- a/src/GlassRenderer.hpp
++++ b/src/GlassRenderer.hpp
+@@ -155,10 +155,10 @@
+ 
+ // True when every pixel sampleBackground() would read for `box` lies inside
+ // `damage`. `box` is in framebuffer pixels, not the logical space boundingBox() pads in.
+-[[nodiscard]] bool sampleRegionCovered(const CBox& box, const SP<Render::IFramebuffer>& source, const CRegion& damage);
++[[nodiscard]] bool sampleRegionCovered(const CBox& box, const SP<Render::IFramebuffer>& source, const CRegion& damage, const std::optional<CBox>& sampleBounds = std::nullopt);
+ 
+ void sampleBackground(Render::CRenderContext& ctx, SP<Render::IFramebuffer>& sampleFramebuffer,
+-                       SP<Render::IFramebuffer> sourceFramebuffer, CBox box, Vector2D& outPaddingRatio, int downscale = 1);
++                       SP<Render::IFramebuffer> sourceFramebuffer, CBox box, Vector2D& outPaddingRatio, int downscale = 1, const std::optional<CBox>& sampleBounds = std::nullopt);
+ 
+ // Draws the window's own committed surfaces over the sampled background, so the
+ // blur that follows works on a mix of the desktop and the window's own content.
+--- a/src/GlassRenderer.cpp
++++ b/src/GlassRenderer.cpp
+@@ -78,12 +78,14 @@
+     return CRegion(CBox{x1, y1, x2 - x1, y2 - y1}).subtract(damage).empty();
+ }
+ 
+-bool sampleRegionCovered(const CBox& box, const SP<Render::IFramebuffer>& source, const CRegion& damage) {
++bool sampleRegionCovered(const CBox& box, const SP<Render::IFramebuffer>& source, const CRegion& damage, const std::optional<CBox>& sampleBounds) {
+     // The exact source rect the blit reads.
+     const auto map = sampleMapFor(box, 1);
+-    return damageCoversBox(CBox{static_cast<double>(map.srcX0), static_cast<double>(map.srcY0), static_cast<double>(map.srcX1 - map.srcX0),
+-                                static_cast<double>(map.srcY1 - map.srcY0)},
+-                           source, damage);
++    CRegion region(CBox{static_cast<double>(map.srcX0), static_cast<double>(map.srcY0),
++                        static_cast<double>(map.srcX1 - map.srcX0), static_cast<double>(map.srcY1 - map.srcY0)});
++    if (sampleBounds)
++        region.intersect(*sampleBounds);
++    return region.empty() || damageCoversBox(region.getExtents(), source, damage);
+ }
+ 
+ SFoldedBlur foldBlurPasses(float radius, int iterations) noexcept {
+@@ -98,7 +100,7 @@
+ }
+ 
+ void sampleBackground(Render::CRenderContext& ctx, SP<Render::IFramebuffer>& sampleFramebuffer,
+-                       SP<Render::IFramebuffer> sourceFramebuffer, CBox box, Vector2D& outPaddingRatio, int downscale) {
++                       SP<Render::IFramebuffer> sourceFramebuffer, CBox box, Vector2D& outPaddingRatio, int downscale, const std::optional<CBox>& sampleBounds) {
+     if (!sourceFramebuffer)
+         return;
+ 
+@@ -147,10 +149,17 @@
+     // which is the only case that can leave uninitialized texels after the blit.
+     bool destinationClamped = false;
+ 
+-    if (srcX0 < 0) { dstX0 += static_cast<int>(-srcX0 * xScale); srcX0 = 0; destinationClamped = true; }
+-    if (srcY0 < 0) { dstY0 += static_cast<int>(-srcY0 * yScale); srcY0 = 0; destinationClamped = true; }
+-    if (srcX1 > framebufferWidth)  { dstX1 -= static_cast<int>((srcX1 - framebufferWidth) * xScale);  srcX1 = framebufferWidth; destinationClamped = true; }
+-    if (srcY1 > framebufferHeight) { dstY1 -= static_cast<int>((srcY1 - framebufferHeight) * yScale); srcY1 = framebufferHeight; destinationClamped = true; }
++    // Tiled panes share a framebuffer with the neighboring workspace during
++    // a slide. Never refract that workspace into the departing pane: extend
++    // the last valid texels at the moving viewport just like monitor edges.
++    const int minX = sampleBounds ? std::clamp(static_cast<int>(std::ceil(sampleBounds->x)), 0, framebufferWidth) : 0;
++    const int minY = sampleBounds ? std::clamp(static_cast<int>(std::ceil(sampleBounds->y)), 0, framebufferHeight) : 0;
++    const int maxX = sampleBounds ? std::clamp(static_cast<int>(std::floor(sampleBounds->x + sampleBounds->w)), 0, framebufferWidth) : framebufferWidth;
++    const int maxY = sampleBounds ? std::clamp(static_cast<int>(std::floor(sampleBounds->y + sampleBounds->h)), 0, framebufferHeight) : framebufferHeight;
++    if (srcX0 < minX) { dstX0 += static_cast<int>((minX - srcX0) * xScale); srcX0 = minX; destinationClamped = true; }
++    if (srcY0 < minY) { dstY0 += static_cast<int>((minY - srcY0) * yScale); srcY0 = minY; destinationClamped = true; }
++    if (srcX1 > maxX) { dstX1 -= static_cast<int>((srcX1 - maxX) * xScale); srcX1 = maxX; destinationClamped = true; }
++    if (srcY1 > maxY) { dstY1 -= static_cast<int>((srcY1 - maxY) * yScale); srcY1 = maxY; destinationClamped = true; }
+ 
+     // Padding ratio is relative to the logical content area (resolution-independent)
+     outPaddingRatio = Vector2D(
+--- a/src/GlassDecoration.cpp
++++ b/src/GlassDecoration.cpp
+@@ -618,13 +618,13 @@
+         // X-ray never samples the live frame: it holds the windows it hides.
+         const auto snapshot = xray ? xraySnapshotCovering(monitor, source, windowBox) : nullptr;
+         const bool covered  = xray ? static_cast<bool>(snapshot) :
+-                                     GlassRenderer::sampleRegionCovered(windowBox, source, ctx.m_data.damage);
++                                     GlassRenderer::sampleRegionCovered(windowBox, source, ctx.m_data.damage, workspaceViewport);
+ 
+         if (covered) {
+             float blurStrength   = resolvePresetFloat(resolveContext, &SPresetValues::blurStrength, &SOverridableConfig::blurStrength);
+             int downscale        = blurStrength >= GlassRenderer::BLUR_DOWNSCALE_THRESHOLD ? GlassRenderer::BLUR_DOWNSCALE_MAX : 1;
+ 
+-            GlassRenderer::sampleBackground(ctx, m_sampleFramebuffer, xray ? snapshot : source, windowBox, m_samplePaddingRatio, downscale);
++            GlassRenderer::sampleBackground(ctx, m_sampleFramebuffer, xray ? snapshot : source, windowBox, m_samplePaddingRatio, downscale, workspaceViewport);
+ 
+             // Only here, on a real (non-cached) sample: blending onto a cache-hit
+             // frame would double-composite our own content over an already-blurred FBO.

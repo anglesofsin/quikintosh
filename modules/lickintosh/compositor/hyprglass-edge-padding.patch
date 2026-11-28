@@ -1,0 +1,36 @@
+--- a/src/GlassRenderer.cpp
++++ b/src/GlassRenderer.cpp
+@@ -180,9 +180,33 @@
+ 
+     g_pHyprOpenGL->bindFramebuffer(GL_READ_FRAMEBUFFER, fbId(sourceFramebuffer));
+     g_pHyprOpenGL->bindFramebuffer(GL_DRAW_FRAMEBUFFER, fbId(sampleFramebuffer));
++    if (srcX0 >= srcX1 || srcY0 >= srcY1 || dstX0 >= dstX1 || dstY0 >= dstY1)
++        return;
++
+     glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1,
+                       dstX0, dstY0, dstX1, dstY1,
+                       GL_COLOR_BUFFER_BIT, GL_LINEAR);
++
++    // Refraction and blur read the padding even when the pane slides beyond
++    // the monitor. Transparent-black padding becomes a dark moving band.
++    // Extend the nearest valid source texels, equivalent to CLAMP_TO_EDGE,
++    // without stretching the in-bounds image or changing its sample mapping.
++    // These bounded copies run only at framebuffer edges, never per pixel.
++    if (destinationClamped) {
++        const auto extend = [](int sx0, int sy0, int sx1, int sy1,
++                               int dx0, int dy0, int dx1, int dy1) {
++            if (dx1 > dx0 && dy1 > dy0)
++                glBlitFramebuffer(sx0, sy0, sx1, sy1, dx0, dy0, dx1, dy1, GL_COLOR_BUFFER_BIT, GL_NEAREST);
++        };
++        extend(srcX0, srcY0, srcX0 + 1, srcY1, 0, dstY0, dstX0, dstY1);
++        extend(srcX1 - 1, srcY0, srcX1, srcY1, dstX1, dstY0, sampleWidth, dstY1);
++        extend(srcX0, srcY0, srcX1, srcY0 + 1, dstX0, 0, dstX1, dstY0);
++        extend(srcX0, srcY1 - 1, srcX1, srcY1, dstX0, dstY1, dstX1, sampleHeight);
++        extend(srcX0, srcY0, srcX0 + 1, srcY0 + 1, 0, 0, dstX0, dstY0);
++        extend(srcX1 - 1, srcY0, srcX1, srcY0 + 1, dstX1, 0, sampleWidth, dstY0);
++        extend(srcX0, srcY1 - 1, srcX0 + 1, srcY1, 0, dstY1, dstX0, sampleHeight);
++        extend(srcX1 - 1, srcY1 - 1, srcX1, srcY1, dstX1, dstY1, sampleWidth, sampleHeight);
++    }
+ }
+ 
+ void blendOwnContent(Render::CRenderContext& ctx, SP<Render::IFramebuffer>& sampleFramebuffer, PHLWINDOW window,

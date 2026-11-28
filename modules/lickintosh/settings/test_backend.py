@@ -24,6 +24,18 @@ class BackendTests(unittest.TestCase):
    self.assertEqual(len(users),1)
    self.assertTrue(users[0]['current'])
    self.assertEqual(users[0]['name'],current.pw_name)
+ def test_empty_input_value_is_a_blank_field(self):
+  with patch.object(b,'run',return_value='{"option":"input:kb_variant","str":"[[EMPTY]]"}'):
+   self.assertEqual(b.input_values(['input:kb_variant'])['input:kb_variant'],'')
+ def test_game_mode_is_idempotent_and_validates_boolean(self):
+  with patch.object(b,'read',return_value='lickintosh'),patch.object(b,'run',return_value='{"gameMode":true}') as run:
+   self.assertTrue(b.action('game-mode',{'enabled':True})['gameMode'])
+   self.assertFalse(any(args[0][-1]=='gameMode' for args in run.call_args_list))
+   with self.assertRaises(ValueError):b.action('game-mode',{'enabled':'yes'})
+ def test_game_mode_changes_only_when_requested_state_differs(self):
+  with patch.object(b,'read',return_value='lickintosh'),patch.object(b,'run',side_effect=['{"gameMode":false}','ok','{"gameMode":true}']) as run:
+   self.assertTrue(b.action('game-mode',{'enabled':True})['gameMode'])
+   self.assertEqual(run.call_args_list[1].args[0][-1],'gameMode')
  def test_escaped_network_names(self):
   self.assertEqual(b.split_nm(r'uuid:Office\: A\\B:vpn:eth0'),['uuid','Office: A\\B','vpn','eth0'])
  def test_permissions_merge_overrides_without_losing_unrelated_grants(self):

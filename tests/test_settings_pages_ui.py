@@ -12,6 +12,22 @@ class SettingsPagesUI(unittest.TestCase):
    for e in source.iterdir():
     if e.name not in ['shell.qml','settings.qml']:(root/e.name).symlink_to(e,target_is_directory=e.is_dir())
    text=(source/'settings.qml').read_text().replace('IpcHandler{\n  target:', '''IpcHandler{
+  function controlsAudit():string{
+   const page=loader.item,previous=SettingsPreferences.inputOverrides
+   SettingsPreferences.inputOverrides=({'input:kb_layout':'fr','input:touchpad:natural_scroll':true,'input:sensitivity':0.25,'decoration:rounding':12})
+   page.apply({action:'input-reset'},null)
+   const result={unknownSelection:page.choice('Test',['First'],-1,'none').selection,reset:SettingsPreferences.inputOverrides}
+   SettingsPreferences.inputOverrides=previous
+   return JSON.stringify(result)
+  }
+  function focusAudit():string{
+   const before=FocusState.profile.start
+   loader.item.apply({action:'focus-edit',key:'start'},'28:90')
+   const result={unchanged:FocusState.profile.start===before,error:SettingsState.error}
+   SettingsState.error='';return JSON.stringify(result)
+  }
+  function findSettings(query:string):string{return JSON.stringify(SettingsCatalog.search(query).map(page=>page.id))}
+  function advanced():void{function scan(item){if(item.hasOwnProperty('advanced')){try{item.advanced=true}catch(error){}}if(item.hasOwnProperty('advancedOptions'))item.advancedOptions=true;for(const child of item.children || [])scan(child)}if(loader.item)scan(loader.item)}
   function batteryDemo():void{loader.item.devices=[{id:'review-laptop',name:'Mac-style notebook',kind:'laptop',percent:81,charging:true,connected:true},{id:'review-phone',name:'Phone',kind:'phone',percent:64,charging:false,connected:true,source:'KDE Connect'}];BatteryHealthState.energyFullDesign=60;BatteryHealthState.energyFull=57;const now=Date.now()/1000;BatteryHistoryState.rawEntries=Array.from({length:48},(_,i)=>({timestamp:now-(47-i)*1800,percent:Math.round(47+i*.72),screenOn:i%3!==0}));}
   function geometry():string{function scan(item,result){if(item.visible && item.width>0 && item.height>0){if(item.text!==undefined && typeof item.text==='string' && item.text.length)result.push({text:item.text.slice(0,200),x:item.x,y:item.y,w:item.width,h:item.height,clipped:item.truncated===true})}for(const child of item.children || [])scan(child,result)}const rows=[];if(loader.item)scan(loader.item,rows);return JSON.stringify({width:window.width,height:window.height,rows:rows})}
   function scrollBottom():void{if(loader.item && loader.item.contentItem && loader.item.contentHeight)loader.item.contentItem.contentY=Math.max(0,loader.item.contentHeight-loader.item.height)}
@@ -58,8 +74,21 @@ class SettingsPagesUI(unittest.TestCase):
      if phase=='after':self.assertFalse(state['loadError'],key+'\n'+(root/'log').read_text()[-5000:]);self.assertTrue(state['loaded'],key)
      if key=='battery' and phase=='after':
       ipc('batteryDemo');time.sleep(.25);subprocess.run(['grim','-l','1',str(out/'battery-notebook.png')],env=env,check=True,timeout=15)
-     if key in ['battery','island','appearance','desktop','menubar','compositor','notifications','privacy','keyboard','mouse','wallpaper','widgets','glass']:
+     if True:
       ipc('scrollBottom');time.sleep(.2);subprocess.run(['grim','-l','1',str(out/(key+'-bottom.png'))],env=env,check=True,timeout=15)
+    if phase=='after':
+     ipc('navigate','keyboard');time.sleep(.2);audit=json.loads(ipc('controlsAudit'))
+     self.assertEqual(audit['unknownSelection'],-1)
+     self.assertNotIn('input:kb_layout',audit['reset'])
+     self.assertEqual(audit['reset']['input:touchpad:natural_scroll'],True)
+     self.assertEqual(audit['reset']['input:sensitivity'],.25)
+     self.assertEqual(audit['reset']['decoration:rounding'],12)
+     ipc('navigate','focus');time.sleep(.2);focus=json.loads(ipc('focusAudit'));self.assertTrue(focus['unchanged']);self.assertTrue(focus['error'])
+     self.assertIn('mouse',json.loads(ipc('findSettings','tracking speed')))
+     for key in ['appearance','island']:
+      ipc('navigate',key);time.sleep(.2);ipc('advanced');time.sleep(.2)
+      subprocess.run(['grim','-l','1',str(out/(key+'-advanced.png'))],env=env,check=True,timeout=15)
+      ipc('scrollBottom');time.sleep(.2);subprocess.run(['grim','-l','1',str(out/(key+'-advanced-bottom.png'))],env=env,check=True,timeout=15)
     text=(root/'log').read_text()
     if phase=='after':
      for issue in ['ReferenceError:','TypeError:','Cannot assign','Binding loop','recursive rearrange']:self.assertNotIn(issue,text,text[-7000:])

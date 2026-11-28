@@ -207,6 +207,8 @@ def input_values(keys):
                 if key not in INPUTS:
                     continue
                 value = next((data[n] for n in ('bool', 'int', 'float', 'str', 'css') if n in data), None)
+                if value == '[[EMPTY]]':
+                    value = ''
                 values[key] = bool(value) if INPUTS[key][0] == 'bool' and value is not None else value
             except ValueError:
                 continue
@@ -574,6 +576,15 @@ def action(name, args):
     active = read(Path(os.environ.get('RICE_SHELL_STATE_DIR',str(Path(os.environ.get('XDG_STATE_HOME', HOME/'.local/state'))/'nixos-rice')))/'active-shell')
     if name != 'runtime-restore' and active != 'lickintosh':
         raise RuntimeError('Select Lickintosh before applying these settings. Other desktop profiles are unchanged.')
+    if name == 'game-mode':
+        enabled = args.get('enabled')
+        if not isinstance(enabled, bool):
+            raise ValueError('Game Mode must be on or off.')
+        cli = os.environ.get('LICKINTOSH_CLI', 'lickintosh')
+        current = json.loads(run([cli, 'ipc', 'call', 'rice', 'state']))
+        if bool(current.get('gameMode')) != enabled:
+            run([cli, 'ipc', 'call', 'rice', 'gameMode'])
+        return json.loads(run([cli, 'ipc', 'call', 'rice', 'state']))
     if name == 'shortcut-save':
         return save_shortcut(args)
     if name == 'runtime':

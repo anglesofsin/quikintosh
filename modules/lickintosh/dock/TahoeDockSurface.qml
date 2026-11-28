@@ -22,7 +22,10 @@ Scope {
  readonly property int size:Math.round(options.iconSize*options.iconScale)
  property real lensPointer:0
  property bool lensHovered:false
- property real lensStrength:options.magnificationEnabled && lensHovered && !dockDragging && !DockDrag.desktopDragging && !DockDrag.stackDragging && !stackOpen && !stackPending && !controller.menuVisible ? 1:0
+ property bool dragLensActive:false
+ function trackDrag(area,drag){const p=area.mapToItem(dock.contentItem,drag.x,drag.y);root.lensPointer=root.vertical ? p.y:p.x;root.dragLensActive=true;root.revealed=true;hideDelay.stop()}
+ function finishDragLens(){root.dragLensActive=false}
+ property real lensStrength:options.magnificationEnabled && (lensHovered || dragLensActive) && !dockDragging && !stackOpen && !stackPending && !controller.menuVisible ? 1:0
  Behavior on lensStrength{NumberAnimation{duration:140;easing.type:Easing.OutCubic}}
  readonly property var lensLayout:{
   const base=[];let cursor=0
@@ -257,7 +260,7 @@ Scope {
    TahoeGlass{anchors.fill:parent;backdrop:Theme.plainSurfaces ? null : dockGlass;cornerRadius:24}
    Rectangle{anchors.fill:parent;radius:24;color:Theme.plainSurfaces ? Theme.surfaceFor('dock') : '#10ffffff';border.width:1;border.color:'#38ffffff'}
 
-   DropArea{anchors.fill:parent;onDropped:drop=>{if(drop.hasUrls){for(const url of drop.urls)controller.pinDroppedPath(decodeURIComponent(url.toString().replace(/^file:\/\//,'')));drop.acceptProposedAction()}}}
+   DropArea{id:lensDrop;anchors.fill:parent;onEntered:drag=>root.trackDrag(lensDrop,drag);onPositionChanged:drag=>root.trackDrag(lensDrop,drag);onExited:root.finishDragLens();onDropped:drop=>{root.finishDragLens();if(drop.hasUrls){for(const url of drop.urls)controller.pinDroppedPath(decodeURIComponent(url.toString().replace(/^file:\/\//,'')));drop.acceptProposedAction()}}}
    ListModel{id:entryModel;dynamicRoles:true}
    Connections{target:root;function onEntriesChanged(){plate.syncEntries()}}
    Component.onCompleted:syncEntries()
@@ -290,15 +293,18 @@ Scope {
        onDragFinished:(delta,outside)=>{root.dockDragging=false;root.draggedKey='';if(!entry.pinned)return;if(outside>root.actualSize){controller.pinnedApps=controller.pinnedApps.filter((a,i)=>i!==entry.index)}}
       }
 DropArea{id:stackDrop;anchors.fill:parent;enabled:slot.modelData.kind==='stack'
-       onEntered:drag=>{drag.accepted=drag.hasUrls;if(drag.accepted){root.dragHoveredPath=slot.modelData.path;springOpen.restart();root.revealed=true;hideDelay.stop()}}
-       onExited:if(root.dragHoveredPath===slot.modelData.path){root.dragHoveredPath='';springOpen.stop()}
-       onDropped:drop=>{springOpen.stop();const operation=slot.modelData.path==='recent' ? 'copy':root.operationFor(drop);if(operation==='copy' && !(drop.supportedActions & Qt.CopyAction)){drop.accepted=false;return}root.dropFiles(drop.urls.map(String),operation,slot.modelData.path);drop.accept(operation==='copy' ? Qt.CopyAction:operation==='link' ? Qt.LinkAction:Qt.MoveAction);root.stackPending=false;root.stackOpen=false;root.stackDropMode=false}
+       onPositionChanged:drag=>root.trackDrag(stackDrop,drag)
+       onEntered:drag=>{root.trackDrag(stackDrop,drag);drag.accepted=drag.hasUrls;if(drag.accepted){root.dragHoveredPath=slot.modelData.path;springOpen.restart();root.revealed=true;hideDelay.stop()}}
+       onExited:{root.finishDragLens();if(root.dragHoveredPath===slot.modelData.path){root.dragHoveredPath='';springOpen.stop()}}
+       onDropped:drop=>{root.finishDragLens();springOpen.stop();const operation=slot.modelData.path==='recent' ? 'copy':root.operationFor(drop);if(operation==='copy' && !(drop.supportedActions & Qt.CopyAction)){drop.accepted=false;return}root.dropFiles(drop.urls.map(String),operation,slot.modelData.path);drop.accept(operation==='copy' ? Qt.CopyAction:operation==='link' ? Qt.LinkAction:Qt.MoveAction);root.stackPending=false;root.stackOpen=false;root.stackDropMode=false}
        Timer{id:springOpen;interval:500;onTriggered:if(root.dragHoveredPath===slot.modelData.path){const p=tile.mapToItem(dock.contentItem,tile.width/2,tile.height/2);root.openStack(slot.modelData.path,slot.modelData.name,Qt.point(p.x+root.origin.x,p.y+root.origin.y),true)}}
       }
       Rectangle{anchors.centerIn:tile;width:root.actualSize+10;height:width;radius:12;color:'#26ffffff';border.color:'#28ffffff';border.width:1;visible:stackDrop.containsDrag}
       DropArea{id:trashDrop;anchors.fill:parent;enabled:slot.modelData.kind==='trash'
-       onEntered:drag=>{drag.accepted=drag.hasUrls && drag.urls.every(u=>String(u).startsWith('file://')) && (drag.supportedActions & Qt.MoveAction)!==0;if(drag.accepted){root.revealed=true;hideDelay.stop()}}
-       onDropped:drop=>{if(drop.hasUrls && drop.urls.every(u=>String(u).startsWith('file://')) && (drop.supportedActions & Qt.MoveAction)!==0){root.send({action:'trash',urls:drop.urls.map(u=>u.toString())});if(drop.formats.indexOf('application/x-lickintosh-desktop')!==-1)DesktopFiles.clearSelection();drop.accept(Qt.MoveAction)}else drop.accepted=false}
+       onPositionChanged:drag=>root.trackDrag(trashDrop,drag)
+       onExited:root.finishDragLens()
+       onEntered:drag=>{root.trackDrag(trashDrop,drag);drag.accepted=drag.hasUrls && drag.urls.every(u=>String(u).startsWith('file://')) && (drag.supportedActions & Qt.MoveAction)!==0;if(drag.accepted){root.revealed=true;hideDelay.stop()}}
+       onDropped:drop=>{root.finishDragLens();if(drop.hasUrls && drop.urls.every(u=>String(u).startsWith('file://')) && (drop.supportedActions & Qt.MoveAction)!==0){root.send({action:'trash',urls:drop.urls.map(u=>u.toString())});if(drop.formats.indexOf('application/x-lickintosh-desktop')!==-1)DesktopFiles.clearSelection();drop.accept(Qt.MoveAction)}else drop.accepted=false}
       }
       Rectangle{anchors.centerIn:tile;width:root.actualSize+10;height:width;radius:12;color:'#26ffffff';border.color:'#28ffffff';border.width:1;visible:slot.modelData.kind==='trash' && trashDrop.containsDrag}
       DockTooltip{visible:root.hoverLabel!=='' && root.hoveredIndex===slot.index && !root.dockDragging && !trashDrop.containsDrag;text:slot.modelData.name || '';position:root.options.position

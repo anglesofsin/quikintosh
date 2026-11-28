@@ -379,6 +379,7 @@ let
       ${pkgs.python3}/bin/python3 ${./lickintosh/rendering/ensure-geometry.py} ${quickintoshGeometry}/lib/quickintosh-geometry.so
       ${lib.optionalString supportsHyprimate ''
         ${pkgs.python3}/bin/python3 ${./lickintosh/compositor/load-plugin.py} quickintosh-capture-guard ${quickintoshGeometry}/lib/quickintosh-capture-guard.so
+        ${pkgs.python3}/bin/python3 ${./lickintosh/compositor/load-plugin.py} quickintosh-maximize-contour ${quickintoshGeometry}/lib/quickintosh-maximize-contour.so
       ''}
       ${pkgs.python3}/bin/python3 ${./lickintosh/compositor/load-plugin.py} hyprglass ${quickintoshWindowGlass}/lib/hyprglass.so ${./lickintosh/compositor/native_glass.py}
       ${lib.optionalString supportsHyprimate ''

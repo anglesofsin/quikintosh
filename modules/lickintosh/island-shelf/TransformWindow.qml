@@ -33,8 +33,9 @@ FloatingWindow {
  property int placementAttempts:0
  onVisibleChanged:{if(visible){operation=ShelfState.transformOperation;placementAttempts=0;sizeSoon.restart();ShelfState.send({action:'presets'})}else sizeSoon.stop()}
  Timer{id:sizeSoon;interval:100;repeat:true;onTriggered:{if(!root.visible || ++root.placementAttempts>20){stop();return}if(!placement.running)placement.running=true}}
- Process{id:placement;command:['hyprctl','eval','for _,w in ipairs(hl.get_windows()) do if w.title=="Quickintosh Transform" then if not w.floating then hl.dispatch(hl.dsp.window.float({action="enable",window="address:"..w.address})) end;hl.dispatch(hl.dsp.window.resize({x=414,y=680,window="address:"..w.address}));print("qi-transform-placed") end end'];stdout:SplitParser{onRead:data=>{if(data.includes('qi-transform-placed'))sizeSoon.stop()}}}
- Rectangle{anchors.fill:parent;radius:28;color:'#fa080809';border.color:ShelfStyle.outline
+ Process{id:placement;command:['hyprctl','eval','for _,w in ipairs(hl.get_windows()) do if w.title=="Quickintosh Transform" then if not w.floating then hl.dispatch(hl.dsp.window.float({action="enable",window="address:"..w.address})) end;local m=w.monitor;if m then local width=math.min(414,math.floor(m.width/m.scale)-24);local height=math.min(680,math.floor(m.height/m.scale)-48);hl.dispatch(hl.dsp.window.resize({x=width,y=height,window="address:"..w.address}));hl.dispatch(hl.dsp.window.move({x=m.x+math.floor(m.width/m.scale)-width-8,y=m.y+math.floor(m.height/m.scale)-height-8,window="address:"..w.address})) end;print("qi-transform-placed") end end'];stdout:SplitParser{onRead:data=>{if(data.includes('qi-transform-placed'))sizeSoon.stop()}}}
+ ShelfRoundedSurface{anchors.fill:parent;radius:28;color:'transparent';border.width:1;border.color:ShelfStyle.outline
+  ShelfPanelMaterial{anchors.fill:parent;cornerRadius:28}
   Flickable{id:scroll;anchors.fill:parent;anchors.margins:18;anchors.bottomMargin:72;contentHeight:formContent.implicitHeight;clip:true;boundsBehavior:Flickable.StopAtBounds
    ScrollBar.vertical:ScrollBar{policy:ScrollBar.AsNeeded}
    ColumnLayout{id:formContent;width:scroll.width;spacing:16

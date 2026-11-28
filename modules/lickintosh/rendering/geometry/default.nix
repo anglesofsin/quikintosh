@@ -13,6 +13,7 @@ compiler.mkDerivation {
  buildPhase = ''
    $CXX -std=c++${if modern then "26" else "23"} -shared -fPIC -O2 $(pkg-config --cflags hyprland) geometry.cpp -o quickintosh-geometry.so
    ${lib.optionalString modern "$CXX -std=c++26 -shared -fPIC -O2 $(pkg-config --cflags hyprland) protocol-guard.cpp -ldl -o quickintosh-capture-guard.so"}
+   ${lib.optionalString modern "$CXX -std=c++26 -shared -fPIC -O2 $(pkg-config --cflags hyprland) maximize-contour.cpp -o quickintosh-maximize-contour.so"}
  '';
  doCheck = true;
  checkPhase = ''
@@ -21,5 +22,5 @@ compiler.mkDerivation {
    $CXX -std=c++23 drag-shake-test.cpp -o drag-shake-test
    ./drag-shake-test
  '';
- installPhase = ''mkdir -p $out/lib; cp quickintosh-geometry.so $out/lib/; ${lib.optionalString modern "cp quickintosh-capture-guard.so $out/lib/"}'';
+ installPhase = ''mkdir -p $out/lib; cp quickintosh-geometry.so $out/lib/; ${lib.optionalString modern "cp quickintosh-capture-guard.so quickintosh-maximize-contour.so $out/lib/"}'';
 }

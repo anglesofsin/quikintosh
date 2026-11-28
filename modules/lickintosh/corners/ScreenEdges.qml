@@ -4,11 +4,23 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Hyprland
 import qs.services
+import qs.components.glass
 Scope {
  id:root
  property bool enabled:true
  readonly property var cfg:ShellConfig.options.edges
- function fullscreen(screen){const monitor=Hyprland.monitorFor(screen);return !!monitor?.activeWorkspace?.hasFullscreen}
+ readonly property bool watching:enabled && cfg.roundedCorners
+ property bool subscribed:false
+ function syncInventory(){if(subscribed===watching)return;subscribed=watching;GlassTracker.inventoryUsers+=watching ? 1:-1;if(watching){GlassTracker.refreshWindows();GlassTracker.refreshMonitorSnapshot()}}
+ onWatchingChanged:syncInventory()
+ Component.onCompleted:syncInventory()
+ Component.onDestruction:if(subscribed)GlassTracker.inventoryUsers--
+ function fullscreen(screen){
+  const monitor=Hyprland.monitorFor(screen)
+  if(!monitor)return false
+  const ws=monitor.activeWorkspace?.id
+  return GlassTracker.clientsSnapshot.some(w=>(w.monitor===monitor.id || w.monitor?.id===monitor.id) && w.workspace?.id===ws && !w.hidden && w.mapped!==false && w.fullscreen===2)
+ }
  component Cutout:Shape {
   id:cutout
   property real cornerRadius:18

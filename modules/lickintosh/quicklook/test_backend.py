@@ -3,6 +3,14 @@ from pathlib import Path
 from unittest.mock import patch
 spec=importlib.util.spec_from_file_location('quicklook_backend',Path(__file__).with_name('backend.py'));b=importlib.util.module_from_spec(spec);spec.loader.exec_module(b)
 class QuickLookBackendTests(unittest.TestCase):
+ def test_preview_cache_invalidates_changed_file(self):
+  with tempfile.TemporaryDirectory() as folder:
+   p=Path(folder)/'preview.txt';p.write_text('first')
+   b.cached_description.cache_clear();first=b.describe(str(p));second=b.describe(str(p))
+   self.assertEqual(first,second);self.assertEqual(b.cached_description.cache_info().hits,1)
+   p.write_text('different content');third=b.describe(str(p))
+   self.assertNotEqual(first['size'],third['size']);self.assertEqual(b.cached_description.cache_info().misses,2)
+
  def test_local_uri_and_text_limits(self):
   with tempfile.TemporaryDirectory() as folder:
    p=Path(folder)/'space # á.txt';p.write_text('Hello preview')

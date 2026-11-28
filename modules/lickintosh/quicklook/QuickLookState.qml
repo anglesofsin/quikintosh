@@ -63,7 +63,7 @@ Singleton {
    const next=Object.assign({},thumbnailRequests);next[path]=token;thumbnailRequests=next;send({action:'thumbnail',path:path,version:token})
   }
  }
- function show(files,position,source){if(!enabled || !files.length)return;paths=files.slice();index=Math.max(0,Math.min(paths.length-1,position));context=source;if(!opened){openedSnapshot=GlassTracker.snapshotSerial+1;GlassTracker.captureSnapshot();focusPending=true;focusSent=false;focusDeadline=Date.now()+1800}opened=true;GlassTracker.refreshWindows();send({action:'visible',value:true});inspect(1);requestFocus()}
+ function show(files,position,source){if(!enabled || !files.length)return;paths=files.slice();index=Math.max(0,Math.min(paths.length-1,position));context=source;if(!opened){openedSnapshot=GlassTracker.snapshotSerial+1;backgroundRefresh.restart();focusPending=true;focusSent=false;focusDeadline=Date.now()+1800}opened=true;if(data.path!==paths[index]){const path=paths[index],name=path.slice(path.lastIndexOf('/')+1),ext=name.split('.').pop().toLowerCase();data={path:path,name:name,url:urlFor(path),kind:['png','jpg','jpeg','webp','bmp'].includes(ext) ? 'image':'',preview:['png','jpg','jpeg','webp','bmp'].includes(ext) ? urlFor(path):'',mime:'image/'+ext}}backgroundRefresh.restart();send({action:'visible',value:true});inspect(1);requestFocus()}
  function inspect(page){loading=true;error='';notice='';send({action:'inspect',path:paths[index],page:page || 1,id:++requestId})}
  function close(){if(opened && enabled && context==='desktop'){returnToDesktop=true;desktopReturn.restart()}opened=false;focusPending=false;focusSent=false;data=({});loading=false;send({action:'visible',value:false})}
  function navigate(direction){if(context==='finder'){send({action:'navigate',direction:direction});return}const step=direction===2 || direction===4 ? -1:1;index=Math.max(0,Math.min(paths.length-1,index+step));inspect(1)}
@@ -92,6 +92,7 @@ Singleton {
   onExited:{root.ready=false;root.bridgeReady=false;root.opened=false;if(root.active){root.restartReady=false;retry.restart()}}
  }
  Timer{interval:120;running:root.opened && root.focusPending;repeat:true;onTriggered:{GlassTracker.refreshWindows();root.requestFocus()}}
+ Timer{id:backgroundRefresh;interval:120;onTriggered:if(root.opened){GlassTracker.captureSnapshot();GlassTracker.refreshWindows()}}
  Timer{id:retry;interval:1000;onTriggered:root.restartReady=true}
  Timer{id:desktopReturn;interval:180;onTriggered:root.returnToDesktop=false}
  Timer{interval:120;running:root.opened && (!root.geometry.address || root.focusPending);repeat:true;triggeredOnStart:true;onTriggered:{GlassTracker.captureSnapshot();GlassTracker.refreshWindows()}}

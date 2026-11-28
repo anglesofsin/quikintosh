@@ -55,6 +55,9 @@ s=s.replace(anchor,anchor+'''
                 if(event.modifiers===Qt.ControlModifier && event.key===Qt.Key_D){DesktopFiles.duplicateSelection();event.accepted=true;return}
                 if(event.modifiers===(Qt.ControlModifier|Qt.ShiftModifier) && event.key===Qt.Key_N){DesktopFiles.newFolder();event.accepted=true;return}
                 if(event.modifiers===Qt.ControlModifier && event.key===Qt.Key_H){WidgetState.showHidden=!WidgetState.showHidden;event.accepted=true;return}
-                if((event.key===Qt.Key_Return || event.key===Qt.Key_Enter) && DesktopFiles.selection.length){for(const path of DesktopFiles.selection)DesktopFiles.open(path,DesktopFiles.nameOfPath(path));event.accepted=true;return}
+                if(event.modifiers===Qt.NoModifier && (event.key===Qt.Key_Return || event.key===Qt.Key_Enter)){if(DesktopFiles.selection.length===1)DesktopFiles.renaming=DesktopFiles.selection[0];event.accepted=true;return}
+                if(event.modifiers===Qt.ControlModifier && event.key===Qt.Key_O && DesktopFiles.selection.length){for(const path of DesktopFiles.selection)DesktopFiles.open(path,DesktopFiles.nameOfPath(path));event.accepted=true;return}
                 if(event.key===Qt.Key_F2 && DesktopFiles.selection.length===1){DesktopFiles.renaming=DesktopFiles.selection[0];event.accepted=true;return}
 ''',1);p.write_text(s)
+
+p=root/'ui/desktop/DesktopIcon.qml';s=p.read_text();s=s.replace('renameInput.selectAll()', "const dot=root.fileName.lastIndexOf('.');renameInput.select(0,!root.fileIsDir && dot>0 ? dot:root.fileName.length)");p.write_text(s)

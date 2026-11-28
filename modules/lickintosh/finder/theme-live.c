@@ -28,6 +28,22 @@ static void chooser_realized(GtkWidget *widget,gpointer unused) {
     if(surface && GDK_IS_WAYLAND_TOPLEVEL(surface))
         gdk_wayland_toplevel_set_application_id(GDK_TOPLEVEL(surface),"org.quickintosh.Finder.FileChooser");
 }
+/* File-view semantics only: never intercept a chooser or editable control. */
+static gboolean file_return(GtkEventControllerKey *controller,guint key,guint code,GdkModifierType state,gpointer unused) {
+    (void)code;(void)unused;
+    GtkWidget *window=gtk_event_controller_get_widget(GTK_EVENT_CONTROLLER(controller));
+    GtkWidget *focus=gtk_window_get_focus(GTK_WINDOW(window));
+    if(!focus || state&(GDK_CONTROL_MASK|GDK_ALT_MASK|GDK_SUPER_MASK|GDK_SHIFT_MASK))return FALSE;
+    if(key!=GDK_KEY_Return && key!=GDK_KEY_KP_Enter)return FALSE;
+    for(GtkWidget *w=focus;w && w!=window;w=gtk_widget_get_parent(w)){
+        if(GTK_IS_EDITABLE(w) || GTK_IS_TEXT_VIEW(w))return FALSE;
+    }
+    for(GtkWidget *w=focus;w && w!=window;w=gtk_widget_get_parent(w)){
+        if(g_str_has_prefix(G_OBJECT_TYPE_NAME(w),"Nautilus") && strstr(G_OBJECT_TYPE_NAME(w),"View"))
+            return gtk_widget_activate_action(w,"view.rename",NULL);
+    }
+    return FALSE;
+}
 static void windows_changed(GListModel *windows,guint position,guint removed,guint added,gpointer unused) {
     (void)removed;(void)unused;
     for(guint i=position;i<position+added;i++){
@@ -39,6 +55,13 @@ static void windows_changed(GListModel *windows,guint position,guint removed,gui
              * that same mapping turn, before the compositor presents it. */
             g_signal_connect(window,"map",G_CALLBACK(chooser_realized),NULL);
             if(gtk_widget_get_realized(GTK_WIDGET(window)))chooser_realized(GTK_WIDGET(window),NULL);
+        }
+        if(g_strcmp0(G_OBJECT_TYPE_NAME(window),"NautilusWindow")==0 && !g_object_get_data(G_OBJECT(window),"qi-return-rename")){
+            GtkEventController *keys=gtk_event_controller_key_new();
+            gtk_event_controller_set_propagation_phase(keys,GTK_PHASE_CAPTURE);
+            g_signal_connect(keys,"key-pressed",G_CALLBACK(file_return),NULL);
+            gtk_widget_add_controller(GTK_WIDGET(window),keys);
+            g_object_set_data(G_OBJECT(window),"qi-return-rename",GINT_TO_POINTER(1));
         }
         g_object_unref(window);
     }

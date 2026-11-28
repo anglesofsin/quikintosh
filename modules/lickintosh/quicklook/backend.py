@@ -27,6 +27,11 @@ def application_name(mime):
  except (ImportError,ValueError):return ''
 
 def describe(value,page=1):
+ p=local_path(value);st=p.stat()
+ return cached_description(str(p),page,st.st_mtime_ns,st.st_size)
+
+@functools.lru_cache(maxsize=24)
+def cached_description(value,page,mtime,size):
  p=local_path(value);stat=p.stat();mime=mimetypes.guess_type(p.name)[0] or 'application/octet-stream'
  result={'path':str(p),'url':p.as_uri(),'name':p.name,'size':stat.st_size,'mime':mime,'kind':'info','page':page,'pages':1,'text':'','preview':''}
  result['application']=application_name(mime)

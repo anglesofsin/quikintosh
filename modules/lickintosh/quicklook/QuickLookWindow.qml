@@ -8,9 +8,9 @@ import qs.components
 import Quickshell.Io
 FloatingWindow {
  id:window
- visible:QuickLookState.opened
+ visible:QuickLookState.opened || closeMotion.running
  title:'Lickintosh Quick Look — '+(QuickLookState.data.name || '')
- onVisibleChanged:if(!visible && QuickLookState.opened)QuickLookState.close()
+ onClosed:QuickLookState.close()
  color:'transparent';implicitWidth:880;implicitHeight:650;minimumSize:Qt.size(460,320)
  property bool glassReady: true
  readonly property rect glassRegion: Qt.rect(QuickLookState.geometry.x || 0, QuickLookState.geometry.y || 0, window.width, window.height)
@@ -24,7 +24,7 @@ FloatingWindow {
  property var retainedInfo: ({})
  property bool presented: false
  readonly property var info:QuickLookState.opened ? QuickLookState.data : retainedInfo
- readonly property int motionDuration: ShellMotion.fade()
+ readonly property int motionDuration: Math.min(100,ShellMotion.fade())
  Timer { id:closeMotion; interval:Math.max(1,window.motionDuration); onTriggered:window.retainedInfo=({}) }
  Connections {
   target: QuickLookState
@@ -32,7 +32,7 @@ FloatingWindow {
   function onOpenedChanged() {
    if (QuickLookState.opened) {
     closeMotion.stop()
-    Qt.callLater(()=>{ if (QuickLookState.opened) window.presented=true })
+    window.presented=true
    } else {
     window.presented=false
     if (window.motionDuration>0) closeMotion.restart()
@@ -60,8 +60,10 @@ FloatingWindow {
  FocusScope{
   id:keys;anchors.fill:parent;focus:true
   enabled:QuickLookState.opened
-  opacity:1
-  scale:1
+  opacity:window.presented ? 1:0
+  scale:window.presented ? 1:.985
+  Behavior on opacity{NumberAnimation{duration:window.motionDuration;easing.type:Easing.OutCubic}}
+  Behavior on scale{NumberAnimation{duration:window.motionDuration;easing.type:Easing.OutCubic}}
   transformOrigin:Item.Center
   Keys.onPressed:event=>{
    if(event.key===Qt.Key_Escape){window.closePreview();event.accepted=true}
@@ -138,7 +140,7 @@ anchors.margins:12;spacing:10
  Component{id:imagePreview
   Flickable{id:imageScroll;contentWidth:width*window.zoom;contentHeight:height*window.zoom;clip:true;boundsBehavior:Flickable.StopAtBounds
    Item{id:image;width:imageScroll.width*window.zoom;height:imageScroll.height*window.zoom;rotation:window.angle
-    Image{anchors.fill:parent;visible:window.info.mime!=='image/gif';source:visible ? window.info.preview || '':'';fillMode:Image.PreserveAspectFit;asynchronous:true;cache:false;autoTransform:true;sourceSize:Qt.size(2400,2400);onStatusChanged:if(status===Image.Error)QuickLookState.error='Preview is unavailable for this image format.'}
+    Image{anchors.fill:parent;visible:window.info.mime!=='image/gif';source:visible ? window.info.preview || '':'';fillMode:Image.PreserveAspectFit;asynchronous:true;cache:true;autoTransform:true;sourceSize:Qt.size(Math.ceil(window.width*window.screen.devicePixelRatio),Math.ceil(window.height*window.screen.devicePixelRatio));onStatusChanged:if(status===Image.Error)QuickLookState.error='Preview is unavailable for this image format.'}
     AnimatedImage{anchors.fill:parent;visible:window.info.mime==='image/gif';source:visible ? window.info.preview || '':'';fillMode:Image.PreserveAspectFit;asynchronous:true;playing:visible;cache:false}
     Item{width:1;height:1
      Drag.dragType:Drag.Automatic;Drag.active:imageDrag.active;Drag.mimeData:({'text/uri-list':window.info.url+'\r\n','text/plain':window.info.path});Drag.supportedActions:Qt.CopyAction | Qt.MoveAction;Drag.proposedAction:Qt.CopyAction;Drag.imageSource:window.info.preview || '';Drag.imageSourceSize:Qt.size(96,96)

@@ -1,7 +1,7 @@
 {
   description = "Meu NixOS com Quickintosh";
   inputs = {
-    quickintosh.url = "git+ssh://git@github.com/anglesofsin/quikintosh.git";
+    quickintosh.url = "git+ssh://git@github.com/anglesofsin/quikintosh.git?ref=feat/droppy-island-surface";
     nixpkgs.follows = "quickintosh/nixpkgs";
   };
   outputs = inputs@{ nixpkgs, ... }: {

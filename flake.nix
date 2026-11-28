@@ -35,6 +35,12 @@
       default = demo.config.system.build.quickintosh;
       quickintosh = demo.config.system.build.quickintosh;
       shell = demo.config.system.build.lickintosh;
+      shell-source = demo.config.system.build.quickintoshSource;
+      glass-plugin = demo.config.system.build.quickintoshGlass;
+      geometry-plugin = demo.config.system.build.quickintoshGeometry;
+      finder-theme = demo.config.system.build.quickintoshFinderTheme;
+      hyprland-config = builtins.head (builtins.filter
+        (p: p.name == "hyprland-config") demo.config.environment.systemPackages);
       rice-shell = demo.config.system.build.riceShell;
       hyprland = demo.config.programs.hyprland.package;
       arch-mesa = inputs.nixgl.packages.${system}.nixGLIntel;

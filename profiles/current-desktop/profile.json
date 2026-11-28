@@ -1,0 +1,368 @@
+{
+  "schema": 1,
+  "description": "Optional sanitized visual preferences; excludes private content, wallpaper files and machine credentials.",
+  "files": {
+    ".config/lickintosh/shell-config.json": {
+      "json": {
+        "appearance": {
+          "accentColor": "#1C7AFF",
+          "accentMode": "auto",
+          "accentOverride": "#adc6ff",
+          "blurLayerPopups": true,
+          "blurLayers": true,
+          "blurParams": {},
+          "blurPreset": "",
+          "blurSurfaceAlpha": 0.3,
+          "blurWindowOpacity": 0.8,
+          "blurWindowOpacityInactive": 0.8,
+          "glassAutoDarken": true,
+          "glassAutoDarkenSeeded": true,
+          "glassDarkenStrength": 0.5,
+          "glassDarkenThreshold": 0.7,
+          "glassElements": {
+            "*": {
+              "tintAlpha": 0.12
+            }
+          },
+          "glassTintDark": 0.4,
+          "glassTintLight": 0.45,
+          "highlightColor": "#0a84ff",
+          "highlightMode": "accent",
+          "iconAppearance": "auto",
+          "iconDarkColor": "#9ecaff",
+          "iconLightColor": "#0061a4",
+          "iconPaletteRole": "primary",
+          "iconStyle": "color",
+          "iconTintColor": "#f7c7ff",
+          "iconTintMode": "auto",
+          "iconTreatmentStrength": 1,
+          "layerIgnoreAlpha": 0.05,
+          "mode": "dark",
+          "panelOpacity": 0.85,
+          "reduceMotion": false,
+          "scrollbarVisibility": "automatic",
+          "sidebarSize": "medium",
+          "wallpaperFileIcons": false,
+          "wallpaperGtk": false
+        },
+        "battery": {
+          "powerProfile": ""
+        },
+        "dockAppearance": {
+          "animateOpening": true,
+          "confirmEmptyTrash": true,
+          "enable": true,
+          "height": 60,
+          "hideDelay": 300,
+          "hoverToReveal": true,
+          "iconOverflow": 4,
+          "iconScale": 1.15,
+          "iconSize": 40,
+          "iconTint": false,
+          "iconTintColor": "#0a84ff",
+          "iconTintStrength": 1,
+          "magnification": 1.5,
+          "magnificationEnabled": true,
+          "minimizeToAppIcon": true,
+          "monochromeIcons": false,
+          "position": "bottom",
+          "recentAppCount": 3,
+          "showDownloads": true,
+          "showIndicators": true,
+          "showPinButton": false,
+          "showRecentApps": true,
+          "showRecentFiles": false,
+          "showTrash": true,
+          "stackDisplay": "stack",
+          "stackSort": "modified",
+          "stackView": "grid"
+        },
+        "edges": {
+          "bottomLeftAction": "none",
+          "bottomLeftModifiers": 0,
+          "bottomRightAction": "none",
+          "bottomRightModifiers": 0,
+          "cornerRadius": 23,
+          "hideCornersFullscreen": true,
+          "hideHotCornersFullscreen": true,
+          "hotCornerDelay": 200,
+          "hotCorners": false,
+          "menuCornerRadius": 20,
+          "roundMenuBackground": true,
+          "roundedCorners": true,
+          "topLeftAction": "none",
+          "topLeftModifiers": 0,
+          "topRightAction": "none",
+          "topRightModifiers": 0
+        },
+        "general": {
+          "language": "en",
+          "shellScale": 1
+        },
+        "glass": {
+          "captureIntervalMs": 400,
+          "captureWindows": true,
+          "captureWindowsSeeded": true,
+          "windowOpacity": 1,
+          "windowOpacityByClass": {
+            "kitty": 0.3
+          }
+        },
+        "menuBar": {
+          "autoHide": false
+        },
+        "notifications": {
+          "enable": true,
+          "timeoutSecs": 5
+        },
+        "performance": {
+          "ambientAnimations": true,
+          "blurEnabled": true,
+          "blurScale": 0.5,
+          "cacheWidgetDrag": false,
+          "geometryFps": 0,
+          "glassEnabled": true,
+          "glassFps": 0,
+          "maximumFps": 0,
+          "measureFrames": false,
+          "motionScale": 1,
+          "prewarm": true,
+          "renderer": "auto",
+          "shadows": true,
+          "textureScale": 0.5
+        },
+        "sound": {
+          "osdTimeout": 1.5,
+          "showOsd": true
+        },
+        "topbar": {
+          "backgroundColor": "#000000",
+          "backgroundEnabled": false,
+          "backgroundOpacity": 1,
+          "barHeight": 30,
+          "batteryIconVisible": true,
+          "batteryTextVisible": true,
+          "batteryVisible": false,
+          "blurEnabled": false,
+          "clockBadgeVisible": true,
+          "clockFormat": "ddd d MMM HH:mm",
+          "clockTextVisible": true,
+          "clockVisible": true,
+          "foregroundColor": "#fafafa",
+          "foregroundMode": "auto",
+          "islandProvider": "rosa",
+          "logoColor": "#fafafa",
+          "logoColorMode": "follow",
+          "logoSize": 20,
+          "logoType": "apple",
+          "logoVisible": true,
+          "notchVisible": true,
+          "showAI": true,
+          "showBluetooth": false,
+          "showControlCenter": true,
+          "showSpotlight": true,
+          "showSystemTray": true,
+          "showWifi": false
+        },
+        "wallpaper": {
+          "fit": "fill",
+          "dim": 0,
+          "backgroundColor": "#000000",
+          "videoEnabled": true,
+          "videoFps": 60,
+          "videoHeight": 1080,
+          "videoPauseBattery": false,
+          "pauseFullscreen": true,
+          "pauseMaximized": false,
+          "transitionMs": 350
+        }
+      }
+    },
+    ".config/lickintosh/rosa/island.json": {
+      "json": {
+        "style": {
+          "align": "center",
+          "barTakeover": false,
+          "black": true,
+          "blot": true,
+          "centerMode": "pill",
+          "comet": false,
+          "dashboardCamera": true,
+          "edge": "top",
+          "enabled": true,
+          "externalSurfaceMode": "island",
+          "floatingPlayerSize": "player",
+          "glint": true,
+          "glow": true,
+          "hideFull": true,
+          "idleAutoHide": false,
+          "idleHideImmediately": false,
+          "idleHideSeconds": 15,
+          "inBar": true,
+          "privacy": true,
+          "rim": false,
+          "shadow": true,
+          "shelfExpandedTabs": false,
+          "shelfMaterial": "dynamic",
+          "shelfOpenOnHover": false,
+          "shelfSlot1": "media",
+          "shelfSlot2": "calendar",
+          "shelfSlot3": "weather",
+          "shelfSlot4": "none",
+          "shelfWeight1": 1,
+          "shelfWeight2": 1,
+          "shelfWeight3": 1,
+          "shelfWeight4": 1,
+          "srcClip": false,
+          "srcClock": false,
+          "srcDesk": false,
+          "srcOsd": false,
+          "srcShot": true,
+          "srcTask": true,
+          "srcTimer": true,
+          "srcVpn": true,
+          "surfaceMode": "island",
+          "tintShadow": false,
+          "trail": true,
+          "voiceCanary": true,
+          "voiceClient": "canary",
+          "voiceClock": true,
+          "voiceEnabled": true,
+          "voiceLayout": "auto",
+          "voicePulse": true,
+          "voiceSelf": true
+        }
+      }
+    },
+    ".config/lickintosh/rosa/config.json": {
+      "json": {
+        "barPosition": "top",
+        "cornerRadius": 12,
+        "design": "apple",
+        "dockEnabled": true,
+        "fontDisplay": "SF Pro Display",
+        "greetingEnabled": true,
+        "idleDimLeadSec": 45,
+        "idleEnabled": false,
+        "idleLockSec": 3000,
+        "idleScreenOffSec": 3300,
+        "language": "en",
+        "notifySound": "Sine",
+        "osdStyle": "island",
+        "polkitEnabled": true,
+        "sfxEnabled": false,
+        "sfxVolume": 0.55,
+        "uiScale": 1,
+        "weatherEnabled": true,
+        "widgetsEnabled": true
+      }
+    },
+    ".config/lickintosh/core/settings-preferences.json": {
+      "json": {
+        "accessibility": {
+          "increaseContrast": false,
+          "reduceMotion": false,
+          "reduceTransparency": false,
+          "textScale": 1
+        },
+        "profile": {
+          "autoAppearance": false
+        },
+        "notifications": {
+          "banners": true,
+          "previews": "always",
+          "duration": 5000,
+          "sounds": true,
+          "sound": "rebound",
+          "soundVolume": 0.6
+        },
+        "session": {
+          "autoLock": false,
+          "lockAfter": 600
+        },
+        "inputOverrides": {
+          "native-glass:menubar:blur_strength": 8,
+          "native-glass:menubar:enabled": false,
+          "native-glass:menubar:preset": "subtle",
+          "native-glass:menubar:refraction_strength": 0,
+          "plugin:hyprglass:default_preset": "pomme",
+          "plugin:hyprglass:enabled": true,
+          "plugin:hyprimate:window:during_workspace_switch": true,
+          "plugin:hyprimate:window:options:swarm:sprite": "cat",
+          "plugin:hyprimate:window:style": "liquid",
+          "plugin:hyprimate:workspace:effect": "",
+          "plugin:hyprimate:workspace:enabled": false,
+          "plugin:hyprimate:workspace:options:cube:variant": "inside_out",
+          "plugin:hyprimate:workspace:style": "lava",
+          "qi-cursor:scale": 6,
+          "qi-cursor:size": 33,
+          "qi-cursor:theme": "MacTahoe-cursors",
+          "workspace-animation:enabled": true,
+          "workspace-animation:speed": 5.2,
+          "workspace-animation:style": "slide"
+        }
+      }
+    },
+    ".config/lickintosh/core/widgets.json": {
+      "json": {
+        "allowCtrlFreePlacement": true,
+        "avoidDesktopIcons": true,
+        "desktopMenuMaterial": "glass",
+        "desktopSort": "name",
+        "dimWidgets": "auto",
+        "iconSize": 88,
+        "iconSpacing": 40,
+        "showDesktopWidgets": true,
+        "showHidden": false,
+        "widgetMaterial": "glass",
+        "widgetStyle": "auto",
+        "widgetTint": "#5589c9"
+      }
+    },
+    ".config/lickintosh/core/privacy-indicators.json": {
+      "json": {
+        "categories": {
+          "mic": {
+            "color": "#ff9f0a",
+            "enabled": true,
+            "priority": 2
+          },
+          "screen": {
+            "color": "#409cff",
+            "enabled": true,
+            "priority": 1
+          },
+          "camera": {
+            "priority": 0
+          },
+          "audio": {
+            "priority": 3
+          }
+        },
+        "controlCenter": true,
+        "enabled": true,
+        "hideFullscreen": false,
+        "island": true,
+        "showExpanded": false
+      }
+    },
+    ".local/state/quickintosh/island-shelf/utilities.json": {
+      "json": {
+        "commandColumns": 7,
+        "voiceLanguage": "pt",
+        "navigationFavorites": [
+          "",
+          "",
+          "",
+          ""
+        ]
+      }
+    },
+    ".config/kitty/kitty.conf": {
+      "text": "# Optional Quickintosh visual profile\nconfirm_os_window_close 0\nbackground_opacity 0\ndynamic_background_opacity yes\nwindow_margin_width 20\nsingle_window_margin_width 20\nresize_draw_strategy static\nresize_debounce_time 0.01\ninclude current-theme.conf\ninclude quickintosh-fonts.conf\n"
+    },
+    ".config/kitty/current-theme.conf": {
+      "text": "color0 #11131a\ncolor1 #ffb4ab\ncolor2 #adc6ff\ncolor3 #b1c6f7\ncolor4 #f4aeff\ncolor5 #adc6ff\ncolor6 #b1c6f7\ncolor7 #e1e2eb\ncolor8 #8c909f\ncolor9 #ffb4ab\ncolor10 #adc6ff\ncolor11 #b1c6f7\ncolor12 #f4aeff\ncolor13 #adc6ff\ncolor14 #b1c6f7\ncolor15 #e1e2eb\ncursor #e1e2eb\ncursor_text_color #11131a\nbackground #11131a\nforeground #e1e2eb\nselection_foreground #c2c6d5\nselection_background #424753\nactive_border_color #adc6ff\ninactive_border_color #424753\nurl_color #adc6ff\nactive_tab_foreground #002e69\nactive_tab_background #adc6ff\ninactive_tab_foreground #c2c6d5\ninactive_tab_background #424753\ncursor_trail_color #c2c6d5\n"
+    }
+  }
+}

@@ -4,6 +4,10 @@ Rice completa para **NixOS + Hyprland**, inspirada no macOS Tahoe, baseada no Li
 
 Este repositório contém as fontes da shell, os assets do upstream, as modificações locais e as receitas Nix. Não depende dos checkouts `/home/pg/...` da máquina de desenvolvimento. O módulo instala a rice; não substitui a configuração de discos, bootloader, usuários ou senhas do seu sistema.
 
+## Refazer este ambiente
+
+As alterações mais recentes estão na branch **`feat/droppy-island-surface`**. O `main` ainda não contém todas elas. Para reconstruir, siga o [guia de reprodução e restauração](docs/REPRODUCING.md), incluindo o perfil visual opcional, os pacotes de diagnóstico e a distinção entre fontes versionadas e arquivos pessoais.
+
 ## O que está incluído
 
 - **Menu Bar:** menus do aplicativo, troca por hover, cores automáticas/manuais, logo personalizável e cantos configuráveis.
@@ -35,13 +39,13 @@ Arquitetura testada: **x86_64-linux**. É necessário usar flakes. A primeira co
 2. Clone:
 
    ```sh
-   git clone git@github.com:anglesofsin/quikintosh.git ~/quickintosh
+   git clone --branch feat/droppy-island-surface --single-branch git@github.com:anglesofsin/quikintosh.git ~/quickintosh
    ```
 
 3. Integre o input e o módulo à sua flake NixOS. Exemplo completo em [examples/flake.nix](examples/flake.nix). Trecho principal:
 
    ```nix
-   inputs.quickintosh.url = "git+ssh://git@github.com/anglesofsin/quikintosh.git";
+   inputs.quickintosh.url = "git+ssh://git@github.com/anglesofsin/quikintosh.git?ref=feat/droppy-island-surface";
    # Use o mesmo nixpkgs testado pela rice:
    inputs.nixpkgs.follows = "quickintosh/nixpkgs";
    ```
@@ -102,6 +106,8 @@ Os arquivos Hyprland existentes com o mesmo nome são substituídos por links da
 | Super+Alt+G | Game Mode |
 | Super+Alt+K | Keep Awake |
 | Alt+Tab / Alt+Shift+Tab | Alternar apps |
+| Enter em arquivo selecionado | Renomear na Mesa/Finder |
+| Ctrl+O | Abrir arquivo selecionado na Mesa/Finder |
 | Espaço em arquivo | Quick Look |
 | Ctrl+A na Mesa | Selecionar tudo |
 | Ctrl+scroll na Mesa | Tamanho dos itens |
@@ -136,7 +142,7 @@ Veja [arquitetura e fontes](docs/ARCHITECTURE.md), [temas](docs/THEMING.md) e [v
 
 Código derivado da shell sob GPL-3.0-or-later; componentes de terceiros mantêm suas licenças. Consulte [LICENSE](LICENSE), [THIRD_PARTY.md](THIRD_PARTY.md), `upstream/lickintosh/THIRD_PARTY_LICENSES/` e os avisos nos assets. Marcas Apple/macOS pertencem aos seus titulares; este projeto não é afiliado à Apple.
 
-Desktop widgets support Liquid Glass, solid and transparent surfaces, plus per-widget overrides. Media widgets preserve full color and accept images/GIFs/videos, folder slideshows, additional portrait/wide formats, fit modes and shapes. Music, styled text and synchronized MPRIS lyrics have dedicated editors; see [creative widgets](docs/CREATIVE-WIDGETS.md). Hold Control while dragging a desktop widget for free placement and intentional overlap; configure this in Desktop & Dock. Desktop context menus use an overlay above the Dock, including secondary displays and Game Mode.
+Desktop widgets support Liquid Glass, solid and transparent surfaces, plus per-widget overrides. Media widgets preserve full color and accept images/GIFs/videos, folder slideshows, additional portrait/wide formats, fit modes and shapes. Music, styled text and synchronized MPRIS lyrics have dedicated editors; see [creative widgets](docs/CREATIVE-WIDGETS.md). Hold Control while dragging a desktop widget for free placement and intentional overlap; configure this in Settings → Widgets (also linked from Desktop & Dock). Desktop context menus use an overlay above the Dock, including secondary displays and Game Mode.
 
 The desktop presents Finder menus (File, Edit, View, Go, Window and Help). Desktop actions use the shell file services; Finder window actions use the file manager shortcuts, with direct navigation to common folders. Voice call buttons preserve the original glyph artwork and center its visible bounds.
 

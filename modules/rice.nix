@@ -636,6 +636,10 @@ in
   system.build.noctaliaLegacy = noctaliaLegacyPackage;
   system.build.lickintosh = lickintoshPackage;
   system.build.quickintosh = quickintoshPackage;
+  system.build.quickintoshSource = lickintoshRoot;
+  system.build.quickintoshGlass = quickintoshWindowGlass;
+  system.build.quickintoshGeometry = quickintoshGeometry;
+  system.build.quickintoshFinderTheme = finderThemeLive;
   system.build.appleEmoji = appleEmojiFont;
   fonts.packages = [ appleEmojiFont (pkgs.runCommand "quickintosh-sf-fonts" {} ''
     mkdir -p $out/share/fonts/opentype

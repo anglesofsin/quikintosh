@@ -1,0 +1,33 @@
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -867,7 +867,12 @@
+         [=](PHLWINDOW w, PHLWORKSPACE) { bumpWindowMonitor(w); }));
+     g_pGlobalState->listeners.push_back(Event::bus()->m_events.workspace.active.listen(
+         [&](PHLWORKSPACE ws) {
+-            if (ws) if (auto mon = ws->m_monitor.lock()) g_pGlobalState->bumpSceneGeneration(mon);
++            if (ws) if (auto mon = ws->m_monitor.lock()) {
++                g_pGlobalState->bumpSceneGeneration(mon);
++                // A hidden pane can have no valid sample. Repaint its backdrop
++                // before the incoming workspace's very first visible frame.
++                g_pHyprRenderer->damageMonitor(mon);
++            }
+         }));
+ 
+     // Clear pending presets/layers before config re-parse, commit after
+--- a/src/GlassDecoration.cpp
++++ b/src/GlassDecoration.cpp
+@@ -368,8 +368,12 @@
+     const auto window = m_window.lock();
+     if (window && !(window->m_state & Desktop::View::WINDOW_STATE_PINNED)) {
+         const auto workspace = window->m_workspace;
+-        if (workspace && workspace->m_renderOffset->isBeingAnimated())
+-            damageEntire();
++        if (workspace && (workspace->m_renderOffset->isBeingAnimated() || workspace->m_alpha->isBeingAnimated())) {
++            // Sampling crosses the translated workspace viewport. Per-window
++            // damage can leave the newly exposed part holding last frame's
++            // output; repaint the affected monitor until the transition ends.
++            g_pHyprRenderer->damageMonitor(monitor);
++        }
+     }
+ }
+ 

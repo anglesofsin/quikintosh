@@ -1,5 +1,5 @@
 from pathlib import Path
-import json,sys
+import json,re,sys
 r=Path(sys.argv[1]);here=Path(__file__).parent
 def write(name,text):
  p=r/name
@@ -65,9 +65,16 @@ p='components/glass/GlassPrewarm.qml';s=(r/p).read_text().replace('if(!Rendering
 for p,old,new in [
  ('ui/desktop/DesktopLayer.qml','id:desktopWidgetBackdrop','id:desktopWidgetBackdrop; element:"widgets"'),
  ('ui/widgets/WidgetSettings.qml',"GlassBackdrop{element:'menus'","GlassBackdrop{element:'widget-editor'"),
- ('ui/widgets/WidgetGallery.qml',"GlassBackdrop{element:'menus'","GlassBackdrop{element:'widget-editor'"),
- ('ui/topbar/statusarea/notifcenter/NotifPopup.qml',"GlassBackdrop{element:'notifcenter'","GlassBackdrop{element:'notifpopup'")]:
+ ('ui/widgets/WidgetGallery.qml',"GlassBackdrop{element:'menus'","GlassBackdrop{element:'widget-editor'")]:
  s=(r/p).read_text();assert old in s,p;write(p,s.replace(old,new,1))
+# Notification polish supplies its own banner component before this stage.
+# Older assemblies still need migration; the current explicit scope is already correct.
+p='ui/topbar/statusarea/notifcenter/NotifPopup.qml';s=(r/p).read_text()
+if "GlassBackdrop{element:'notifcenter'" in s:
+ s=s.replace("GlassBackdrop{element:'notifcenter'","GlassBackdrop{element:'notifpopup'",1)
+elif not re.search(r"GlassBackdrop\s*\{[^}]*\belement\s*:\s*['\"]notifpopup['\"]",s):
+ raise ValueError('Notification banner has no addressable glass scope')
+write(p,s)
 write('services/NativeGlassState.qml',(here/'NativeGlassState.qml').read_text())
 p='services/qmldir';write(p,(r/p).read_text()+'\nsingleton NativeGlassState NativeGlassState.qml\n')
 p='components/glass/GlassBackdrop.qml';s=(r/p).read_text().replace("Object.keys(SettingsPreferences.inputOverrides).some(key=>key.startsWith('native-glass:'+root.nativeTarget+':'))","NativeGlassState.applied(root.nativeTarget)",1)
